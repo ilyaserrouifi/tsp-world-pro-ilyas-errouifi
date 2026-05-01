@@ -621,14 +621,7 @@ function getOrsKey() { return localStorage.getItem('tsp_ors_key') || ''; }
 function saveOrsKey() { let k=document.getElementById('orsKeyInput').value.trim(); if(k) { localStorage.setItem('tsp_ors_key',k); document.getElementById('orsStatus').innerHTML='✅ Clé sauvegardée'; } else { localStorage.removeItem('tsp_ors_key'); document.getElementById('orsStatus').innerHTML='⚠️ Sans clé → lignes droites. <a href="https://openrouteservice.org/dev/#/signup" target="_blank">Obtenir une clé</a>'; } }
 
 // ==================== EXPORT JAVA (génération tableau) ====================
-function generateJavaCode() {
-    if (selectedCities.length === 0) { document.getElementById('javaCodeArea').value = "// Aucune ville sélectionnée. Ajoutez des villes depuis la recherche."; return; }
-    let code = "double[][] coordinates = {\n";
-    for (let i = 0; i < selectedCities.length; i++) { const city = selectedCities[i]; code += `    {${city.lat}, ${city.lon}}  // ${city.name} (${city.country})`; if (i < selectedCities.length - 1) code += ","; code += "\n"; }
-    code += "};\n\n// Exemple d'utilisation :\n// for (double[] coord : coordinates) {\n//     System.out.println(coord[0] + \", \" + coord[1]);\n// }";
-    document.getElementById('javaCodeArea').value = code;
-}
-function copyJavaCode() { const textarea = document.getElementById('javaCodeArea'); textarea.select(); document.execCommand('copy'); alert("✅ Code Java copié !"); }
+
 
 // ==================== DÉMARRAGE ====================
 (function boot() { let sess = localStorage.getItem('tsp_session'); if(sess) { try{ sess=JSON.parse(sess); document.getElementById('loginOverlay').style.display='none'; startApp(sess); }catch(e){} } })();
