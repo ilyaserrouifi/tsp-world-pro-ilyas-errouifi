@@ -1860,7 +1860,6 @@ function saveOrsKey() {
     let k = document.getElementById('orsKeyInput').value.trim(); 
     if(k) { 
         localStorage.setItem('tsp_ors_key', k); 
-        // Bdlna l-message hna bach i-kon mtabeq m3a l-URL jdid
         document.getElementById('orsStatus').innerHTML = '✅ Clé sauvegardée (utilise api.openrouteservice.org).'; 
     } else { 
         localStorage.removeItem('tsp_ors_key'); 
@@ -1873,8 +1872,6 @@ async function fetchOrsRoute(coords, mode) {
     if (!key) return null;
     
     const profile = mode === 'foot' ? 'foot-walking' : 'driving-car';
-    
-    // IMPORTANT: Bdlna api.heigit.org b api.openrouteservice.org bach i-khdm CORS
     const url = `https://api.openrouteservice.org/v2/directions/${profile}/geojson`;
     
     const body = {
@@ -1884,7 +1881,6 @@ async function fetchOrsRoute(coords, mode) {
         units: "km"
     };
     
-    // Headers s-shih kima banou f image_87d03d.png
     let headers = { 
         'Content-Type': 'application/json; charset=utf-8', 
         'Accept': 'application/json, application/geo+json, charset=utf-8',
@@ -1898,7 +1894,6 @@ async function fetchOrsRoute(coords, mode) {
             body: JSON.stringify(body)
         });
         
-        // Fallback f halat ila kan moshkil f l-header Authorization
         if (response.status === 401 || response.status === 403) {
             const urlWithKey = `${url}?api_key=${encodeURIComponent(key)}`;
             response = await fetch(urlWithKey, {
@@ -1916,9 +1911,7 @@ async function fetchOrsRoute(coords, mode) {
         }
         
         const data = await response.json();
-        if (!data.features || !data.features[0]) {
-            return null;
-        }
+        if (!data.features || !data.features[0]) return null;
         
         const routeCoords = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
         const duration = data.features[0].properties.summary.duration;
@@ -1926,7 +1919,6 @@ async function fetchOrsRoute(coords, mode) {
         
     } catch(e) {
         console.error("ORS network error", e);
-        // Ila bqa l-moshkil, t'akkd mn l-console (image_86e3bf.jpg) wach baqi CORS
         return null;
     }
 }
