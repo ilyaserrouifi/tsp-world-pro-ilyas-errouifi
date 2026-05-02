@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>✈️ TSP WORLD PRO - CORS FIX FINAL</title>
+    <title>✈️ TSP WORLD PRO - CORS résolu (proxy + ORS HeiGIT)</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -63,8 +63,8 @@
         .ors-section { background: rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.2); border-radius:16px; padding:12px 16px; margin-bottom:16px; }
         .ors-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
         .ors-row input { flex:1; padding:8px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50px; color:var(--text); font-size:0.82rem; }
-        .ors-save-btn { padding:8px 16px; background:var(--cyan); border:none; border-radius:50px; color:#000; font-weight:700; cursor:pointer; }
-        .test-ors-btn { padding:8px 12px; background:var(--cyan2); border:none; border-radius:50px; color:#fff; font-weight:700; cursor:pointer; margin-left:8px; }
+        .ors-save-btn, .test-ors-btn { padding:8px 16px; background:var(--cyan); border:none; border-radius:50px; color:#000; font-weight:700; cursor:pointer; }
+        .test-ors-btn { background:var(--cyan2); color:white; margin-left:8px; }
         .cors-proxy-label { display:flex; align-items:center; gap:8px; margin-top:8px; font-size:0.75rem; cursor:pointer; }
         .section { margin-bottom:18px; border-bottom:1px solid rgba(0,245,255,0.1); padding-bottom:16px; }
         .section-title { font-weight:700; font-size:0.82rem; text-transform:uppercase; color:var(--muted); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
@@ -93,6 +93,7 @@
         .java-export { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 12px; margin-top: 8px; }
         .java-export textarea { width: 100%; font-family: monospace; font-size: 0.7rem; background: #0a0a1a; border: 1px solid var(--cyan); color: #0f0; padding: 8px; border-radius: 10px; white-space: pre; }
         @media (max-width: 700px) { .dashboard { width: 380px; } }
+        .toast-alarm { position: fixed; bottom: 20px; left: 20px; background: #000; color: cyan; padding: 12px 20px; border-radius: 40px; z-index: 2000; font-weight: bold; box-shadow: 0 0 10px cyan; }
     </style>
 </head>
 <body>
@@ -156,7 +157,7 @@
             <button class="test-ors-btn" onclick="testORS()">🧪 Tester la clé</button>
         </div>
         <label class="cors-proxy-label">
-            <input type="checkbox" id="useCorsProxyCheckbox"> 🔄 Utiliser un proxy CORS (si bloqué)
+            <input type="checkbox" id="useCorsProxyCheckbox" checked> 🔄 Utiliser un proxy CORS (corsproxy.io) obligatoire pour GitHub Pages
         </label>
         <div class="ors-status" id="orsStatus">⚠️ Sans clé → lignes droites. <a href="https://openrouteservice.org/dev/#/signup" target="_blank">Obtenir une clé</a></div>
     </div>
@@ -190,10 +191,16 @@
     <div class="section"><div class="section-title">🎯 Paramètres TSP</div><div class="tsp-params"><span>Max villes :</span><input type="number" id="maxCities" value="8" min="2" max="35"><span>Départ :</span><select id="startCitySelect"></select><span>Transport :</span><select id="transportMode"><option value="car">🚗 Voiture</option><option value="foot">🚶 Piéton</option><option value="plane">✈️ Avion</option></select><span>Algorithme :</span><select id="algoSelect"><option value="nn">Plus proche voisin</option><option value="2opt">2-opt</option></select></div><div class="btn-row"><button class="btn btn-primary" onclick="computeTSP()">🚀 Lancer le TSP</button><button class="btn btn-secondary" id="cancelTSPBtn" onclick="cancelTSP()" style="display:none;">❌ Annuler</button></div><div class="route-loading" id="routeLoading" style="display:none;">⏳ Calcul...</div></div>
     <div class="section"><div class="section-title">➕ Ajouter une ville personnalisée</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
-    <div class="footer">🌐 CORS résolu via proxy · TSP avec annulation · Export Java inclus</div>
+    <div class="footer">🌐 CORS résolu via proxy · URL HeiGIT · TSP complet · Export Java inclus</div>
 </div>
 <script>
 // ==================== VOS VILLES (VIDE, À REMPLIR) ====================
+// Ajoutez vos villes ici au format : { name: "Nom", lat: 12.345, lon: -67.890, country: "Pays", desc: "" }
+// Exemple : 
+// let allCities = [
+//     { name: "Tanger", lat: 35.7595, lon: -5.8340, country: "Maroc", desc: "" },
+//     { name: "Casablanca", lat: 33.5731, lon: -7.5898, country: "Maroc", desc: "" }
+// ];
 let allCities = [
      {"name": "Tanger", "lat": 35.7595, "lon": -5.834, "country": "Maroc", "desc": ""},
     {"name": "Tétouan", "lat": 35.5785, "lon": -5.3704, "country": "Maroc", "desc": ""},
@@ -1677,7 +1684,6 @@ let tileLayers = { osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/
 function setMapLayer(layerId) { if(currentTileLayer) map.removeLayer(currentTileLayer); currentTileLayer = tileLayers[layerId]; currentTileLayer.addTo(map); localStorage.setItem('tsp_map_layer', layerId); }
 function toggleMapLayer() { let newLayer = (localStorage.getItem('tsp_map_layer') || 'osm') === 'osm' ? 'googleSat' : 'osm'; setMapLayer(newLayer); }
 
-// Horloge / Chrono
 function updateLiveClock() { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('fr-FR'); }
 setInterval(updateLiveClock, 1000); updateLiveClock();
 let cronInterval = null, cronSeconds = parseInt(sessionStorage.getItem('tsp_cron_sec') || '0');
@@ -1687,7 +1693,6 @@ function pauseCron() { if(cronInterval) {clearInterval(cronInterval); cronInterv
 function resetCron() { pauseCron(); cronSeconds=0; updateCronDisplay(); sessionStorage.setItem('tsp_cron_sec',0); }
 updateCronDisplay();
 
-// Authentification simplifiée
 async function hashPassword(pwd) { const encoder = new TextEncoder(); const data = encoder.encode(pwd); const hashBuffer = await crypto.subtle.digest('SHA-256', data); return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2,'0')).join(''); }
 function isFileProtocol() { return window.location.protocol === 'file:'; }
 function requestGeolocationWithHelp(cbSuccess, cbError) { if (isFileProtocol()) { alert("GPS bloqué: ouvrez via serveur HTTP."); if(cbError) cbError({message:"file://"}); return; } if (!navigator.geolocation) { alert("Navigateur non supporté."); return; } navigator.geolocation.getCurrentPosition(cbSuccess, cbError); }
@@ -1701,15 +1706,14 @@ function showConfirm(u) { pendingUser = u; document.getElementById('cf_username'
 function finalizeLogin() { localStorage.setItem('tsp_session', JSON.stringify(pendingUser)); document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('confirmOverlay').classList.add('hidden'); startApp(pendingUser); }
 function logout() { localStorage.removeItem('tsp_session'); location.reload(); }
 
-// Rappels
 let reminders = [], nextReminderId = 1, reminderInterval = null;
 function loadReminders() { try { let saved = localStorage.getItem('tsp_reminders'); if (saved) { reminders = JSON.parse(saved); nextReminderId = Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); } } catch(e) {} startReminderWatcher(); }
 function saveReminders() { localStorage.setItem('tsp_reminders', JSON.stringify(reminders)); }
-function renderReminderList() { let container = document.getElementById('reminderList'); if (!reminders.length) { container.innerHTML = '<div style="color:var(--muted); padding:8px;">Aucun rappel programmé.</div>'; return; } container.innerHTML = reminders.map(r => `<div><span>⏰ ${r.timeStr}</span> ${escapeHtml(r.message)} <button onclick="deleteReminder(${r.id})">✖</button></div>`).join(''); }
+function renderReminderList() { let container = document.getElementById('reminderList'); if (!reminders.length) { container.innerHTML = '<div style="color:var(--muted); padding:8px;">Aucun rappel programmé.</div>'; return; } container.innerHTML = reminders.map(r => `<div style="margin-bottom:5px;"><span>⏰ ${r.timeStr}</span> ${escapeHtml(r.message)} <button onclick="deleteReminder(${r.id})">✖</button></div>`).join(''); }
 function startReminderWatcher() { if (reminderInterval) clearInterval(reminderInterval); reminderInterval = setInterval(() => { const now = new Date(); const nowStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`; for (let i = reminders.length-1; i >= 0; i--) { if (reminders[i].timeStr === nowStr) { showToastAlarm(reminders[i].message); if (Notification.permission === "granted") { new Notification("⏰ Rappel", { body: reminders[i].message, icon: NOTIF_ICON }); } reminders.splice(i,1); saveReminders(); renderReminderList(); } } }, 1000); }
 function scheduleAlarm() { let timeInput = document.getElementById('reminderTime').value; let message = document.getElementById('reminderMessage').value.trim(); if (!timeInput) { alert("Veuillez choisir une heure."); return; } if (!message) message = "Rappel !"; if (Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission(); let newId = nextReminderId++; reminders.push({ id: newId, timeStr: timeInput, message: message }); saveReminders(); renderReminderList(); document.getElementById('reminderTime').value = ''; document.getElementById('reminderMessage').value = ''; }
 function deleteReminder(id) { reminders = reminders.filter(r => r.id !== id); saveReminders(); renderReminderList(); }
-function showToastAlarm(message) { let toast = document.createElement('div'); toast.className = 'toast-alarm'; toast.innerHTML = `<div style="background:#000;color:cyan;padding:10px;">⏰ ${escapeHtml(message)}</div>`; document.body.appendChild(toast); setTimeout(() => toast.remove(), 4000); }
+function showToastAlarm(message) { let toast = document.createElement('div'); toast.className = 'toast-alarm'; toast.innerHTML = `⏰ ${escapeHtml(message)}`; document.body.appendChild(toast); setTimeout(() => toast.remove(), 5000); }
 function escapeHtml(s) { return String(s).replace(/[&<>]/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m];}); }
 
 // Gestion villes
@@ -1732,7 +1736,7 @@ function saveSelection() { localStorage.setItem('tsp_selection',JSON.stringify(s
 function loadStoredSelection() { try{ let custom=JSON.parse(localStorage.getItem('tsp_custom')||'[]'); custom.forEach(c=>{if(!allCities.some(a=>a.name===c.name)) allCities.push(c);}); let ids=JSON.parse(localStorage.getItem('tsp_selection')||'[]'); ids.forEach(id=>{let city=allCities.find(c=>c.id===id); if(city&&!selectedCities.some(s=>s.id===id)) selectedCities.push(city);}); updateSelUI(); filterCities(); }catch(e){} }
 function exportGeoJSON() { let features = []; selectedCities.forEach(city => { features.push({ type: "Feature", geometry: { type: "Point", coordinates: [city.lon, city.lat] }, properties: { name: city.name, country: city.country } }); }); if(routeLayer && routeLayer.getLatLngs && routeLayer.getLatLngs().length) { let coords = routeLayer.getLatLngs().map(c => [c.lng, c.lat]); features.push({ type: "Feature", geometry: { type: "LineString", coordinates: coords }, properties: { name: "Itinéraire TSP" } }); } let geojson = { type: "FeatureCollection", features: features }; let blob = new Blob([JSON.stringify(geojson, null, 2)], {type: "application/json"}); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "tsp_route.geojson"; a.click(); URL.revokeObjectURL(url); }
 
-// TSP & ORS avec contournement CORS
+// TSP & ORS avec proxy CORS intégré (corsproxy.io)
 function haversine(lat1,lon1,lat2,lon2) { const R=6371, r=Math.PI/180; const dLat=(lat2-lat1)*r, dLon=(lon2-lon1)*r; return R*2*Math.asin(Math.sqrt(Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2)); }
 function totalDistance(tour) { let d=0; for(let i=0;i<tour.length-1;i++) d+=haversine(tour[i].lat,tour[i].lon,tour[i+1].lat,tour[i+1].lon); return d; }
 function twoOpt(tour) { let improved=true, bestDist=totalDistance(tour); while(improved && !tspCancelRequested){ improved=false; for(let i=1;i<tour.length-2;i++){ for(let j=i+1;j<tour.length-1;j++){ if(tspCancelRequested) return tour; let newTour = [...tour.slice(0,i), ...tour.slice(i,j+1).reverse(), ...tour.slice(j+1)]; let newDist=totalDistance(newTour); if(newDist<bestDist-0.001){ bestDist=newDist; tour=newTour; improved=true; } } } } return tour; }
@@ -1740,7 +1744,7 @@ function tspNN(cities,startIdx) { if(cities.length<2) return [[],0]; let unvisit
 
 async function fetchOrsRouteWithRetry(coords, mode, retries = 3) {
     let key = getOrsKey();
-    if (!key) { console.warn("No API key"); return null; }
+    if (!key) { console.warn("ORS: no key"); return null; }
     let profile = mode === 'foot' ? 'foot-walking' : 'driving-car';
     if (mode === 'plane') return null;
     if (coords.length > 50) coords = coords.slice(0,50);
@@ -1748,7 +1752,6 @@ async function fetchOrsRouteWithRetry(coords, mode, retries = 3) {
     let targetUrl = `https://api.heigit.org/v2/directions/${profile}/geojson`;
     const useProxy = document.getElementById('useCorsProxyCheckbox') && document.getElementById('useCorsProxyCheckbox').checked;
     let url = useProxy ? `https://corsproxy.io/?${encodeURIComponent(targetUrl)}` : targetUrl;
-    console.log("ORS request URL:", url, "useProxy:", useProxy);
     
     for (let attempt = 0; attempt < retries; attempt++) {
         try {
@@ -1756,13 +1759,14 @@ async function fetchOrsRouteWithRetry(coords, mode, retries = 3) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': key
+                    'Authorization': key,
+                    'Accept': 'application/json, application/geo+json'
                 },
                 body: JSON.stringify({ coordinates: coords, instructions: false })
             };
             let resp = await fetch(url, fetchOptions);
             if (resp.status === 401) {
-                document.getElementById('orsStatus').innerHTML = '❌ Clé API invalide.';
+                document.getElementById('orsStatus').innerHTML = '❌ Clé API invalide (401)';
                 return null;
             }
             if (resp.status === 429) {
@@ -1770,7 +1774,7 @@ async function fetchOrsRouteWithRetry(coords, mode, retries = 3) {
                 continue;
             }
             if (!resp.ok) {
-                console.error("ORS response not OK:", resp.status);
+                console.error("ORS error status:", resp.status);
                 return null;
             }
             let data = await resp.json();
@@ -1855,7 +1859,7 @@ async function computeTSP() {
     loadEl.style.display='none'; 
     if(tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display='none'; return; } 
     if(routeLatLng.length<2){ 
-        document.getElementById('resultsPanel').innerHTML='<div style="color:var(--error)">ORS échoué. Activez le proxy CORS ou passez en mode Avion.</div>'; 
+        document.getElementById('resultsPanel').innerHTML='<div style="color:var(--error)">Erreur ORS. Activez le proxy CORS (recommandé pour GitHub Pages) ou vérifiez votre clé.</div>'; 
         document.getElementById('cancelTSPBtn').style.display='none'; 
         return; 
     } 
@@ -1877,26 +1881,23 @@ async function computeTSP() {
 }
 function cancelTSP() { tspCancelRequested = true; }
 
-// Test ORS
 async function testORS() {
     let key = getOrsKey();
     if (!key) { alert("Aucune clé sauvegardée"); return; }
     let useProxy = document.getElementById('useCorsProxyCheckbox') && document.getElementById('useCorsProxyCheckbox').checked;
-    alert(`Test ORS avec proxy = ${useProxy ? "ACTIF" : "INACTIF"}. Voir console.`);
+    alert(`Test avec proxy = ${useProxy ? "ACTIF" : "INACTIF"}\nVoir console pour détails.`);
     let result = await fetchOrsRouteWithRetry([[-5.834, 35.7595], [-5.3704, 35.5785]], "car", 1);
     if (result) alert(`✅ Succès ! Durée: ${result.duration} sec`);
-    else alert("❌ Échec. Activez le proxy CORS et vérifiez votre clé.");
+    else alert("❌ Échec. Vérifiez que le proxy est activé (case cochée) et que votre clé est valide.");
 }
 
-// GPS
 function showMyLocation() { requestGeolocationWithHelp(pos => { let lat=pos.coords.latitude, lon=pos.coords.longitude; map.setView([lat,lon],14); if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]); else myLocationMarker = L.marker([lat,lon]).addTo(map).bindPopup('Vous êtes ici').openPopup(); if(confirm("Ajouter cette position ?")) addCityToList({name:"Ma position",lat,lon,country:"Local",desc:"",custom:true}); }, err => alert("GPS refusé")); }
 function startTracking() { if(isFileProtocol()) { alert("Suivi impossible en file://"); return; } if(watchId) stopTracking(); trackingPoints = []; if(trackingPolyline) map.removeLayer(trackingPolyline); watchId = navigator.geolocation.watchPosition(pos => { let lat=pos.coords.latitude, lon=pos.coords.longitude; trackingPoints.push([lat,lon]); if(trackingPolyline) map.removeLayer(trackingPolyline); trackingPolyline = L.polyline(trackingPoints, {color:'#ffaa33', weight:3}).addTo(map); if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]); else myLocationMarker = L.marker([lat,lon]).addTo(map); map.setView([lat,lon], map.getZoom()); }, err => console.warn(err)); }
 function stopTracking() { if(watchId) { navigator.geolocation.clearWatch(watchId); watchId=null; } }
 function useGeoloc() { requestGeolocationWithHelp(pos => { document.getElementById('newLat').value=pos.coords.latitude.toFixed(6); document.getElementById('newLon').value=pos.coords.longitude.toFixed(6); document.getElementById('pickMsg').textContent='📍 GPS récupéré'; }, err=>alert("GPS refusé")); }
 function getOrsKey() { return localStorage.getItem('tsp_ors_key') || ''; }
-function saveOrsKey() { let k=document.getElementById('orsKeyInput').value.trim(); if(k) { localStorage.setItem('tsp_ors_key',k); document.getElementById('orsStatus').innerHTML='✅ Clé sauvegardée'; } else { localStorage.removeItem('tsp_ors_key'); document.getElementById('orsStatus').innerHTML='⚠️ Sans clé → lignes droites'; } }
+function saveOrsKey() { let k=document.getElementById('orsKeyInput').value.trim(); if(k) { localStorage.setItem('tsp_ors_key',k); document.getElementById('orsStatus').innerHTML='✅ Clé sauvegardée (proxy recommandé)'; } else { localStorage.removeItem('tsp_ors_key'); document.getElementById('orsStatus').innerHTML='⚠️ Sans clé → lignes droites'; } }
 
-// Export Java
 function generateJavaCode() {
     if (!selectedCities.length) { document.getElementById('javaCodeArea').value = "// Aucune ville sélectionnée"; return; }
     let lines = selectedCities.map(c => `    {${c.lat}, ${c.lon}} // ${c.name}`);
@@ -1921,7 +1922,6 @@ function startApp(user) {
 function shareCurrentLocation() { requestGeolocationWithHelp(pos => { let lat = pos.coords.latitude, lon = pos.coords.longitude; let shareUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}&name=Ma%20position`; navigator.clipboard.writeText(shareUrl).then(() => alert("Lien copié !")); }, err => alert("Erreur GPS")); }
 function switchTab(t) { document.getElementById('loginForm').style.display = t === 'login' ? 'block' : 'none'; document.getElementById('registerForm').style.display = t === 'register' ? 'block' : 'none'; document.getElementById('tabLogin').classList.toggle('active', t === 'login'); document.getElementById('tabReg').classList.toggle('active', t === 'register'); }
 
-// Démarrage
 (function boot() { let sess = localStorage.getItem('tsp_session'); if(sess) { try{ sess=JSON.parse(sess); document.getElementById('loginOverlay').style.display='none'; startApp(sess); }catch(e){} } })();
 </script>
 </body>
