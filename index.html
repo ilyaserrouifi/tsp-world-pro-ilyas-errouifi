@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>✈️ TSP WORLD PRO - CORS FIXÉ</title>
+    <title>✈️ TSP WORLD PRO - CORS FIX FINAL</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -190,7 +190,7 @@
     <div class="section"><div class="section-title">🎯 Paramètres TSP</div><div class="tsp-params"><span>Max villes :</span><input type="number" id="maxCities" value="8" min="2" max="35"><span>Départ :</span><select id="startCitySelect"></select><span>Transport :</span><select id="transportMode"><option value="car">🚗 Voiture</option><option value="foot">🚶 Piéton</option><option value="plane">✈️ Avion</option></select><span>Algorithme :</span><select id="algoSelect"><option value="nn">Plus proche voisin</option><option value="2opt">2-opt</option></select></div><div class="btn-row"><button class="btn btn-primary" onclick="computeTSP()">🚀 Lancer le TSP</button><button class="btn btn-secondary" id="cancelTSPBtn" onclick="cancelTSP()" style="display:none;">❌ Annuler</button></div><div class="route-loading" id="routeLoading" style="display:none;">⏳ Calcul...</div></div>
     <div class="section"><div class="section-title">➕ Ajouter une ville personnalisée</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
-    <div class="footer">🌐 CORS résolu via proxy optionnel · TSP avec annulation · Export Java inclus</div>
+    <div class="footer">🌐 CORS résolu via proxy · TSP avec annulation · Export Java inclus</div>
 </div>
 <script>
 // ==================== VOS VILLES (VIDE, À REMPLIR) ====================
@@ -1705,11 +1705,11 @@ function logout() { localStorage.removeItem('tsp_session'); location.reload(); }
 let reminders = [], nextReminderId = 1, reminderInterval = null;
 function loadReminders() { try { let saved = localStorage.getItem('tsp_reminders'); if (saved) { reminders = JSON.parse(saved); nextReminderId = Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); } } catch(e) {} startReminderWatcher(); }
 function saveReminders() { localStorage.setItem('tsp_reminders', JSON.stringify(reminders)); }
-function renderReminderList() { let container = document.getElementById('reminderList'); if (!reminders.length) { container.innerHTML = '<div style="color:var(--muted); padding:8px;">Aucun rappel programmé.</div>'; return; } container.innerHTML = reminders.map(r => `<div class="reminder-item"><span>⏰ ${r.timeStr}</span><span>${escapeHtml(r.message)}</span><button onclick="deleteReminder(${r.id})">✖</button></div>`).join(''); }
+function renderReminderList() { let container = document.getElementById('reminderList'); if (!reminders.length) { container.innerHTML = '<div style="color:var(--muted); padding:8px;">Aucun rappel programmé.</div>'; return; } container.innerHTML = reminders.map(r => `<div><span>⏰ ${r.timeStr}</span> ${escapeHtml(r.message)} <button onclick="deleteReminder(${r.id})">✖</button></div>`).join(''); }
 function startReminderWatcher() { if (reminderInterval) clearInterval(reminderInterval); reminderInterval = setInterval(() => { const now = new Date(); const nowStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`; for (let i = reminders.length-1; i >= 0; i--) { if (reminders[i].timeStr === nowStr) { showToastAlarm(reminders[i].message); if (Notification.permission === "granted") { new Notification("⏰ Rappel", { body: reminders[i].message, icon: NOTIF_ICON }); } reminders.splice(i,1); saveReminders(); renderReminderList(); } } }, 1000); }
 function scheduleAlarm() { let timeInput = document.getElementById('reminderTime').value; let message = document.getElementById('reminderMessage').value.trim(); if (!timeInput) { alert("Veuillez choisir une heure."); return; } if (!message) message = "Rappel !"; if (Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission(); let newId = nextReminderId++; reminders.push({ id: newId, timeStr: timeInput, message: message }); saveReminders(); renderReminderList(); document.getElementById('reminderTime').value = ''; document.getElementById('reminderMessage').value = ''; }
 function deleteReminder(id) { reminders = reminders.filter(r => r.id !== id); saveReminders(); renderReminderList(); }
-function showToastAlarm(message) { let toast = document.createElement('div'); toast.className = 'toast-alarm'; toast.innerHTML = `<div>⏰ ${escapeHtml(message)}</div>`; document.body.appendChild(toast); setTimeout(() => toast.remove(), 5000); }
+function showToastAlarm(message) { let toast = document.createElement('div'); toast.className = 'toast-alarm'; toast.innerHTML = `<div style="background:#000;color:cyan;padding:10px;">⏰ ${escapeHtml(message)}</div>`; document.body.appendChild(toast); setTimeout(() => toast.remove(), 4000); }
 function escapeHtml(s) { return String(s).replace(/[&<>]/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m];}); }
 
 // Gestion villes
@@ -1732,25 +1732,23 @@ function saveSelection() { localStorage.setItem('tsp_selection',JSON.stringify(s
 function loadStoredSelection() { try{ let custom=JSON.parse(localStorage.getItem('tsp_custom')||'[]'); custom.forEach(c=>{if(!allCities.some(a=>a.name===c.name)) allCities.push(c);}); let ids=JSON.parse(localStorage.getItem('tsp_selection')||'[]'); ids.forEach(id=>{let city=allCities.find(c=>c.id===id); if(city&&!selectedCities.some(s=>s.id===id)) selectedCities.push(city);}); updateSelUI(); filterCities(); }catch(e){} }
 function exportGeoJSON() { let features = []; selectedCities.forEach(city => { features.push({ type: "Feature", geometry: { type: "Point", coordinates: [city.lon, city.lat] }, properties: { name: city.name, country: city.country } }); }); if(routeLayer && routeLayer.getLatLngs && routeLayer.getLatLngs().length) { let coords = routeLayer.getLatLngs().map(c => [c.lng, c.lat]); features.push({ type: "Feature", geometry: { type: "LineString", coordinates: coords }, properties: { name: "Itinéraire TSP" } }); } let geojson = { type: "FeatureCollection", features: features }; let blob = new Blob([JSON.stringify(geojson, null, 2)], {type: "application/json"}); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "tsp_route.geojson"; a.click(); URL.revokeObjectURL(url); }
 
-// TSP & ORS (avec contournement CORS via proxy optionnel)
+// TSP & ORS avec contournement CORS
 function haversine(lat1,lon1,lat2,lon2) { const R=6371, r=Math.PI/180; const dLat=(lat2-lat1)*r, dLon=(lon2-lon1)*r; return R*2*Math.asin(Math.sqrt(Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2)); }
 function totalDistance(tour) { let d=0; for(let i=0;i<tour.length-1;i++) d+=haversine(tour[i].lat,tour[i].lon,tour[i+1].lat,tour[i+1].lon); return d; }
 function twoOpt(tour) { let improved=true, bestDist=totalDistance(tour); while(improved && !tspCancelRequested){ improved=false; for(let i=1;i<tour.length-2;i++){ for(let j=i+1;j<tour.length-1;j++){ if(tspCancelRequested) return tour; let newTour = [...tour.slice(0,i), ...tour.slice(i,j+1).reverse(), ...tour.slice(j+1)]; let newDist=totalDistance(newTour); if(newDist<bestDist-0.001){ bestDist=newDist; tour=newTour; improved=true; } } } } return tour; }
 function tspNN(cities,startIdx) { if(cities.length<2) return [[],0]; let unvisited=[...cities]; let start=unvisited.splice(startIdx,1)[0]; let tour=[start], current=start, total=0; while(unvisited.length){ let bestIdx=0, bestDist=haversine(current.lat,current.lon,unvisited[0].lat,unvisited[0].lon); for(let i=1;i<unvisited.length;i++){ let d=haversine(current.lat,current.lon,unvisited[i].lat,unvisited[i].lon); if(d<bestDist){bestDist=d;bestIdx=i;}} total+=bestDist; current=unvisited[bestIdx]; tour.push(current); unvisited.splice(bestIdx,1); } total+=haversine(current.lat,current.lon,start.lat,start.lon); tour.push(start); return [tour,total]; }
 
-// Fonction ORS avec gestion CORS (proxy si nécessaire)
 async function fetchOrsRouteWithRetry(coords, mode, retries = 3) {
     let key = getOrsKey();
-    if (!key) return null;
+    if (!key) { console.warn("No API key"); return null; }
     let profile = mode === 'foot' ? 'foot-walking' : 'driving-car';
     if (mode === 'plane') return null;
     if (coords.length > 50) coords = coords.slice(0,50);
     
-    let url = `https://api.heigit.org/v2/directions/${profile}/geojson`;
-    const useProxy = document.getElementById('useCorsProxyCheckbox')?.checked === true;
-    if (useProxy) {
-        url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-    }
+    let targetUrl = `https://api.heigit.org/v2/directions/${profile}/geojson`;
+    const useProxy = document.getElementById('useCorsProxyCheckbox') && document.getElementById('useCorsProxyCheckbox').checked;
+    let url = useProxy ? `https://corsproxy.io/?${encodeURIComponent(targetUrl)}` : targetUrl;
+    console.log("ORS request URL:", url, "useProxy:", useProxy);
     
     for (let attempt = 0; attempt < retries; attempt++) {
         try {
@@ -1762,7 +1760,6 @@ async function fetchOrsRouteWithRetry(coords, mode, retries = 3) {
                 },
                 body: JSON.stringify({ coordinates: coords, instructions: false })
             };
-            // Si on utilise le proxy, il faut peut-être enlever l'header Authorization ou le mettre dans l'URL ? Non, le proxy transmet les headers.
             let resp = await fetch(url, fetchOptions);
             if (resp.status === 401) {
                 document.getElementById('orsStatus').innerHTML = '❌ Clé API invalide.';
@@ -1772,7 +1769,10 @@ async function fetchOrsRouteWithRetry(coords, mode, retries = 3) {
                 await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1500));
                 continue;
             }
-            if (!resp.ok) return null;
+            if (!resp.ok) {
+                console.error("ORS response not OK:", resp.status);
+                return null;
+            }
             let data = await resp.json();
             if (!data.features || !data.features[0]) return null;
             return {
@@ -1855,7 +1855,7 @@ async function computeTSP() {
     loadEl.style.display='none'; 
     if(tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display='none'; return; } 
     if(routeLatLng.length<2){ 
-        document.getElementById('resultsPanel').innerHTML='<div class="error">ORS indisponible ou CORS bloqué. Activez le proxy CORS ou passez en mode Avion.</div>'; 
+        document.getElementById('resultsPanel').innerHTML='<div style="color:var(--error)">ORS échoué. Activez le proxy CORS ou passez en mode Avion.</div>'; 
         document.getElementById('cancelTSPBtn').style.display='none'; 
         return; 
     } 
@@ -1881,12 +1881,11 @@ function cancelTSP() { tspCancelRequested = true; }
 async function testORS() {
     let key = getOrsKey();
     if (!key) { alert("Aucune clé sauvegardée"); return; }
-    let useProxy = document.getElementById('useCorsProxyCheckbox').checked;
-    let proxyMsg = useProxy ? "(proxy actif)" : "(proxy désactivé)";
-    alert(`Test ORS en cours ${proxyMsg}... Voir console.`);
+    let useProxy = document.getElementById('useCorsProxyCheckbox') && document.getElementById('useCorsProxyCheckbox').checked;
+    alert(`Test ORS avec proxy = ${useProxy ? "ACTIF" : "INACTIF"}. Voir console.`);
     let result = await fetchOrsRouteWithRetry([[-5.834, 35.7595], [-5.3704, 35.5785]], "car", 1);
     if (result) alert(`✅ Succès ! Durée: ${result.duration} sec`);
-    else alert("❌ Échec. Vérifiez clé et CORS. Essayez d'activer le proxy.");
+    else alert("❌ Échec. Activez le proxy CORS et vérifiez votre clé.");
 }
 
 // GPS
@@ -1919,7 +1918,6 @@ function startApp(user) {
     if(selectedCities.length===0 && allCities.length>=2) { addCityToList(allCities[0]); addCityToList(allCities[1]); } 
     loadReminders(); 
 }
-function handleUrlLocation() { /* existant */ }
 function shareCurrentLocation() { requestGeolocationWithHelp(pos => { let lat = pos.coords.latitude, lon = pos.coords.longitude; let shareUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}&name=Ma%20position`; navigator.clipboard.writeText(shareUrl).then(() => alert("Lien copié !")); }, err => alert("Erreur GPS")); }
 function switchTab(t) { document.getElementById('loginForm').style.display = t === 'login' ? 'block' : 'none'; document.getElementById('registerForm').style.display = t === 'register' ? 'block' : 'none'; document.getElementById('tabLogin').classList.toggle('active', t === 'login'); document.getElementById('tabReg').classList.toggle('active', t === 'register'); }
 
