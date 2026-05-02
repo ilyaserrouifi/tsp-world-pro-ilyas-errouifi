@@ -1850,16 +1850,32 @@ function exportGeoJSON() {
 function generateJavaCode() { if (!selectedCities.length) { document.getElementById('javaCodeArea').value = "// Aucune ville sélectionnée"; return; } let lines = selectedCities.map(c => `    {${c.lat}, ${c.lon}} // ${c.name}`); document.getElementById('javaCodeArea').value = `double[][] villes = {\n${lines.join(',\n')}\n};`; }
 function copyJavaCode() { let area = document.getElementById('javaCodeArea'); if(!area.value) alert("Générez d'abord"); else { navigator.clipboard.writeText(area.value); alert("Copié !"); } }
 
-// ---------- ORS avec api.heigit.org (VERSION CORRIGÉE) ----------
-function getOrsKey() { return localStorage.getItem('tsp_ors_key') || ''; }
-function saveOrsKey() { let k = document.getElementById('orsKeyInput').value.trim(); if(k) { localStorage.setItem('tsp_ors_key', k); document.getElementById('orsStatus').innerHTML = '✅ Clé sauvegardée (utilise api.heigit.org).'; } else { localStorage.removeItem('tsp_ors_key'); document.getElementById('orsStatus').innerHTML = '⚠️ Sans clé → lignes droites. <a href="https://openrouteservice.org/dev/#/signup" target="_blank">Obtenir une clé</a>'; } }
+// ---------- ORS avec openrouteservice.org (VERSION FINALE CORRIGÉE) ----------
+
+function getOrsKey() { 
+    return (localStorage.getItem('tsp_ors_key') || '').trim(); 
+}
+
+function saveOrsKey() { 
+    let k = document.getElementById('orsKeyInput').value.trim(); 
+    if(k) { 
+        localStorage.setItem('tsp_ors_key', k); 
+        // Bdlna l-message hna bach i-kon mtabeq m3a l-URL jdid
+        document.getElementById('orsStatus').innerHTML = '✅ Clé sauvegardée (utilise api.openrouteservice.org).'; 
+    } else { 
+        localStorage.removeItem('tsp_ors_key'); 
+        document.getElementById('orsStatus').innerHTML = '⚠️ Sans clé → lignes droites. <a href="https://openrouteservice.org/dev/#/signup" target="_blank">Obtenir une clé</a>'; 
+    } 
+}
 
 async function fetchOrsRoute(coords, mode) {
     const key = getOrsKey();
     if (!key) return null;
     
     const profile = mode === 'foot' ? 'foot-walking' : 'driving-car';
-    const url = `https://api.heigit.org/ors/v2/directions/${profile}/geojson`;
+    
+    // IMPORTANT: Bdlna api.heigit.org b api.openrouteservice.org bach i-khdm CORS
+    const url = `https://api.openrouteservice.org/v2/directions/${profile}/geojson`;
     
     const body = {
         coordinates: coords,
@@ -1868,7 +1884,12 @@ async function fetchOrsRoute(coords, mode) {
         units: "km"
     };
     
-    let headers = { 'Content-Type': 'application/json', 'Authorization': key };
+    // Headers s-shih kima banou f image_87d03d.png
+    let headers = { 
+        'Content-Type': 'application/json; charset=utf-8', 
+        'Accept': 'application/json, application/geo+json, charset=utf-8',
+        'Authorization': key 
+    };
     
     try {
         let response = await fetch(url, {
@@ -1877,18 +1898,17 @@ async function fetchOrsRoute(coords, mode) {
             body: JSON.stringify(body)
         });
         
-        // Si échec avec header, essai avec api_key dans l'URL (fallback)
+        // Fallback f halat ila kan moshkil f l-header Authorization
         if (response.status === 401 || response.status === 403) {
             const urlWithKey = `${url}?api_key=${encodeURIComponent(key)}`;
             response = await fetch(urlWithKey, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json; charset=utf-8' },
                 body: JSON.stringify(body)
             });
         }
         
         if (!response.ok) {
-            let errText = await response.text();
             if (response.status === 401) {
                 document.getElementById('orsStatus').innerHTML = '❌ Clé ORS invalide ou expirée. <a href="https://openrouteservice.org/dev/#/signup" target="_blank">Obtenir une nouvelle clé</a>';
             }
@@ -1906,6 +1926,7 @@ async function fetchOrsRoute(coords, mode) {
         
     } catch(e) {
         console.error("ORS network error", e);
+        // Ila bqa l-moshkil, t'akkd mn l-console (image_86e3bf.jpg) wach baqi CORS
         return null;
     }
 }
