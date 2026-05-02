@@ -9,91 +9,91 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <style>
-       :root {
-    --cyan: #00f5ff;
-    --cyan2: #0088ff;
-    --bg: #070714;
-    --surface: rgba(10,10,28,0.97);
-    --border: rgba(0,245,255,0.25);
-    --border-strong: rgba(0,245,255,0.7);
-    --text: #e8eaf6;
-    --muted: rgba(200,210,255,0.5);
-    --error: #ff6b8a;
-    --success: #00ffaa;
-    --warning: #ffaa33;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
-#map { position:absolute; inset:0; z-index:1; }
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 10px; }
-.overlay { position: fixed; inset: 0; background: rgba(4,4,18,0.96); backdrop-filter: blur(20px); z-index: 10000; display: flex; align-items: center; justify-content: center; transition: opacity 0.4s ease; }
-.overlay.hidden { opacity:0; pointer-events:none; }
-.auth-card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 28px; padding: 36px 32px; width: 460px; max-width: 92vw; box-shadow: 0 0 80px rgba(0,245,255,0.1); animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1); }
-@keyframes slideUp { from { opacity:0; transform:translateY(32px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }
-.auth-logo { font-family: 'Syne', sans-serif; font-size: 1.7rem; font-weight: 800; text-align: center; margin-bottom: 6px; background: linear-gradient(135deg, var(--cyan), var(--cyan2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.auth-sub { text-align:center; font-size:0.8rem; color:var(--muted); margin-bottom:24px; }
-.tab-row { display: flex; gap: 8px; margin-bottom: 24px; background: rgba(255,255,255,0.04); border-radius: 50px; padding: 4px; }
-.tab-btn { flex:1; padding: 9px; border-radius: 50px; border: none; cursor: pointer; font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; font-weight: 600; background: transparent; color: var(--muted); transition: all 0.25s; }
-.tab-btn.active { background: var(--cyan); color: #000; box-shadow: 0 0 20px rgba(0,245,255,0.4); }
-.field { margin-bottom: 16px; position: relative; }
-.field label { display:block; font-size:0.75rem; font-weight:600; color:var(--muted); margin-bottom:6px; text-transform:uppercase; }
-.field input { width:100%; padding: 11px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50px; color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem; outline: none; }
-.field input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0,245,255,0.12); }
-.primary-btn { width:100%; padding: 13px; margin-top: 6px; background: linear-gradient(135deg, var(--cyan), var(--cyan2)); border: none; border-radius: 50px; color: #000; font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
-.primary-btn:hover { opacity:0.9; transform:translateY(-1px); box-shadow: 0 8px 24px rgba(0,245,255,0.3); }
-.err-msg { color: var(--error); font-size: 0.78rem; margin-top: 10px; text-align:center; }
-.confirm-card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 28px; padding: 40px 32px; width: 400px; max-width: 92vw; text-align: center; }
-.confirm-icon { font-size: 3rem; margin-bottom: 16px; }
-.confirm-card h3 { font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; margin-bottom:20px; }
-.confirm-table { background: rgba(0,245,255,0.06); border-radius: 16px; padding: 16px 20px; margin-bottom: 24px; text-align: left; }
-.confirm-row { display:flex; justify-content:space-between; padding: 6px 0; font-size:0.88rem; border-bottom:1px solid rgba(255,255,255,0.05); }
-.dashboard { position: fixed; top:16px; left:16px; width: 540px; max-width: calc(100vw - 32px); max-height: calc(100vh - 32px); background: var(--surface); border: 1px solid var(--border); border-radius: 24px; box-shadow: 0 30px 60px rgba(0,0,0,0.8); padding: 20px; z-index: 1000; overflow-y: auto; transition: transform 0.3s ease; }
-.dashboard.collapsed { transform: translateX(-100%); }
-.toggle-dash { position: fixed; bottom: 20px; right: 20px; z-index: 1001; background: var(--surface); border: 1px solid var(--cyan); border-radius: 40px; padding: 8px 16px; cursor: pointer; font-size: 0.9rem; font-weight: bold; backdrop-filter: blur(8px); color: var(--cyan); transition: all 0.2s ease; }
-.toggle-dash:hover { background: var(--cyan); color: #000; box-shadow: 0 0 12px var(--cyan); }
-.dash-header { display: flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-.dash-title { font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800; background: linear-gradient(135deg,var(--cyan),var(--cyan2),#00ffaa); -webkit-background-clip:text; background-clip:text; color:transparent; }
-.welcome-pill { background: rgba(0,245,255,0.08); border: 1px dashed rgba(0,245,255,0.3); border-radius: 50px; padding: 7px 14px; display:flex; align-items:center; gap:10px; margin-bottom:16px; font-size:0.78rem; }
-.logout-btn { background: rgba(255,80,80,0.12); border:1px solid rgba(255,100,100,0.4); color:#ff8888; padding:4px 12px; border-radius:50px; cursor:pointer; font-size:0.7rem; }
-.time-panel { display: flex; justify-content: space-between; align-items: baseline; background: rgba(0,245,255,0.1); border-radius: 16px; padding: 8px 16px; margin-bottom: 16px; flex-wrap: wrap; }
-.current-time { font-family: monospace; font-size: 1.6rem; font-weight: 700; color: var(--cyan); }
-.chrono { font-family: monospace; font-size: 1.2rem; background: rgba(0,0,0,0.3); padding: 4px 12px; border-radius: 40px; }
-.stadia-section { background: rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.2); border-radius:16px; padding:12px 16px; margin-bottom:16px; }
-.stadia-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-.stadia-row input { flex:1; padding:8px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50px; color:var(--text); font-size:0.82rem; }
-.stadia-save-btn, .test-stadia-btn { padding:8px 16px; background:var(--cyan); border:none; border-radius:50px; color:#000; font-weight:700; cursor:pointer; }
-.test-stadia-btn { background:var(--cyan2); color:white; margin-left:8px; }
-.cors-proxy-label { display:flex; align-items:center; gap:8px; margin-top:8px; font-size:0.75rem; cursor:pointer; background:rgba(0,0,0,0.3); padding:4px 8px; border-radius:20px; }
-.section { margin-bottom:18px; border-bottom:1px solid rgba(0,245,255,0.1); padding-bottom:16px; }
-.section-title { font-weight:700; font-size:0.82rem; text-transform:uppercase; color:var(--muted); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
-.search-input { width:100%; padding:10px 16px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50px; color:var(--text); font-size:0.88rem; }
-.history-list { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; }
-.history-tag { background:rgba(0,200,200,0.12); border:1px solid rgba(0,245,255,0.3); border-radius:50px; padding:4px 12px; font-size:0.72rem; cursor:pointer; color:var(--cyan); }
-.city-grid { max-height:220px; overflow-y:auto; margin-top:8px; }
-.city-card { background:rgba(255,255,255,0.03); border:1px solid transparent; border-radius:12px; padding:8px 14px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-bottom:4px; transition: background 0.1s; }
-.city-card:hover { background:rgba(0,245,255,0.08); border-color:rgba(0,245,255,0.3); }
-.city-name { font-weight:600; font-size:0.88rem; }
-.city-country { font-size:0.72rem; color:var(--muted); }
-.selected-list { max-height:140px; overflow-y:auto; margin:8px 0; }
-.sel-item { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.04); border-radius:50px; padding:7px 14px; font-size:0.82rem; margin-bottom:4px; }
-.btn { padding:9px 16px; border:none; border-radius:50px; cursor:pointer; font-weight:600; font-family:'Space Grotesk',sans-serif; font-size:0.8rem; }
-.btn-primary { background:linear-gradient(135deg,var(--cyan),var(--cyan2)); color:#000; }
-.btn-secondary { background:rgba(255,255,255,0.07); color:var(--text); border:1px solid rgba(255,255,255,0.1); }
-.btn-danger { background:rgba(255,80,80,0.12); color:#ff8888; }
-.btn-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
-.add-form input, .add-form textarea { width:100%; margin:5px 0; padding:9px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50px; color:var(--text); }
-.coords-row { display:flex; gap:8px; }
-.results-panel { background:rgba(0,0,0,0.4); border-radius:18px; padding:14px; margin-top:4px; }
-.stats-grid { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
-.stat-card { flex:1; background:rgba(255,255,255,0.04); border-radius:12px; padding:10px; text-align:center; }
-.route-steps { margin-top:12px; font-size:0.78rem; max-height:120px; overflow-y:auto; }
-.footer { font-size:0.68rem; text-align:center; color:var(--muted); margin-top:14px; }
-.java-export { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 12px; margin-top: 8px; }
-.java-export textarea { width: 100%; font-family: monospace; font-size: 0.7rem; background: #0a0a1a; border: 1px solid var(--cyan); color: #0f0; padding: 8px; border-radius: 10px; white-space: pre; }
-@media (max-width: 700px) { .dashboard { width: 380px; } }
-.toast-alarm { position: fixed; bottom: 20px; left: 20px; background: #000; color: cyan; padding: 12px 20px; border-radius: 40px; z-index: 2000; font-weight: bold; box-shadow: 0 0 10px cyan; }
+        :root {
+            --cyan: #00f5ff;
+            --cyan2: #0088ff;
+            --bg: #070714;
+            --surface: rgba(10,10,28,0.97);
+            --border: rgba(0,245,255,0.25);
+            --border-strong: rgba(0,245,255,0.7);
+            --text: #e8eaf6;
+            --muted: rgba(200,210,255,0.5);
+            --error: #ff6b8a;
+            --success: #00ffaa;
+            --warning: #ffaa33;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
+        #map { position:absolute; inset:0; z-index:1; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 10px; }
+        .overlay { position: fixed; inset: 0; background: rgba(4,4,18,0.96); backdrop-filter: blur(20px); z-index: 10000; display: flex; align-items: center; justify-content: center; transition: opacity 0.4s ease; }
+        .overlay.hidden { opacity:0; pointer-events:none; }
+        .auth-card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 28px; padding: 36px 32px; width: 460px; max-width: 92vw; box-shadow: 0 0 80px rgba(0,245,255,0.1); animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes slideUp { from { opacity:0; transform:translateY(32px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+        .auth-logo { font-family: 'Syne', sans-serif; font-size: 1.7rem; font-weight: 800; text-align: center; margin-bottom: 6px; background: linear-gradient(135deg, var(--cyan), var(--cyan2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .auth-sub { text-align:center; font-size:0.8rem; color:var(--muted); margin-bottom:24px; }
+        .tab-row { display: flex; gap: 8px; margin-bottom: 24px; background: rgba(255,255,255,0.04); border-radius: 50px; padding: 4px; }
+        .tab-btn { flex:1; padding: 9px; border-radius: 50px; border: none; cursor: pointer; font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; font-weight: 600; background: transparent; color: var(--muted); transition: all 0.25s; }
+        .tab-btn.active { background: var(--cyan); color: #000; box-shadow: 0 0 20px rgba(0,245,255,0.4); }
+        .field { margin-bottom: 16px; position: relative; }
+        .field label { display:block; font-size:0.75rem; font-weight:600; color:var(--muted); margin-bottom:6px; text-transform:uppercase; }
+        .field input { width:100%; padding: 11px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50px; color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem; outline: none; }
+        .field input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0,245,255,0.12); }
+        .primary-btn { width:100%; padding: 13px; margin-top: 6px; background: linear-gradient(135deg, var(--cyan), var(--cyan2)); border: none; border-radius: 50px; color: #000; font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
+        .primary-btn:hover { opacity:0.9; transform:translateY(-1px); box-shadow: 0 8px 24px rgba(0,245,255,0.3); }
+        .err-msg { color: var(--error); font-size: 0.78rem; margin-top: 10px; text-align:center; }
+        .confirm-card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 28px; padding: 40px 32px; width: 400px; max-width: 92vw; text-align: center; }
+        .confirm-icon { font-size: 3rem; margin-bottom: 16px; }
+        .confirm-card h3 { font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; margin-bottom:20px; }
+        .confirm-table { background: rgba(0,245,255,0.06); border-radius: 16px; padding: 16px 20px; margin-bottom: 24px; text-align: left; }
+        .confirm-row { display:flex; justify-content:space-between; padding: 6px 0; font-size:0.88rem; border-bottom:1px solid rgba(255,255,255,0.05); }
+        .dashboard { position: fixed; top:16px; left:16px; width: 540px; max-width: calc(100vw - 32px); max-height: calc(100vh - 32px); background: var(--surface); border: 1px solid var(--border); border-radius: 24px; box-shadow: 0 30px 60px rgba(0,0,0,0.8); padding: 20px; z-index: 1000; overflow-y: auto; transition: transform 0.3s ease; }
+        .dashboard.collapsed { transform: translateX(-100%); }
+        .toggle-dash { position: fixed; bottom: 20px; right: 20px; z-index: 1001; background: var(--surface); border: 1px solid var(--cyan); border-radius: 40px; padding: 8px 16px; cursor: pointer; font-size: 0.9rem; font-weight: bold; backdrop-filter: blur(8px); color: var(--cyan); transition: all 0.2s ease; }
+        .toggle-dash:hover { background: var(--cyan); color: #000; box-shadow: 0 0 12px var(--cyan); }
+        .dash-header { display: flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+        .dash-title { font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800; background: linear-gradient(135deg,var(--cyan),var(--cyan2),#00ffaa); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .welcome-pill { background: rgba(0,245,255,0.08); border: 1px dashed rgba(0,245,255,0.3); border-radius: 50px; padding: 7px 14px; display:flex; align-items:center; gap:10px; margin-bottom:16px; font-size:0.78rem; }
+        .logout-btn { background: rgba(255,80,80,0.12); border:1px solid rgba(255,100,100,0.4); color:#ff8888; padding:4px 12px; border-radius:50px; cursor:pointer; font-size:0.7rem; }
+        .time-panel { display: flex; justify-content: space-between; align-items: baseline; background: rgba(0,245,255,0.1); border-radius: 16px; padding: 8px 16px; margin-bottom: 16px; flex-wrap: wrap; }
+        .current-time { font-family: monospace; font-size: 1.6rem; font-weight: 700; color: var(--cyan); }
+        .chrono { font-family: monospace; font-size: 1.2rem; background: rgba(0,0,0,0.3); padding: 4px 12px; border-radius: 40px; }
+        .stadia-section { background: rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.2); border-radius:16px; padding:12px 16px; margin-bottom:16px; }
+        .stadia-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+        .stadia-row input { flex:1; padding:8px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50px; color:var(--text); font-size:0.82rem; }
+        .stadia-save-btn, .test-stadia-btn { padding:8px 16px; background:var(--cyan); border:none; border-radius:50px; color:#000; font-weight:700; cursor:pointer; }
+        .test-stadia-btn { background:var(--cyan2); color:white; margin-left:8px; }
+        .cors-proxy-label { display:flex; align-items:center; gap:8px; margin-top:8px; font-size:0.75rem; cursor:pointer; background:rgba(0,0,0,0.3); padding:4px 8px; border-radius:20px; }
+        .section { margin-bottom:18px; border-bottom:1px solid rgba(0,245,255,0.1); padding-bottom:16px; }
+        .section-title { font-weight:700; font-size:0.82rem; text-transform:uppercase; color:var(--muted); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+        .search-input { width:100%; padding:10px 16px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50px; color:var(--text); font-size:0.88rem; }
+        .history-list { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; }
+        .history-tag { background:rgba(0,200,200,0.12); border:1px solid rgba(0,245,255,0.3); border-radius:50px; padding:4px 12px; font-size:0.72rem; cursor:pointer; color:var(--cyan); }
+        .city-grid { max-height:220px; overflow-y:auto; margin-top:8px; }
+        .city-card { background:rgba(255,255,255,0.03); border:1px solid transparent; border-radius:12px; padding:8px 14px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-bottom:4px; transition: background 0.1s; }
+        .city-card:hover { background:rgba(0,245,255,0.08); border-color:rgba(0,245,255,0.3); }
+        .city-name { font-weight:600; font-size:0.88rem; }
+        .city-country { font-size:0.72rem; color:var(--muted); }
+        .selected-list { max-height:140px; overflow-y:auto; margin:8px 0; }
+        .sel-item { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.04); border-radius:50px; padding:7px 14px; font-size:0.82rem; margin-bottom:4px; }
+        .btn { padding:9px 16px; border:none; border-radius:50px; cursor:pointer; font-weight:600; font-family:'Space Grotesk',sans-serif; font-size:0.8rem; }
+        .btn-primary { background:linear-gradient(135deg,var(--cyan),var(--cyan2)); color:#000; }
+        .btn-secondary { background:rgba(255,255,255,0.07); color:var(--text); border:1px solid rgba(255,255,255,0.1); }
+        .btn-danger { background:rgba(255,80,80,0.12); color:#ff8888; }
+        .btn-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+        .add-form input, .add-form textarea { width:100%; margin:5px 0; padding:9px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50px; color:var(--text); }
+        .coords-row { display:flex; gap:8px; }
+        .results-panel { background:rgba(0,0,0,0.4); border-radius:18px; padding:14px; margin-top:4px; }
+        .stats-grid { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+        .stat-card { flex:1; background:rgba(255,255,255,0.04); border-radius:12px; padding:10px; text-align:center; }
+        .route-steps { margin-top:12px; font-size:0.78rem; max-height:120px; overflow-y:auto; }
+        .footer { font-size:0.68rem; text-align:center; color:var(--muted); margin-top:14px; }
+        .java-export { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 12px; margin-top: 8px; }
+        .java-export textarea { width: 100%; font-family: monospace; font-size: 0.7rem; background: #0a0a1a; border: 1px solid var(--cyan); color: #0f0; padding: 8px; border-radius: 10px; white-space: pre; }
+        @media (max-width: 700px) { .dashboard { width: 380px; } }
+        .toast-alarm { position: fixed; bottom: 20px; left: 20px; background: #000; color: cyan; padding: 12px 20px; border-radius: 40px; z-index: 2000; font-weight: bold; box-shadow: 0 0 10px cyan; }
     </style>
 </head>
 <body>
@@ -170,7 +170,7 @@ body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: v
         </div>
         <div id="reminderList" class="reminder-list"></div>
     </div>
-    <div class="section"><div class="section-title">🔍 Rechercher une ville</div><input type="text" class="search-input" id="searchInput" placeholder="Ex: Tanger, Rabat..."><div class="history-list" id="historyList"></div><div class="city-grid" id="cityGrid"></div><div class="result-count" id="resultCount"></div></div>
+    <div class="section"><div class="section-title">🔍 Rechercher une ville</div><input type="text" class="search-input" id="searchInput" placeholder="Ex: Paris, Londres..."><div class="history-list" id="historyList"></div><div class="city-grid" id="cityGrid"></div><div class="result-count" id="resultCount"></div></div>
     <div class="section"><div class="section-title">✅ Ma sélection — <span id="selCount">0</span> ville(s)</div><div class="selected-list" id="selectedList"></div><div class="btn-row">
         <button class="btn btn-danger" onclick="clearSelection()">🗑️ Vider</button>
         <button class="btn btn-secondary" onclick="showMyLocation()">📍 Me localiser</button>
@@ -194,9 +194,7 @@ body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: v
     <div class="footer">🌐 Routes par Stadia Maps (Valhalla) · Fallback lignes droites</div>
 </div>
 <script>
-// ==================== VOS VILLES (À REMPLACER PAR VOTRE PROPRE LISTE) ====================
-// Chaque ville doit avoir les propriétés : name, lat, lon, country, desc (optionnel)
-// Exemple :
+// ==================== VOTRE LISTE DE VILLES (VIDE, À REMPLIR) ====================
 let allCities = [
      {"name": "Tanger", "lat": 35.7595, "lon": -5.834, "country": "Maroc", "desc": ""},
     {"name": "Tétouan", "lat": 35.5785, "lon": -5.3704, "country": "Maroc", "desc": ""},
@@ -1668,9 +1666,7 @@ let allCities = [
     {"name": "Nassau", "lat": 25.0582, "lon": -77.3431, "country": "Bahamas", "desc": ""},
     {"name": "Bridgetown", "lat": 13.0975, "lon": -59.6165, "country": "Barbados", "desc": ""},
     {"name": "Port of Spain", "lat": 10.6667, "lon": -61.5167, "country": "Trinidad and Tobago", "desc": ""}
-    // { name: "Exemple", lat: 0.0, lon: 0.0, country: "Pays", desc: "" }
-];
-// Assurez-vous que chaque ville reçoit un id unique (ajouté automatiquement ci-dessous)
+];  // Insérez vos villes ici, ex: { name: "Paris", lat: 48.8566, lon: 2.3522, country: "France", desc: "" }
 allCities = allCities.map((city, idx) => ({ ...city, id: idx }));
 // ====================================================================
 
@@ -1734,68 +1730,36 @@ function saveSelection() { localStorage.setItem('tsp_selection',JSON.stringify(s
 function loadStoredSelection() { try{ let custom=JSON.parse(localStorage.getItem('tsp_custom')||'[]'); custom.forEach(c=>{if(!allCities.some(a=>a.name===c.name)) allCities.push(c);}); let ids=JSON.parse(localStorage.getItem('tsp_selection')||'[]'); ids.forEach(id=>{let city=allCities.find(c=>c.id===id); if(city&&!selectedCities.some(s=>s.id===id)) selectedCities.push(city);}); updateSelUI(); filterCities(); }catch(e){} }
 function exportGeoJSON() { let features = []; selectedCities.forEach(city => { features.push({ type: "Feature", geometry: { type: "Point", coordinates: [city.lon, city.lat] }, properties: { name: city.name, country: city.country } }); }); if(routeLayer && routeLayer.getLatLngs && routeLayer.getLatLngs().length) { let coords = routeLayer.getLatLngs().map(c => [c.lng, c.lat]); features.push({ type: "Feature", geometry: { type: "LineString", coordinates: coords }, properties: { name: "Itinéraire TSP" } }); } let geojson = { type: "FeatureCollection", features: features }; let blob = new Blob([JSON.stringify(geojson, null, 2)], {type: "application/json"}); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "tsp_route.geojson"; a.click(); URL.revokeObjectURL(url); }
 
-// ==================== STADIA MAPS ROUTING (Valhalla) ====================
+// ==================== STADIA MAPS ROUTING (VALHALLA) ====================
 function getStadiaKey() { return localStorage.getItem('tsp_stadia_key') || ''; }
 function saveStadiaKey() { let k = document.getElementById('stadiaKeyInput').value.trim(); if(k) { localStorage.setItem('tsp_stadia_key', k); document.getElementById('stadiaStatus').innerHTML = '✅ Clé Stadia Maps sauvegardée.'; } else { localStorage.removeItem('tsp_stadia_key'); document.getElementById('stadiaStatus').innerHTML = '⚠️ Sans clé → lignes droites.'; } }
-async function fetchStadiaRoute(coordonnées, mode) {
-    const clé = getStadiaKey();
-    if (!clé) return null;
 
-    const URL = "https://api.stadiamaps.com/route/v1/route";
-    const profil = mode === 'pied' ? 'pedestrian' : 'auto'; 
-
-    const corps = JSON.stringify({
-        locations: coordonnées.map(c => ({ lat: c[0], lon: c[1] })), 
-        costing: profil,
+async function fetchStadiaRoute(coords, mode) {
+    const key = getStadiaKey();
+    if (!key) return null;
+    // coords: [[lon,lat], ...]
+    const profile = mode === 'foot' ? 'foot' : 'auto';
+    const url = `https://api.stadiamaps.com/route/v1/route?api_key=${key}`;
+    const requestBody = {
+        locations: coords.map(c => ({ lat: c[1], lon: c[0] })),
+        costing: profile,
         units: "km"
-    });
-
+    };
+    const useProxy = document.getElementById('useCorsProxyCheckbox') && document.getElementById('useCorsProxyCheckbox').checked;
+    let fetchUrl = url;
+    if (useProxy) fetchUrl = `https://cors-anywhere.herokuapp.com/${url}`;
     try {
-        const resp = await fetch(`${URL}?api_key=${clé}`, {
+        const resp = await fetch(fetchUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: corps
+            body: JSON.stringify(requestBody)
         });
-
-        if (!resp.ok) {
-            if (resp.status === 401) {
-                document.getElementById('stadiaStatus').innerHTML = '❌ Clé invalide';
-            }
-            return null;
-        }
-
-        const données = await resp.json();
-        
-        // Hada houwa l-farq: Stadia katsmiha trip.legs
-        if (!données.trip || !données.trip.legs || !données.trip.legs[0]) return null;
-
-        const forme = données.trip.legs[0].shape;
-        const décodé = décoderPolyline(forme); 
-       const routeLatLng = décodé.map(p => [p.lat, p.lon]);
-       const durée = données.trip.summary.time; // en secondes
-
-        return { coordonnées_de_l_itinéraire: routeLatLng, durée: durée }; 
-
-        return { coordonnées_de_l_itinéraire: routeLatLng, durée: durée };
-
-    } catch (e) {
-        console.warn("Erreur Stadia", e);
-        return null;
-    }
-}
-        // ... (khli bqiyat l-code dyal décodage kima hwa f image_b140e1.png)
-    const useProxy = document.getElementById('useCorsProxyCheckbox') && document.getElementById('useCorsProxyCheckbox').checked;
-    let fetchUrl = `${url}?${params.toString()}`;
-    if (useProxy) fetchUrl = `https://cors-anywhere.herokuapp.com/${fetchUrl}`;
-    try {
-        let resp = await fetch(fetchUrl, { headers: { 'Accept': 'application/json' } });
         if (!resp.ok) {
             if (resp.status === 401) document.getElementById('stadiaStatus').innerHTML = '❌ Clé Stadia invalide (401)';
             return null;
         }
-        let data = await resp.json();
+        const data = await resp.json();
         if (!data.trip || !data.trip.legs || !data.trip.legs[0] || !data.trip.legs[0].shape) return null;
-        // Decode polyline
         const shape = data.trip.legs[0].shape;
         const decoded = decodePolyline(shape);
         const routeLatLng = decoded.map(p => [p.lat, p.lon]);
@@ -1807,7 +1771,6 @@ async function fetchStadiaRoute(coordonnées, mode) {
     }
 }
 
-// decode Google polyline (simple)
 function decodePolyline(encoded) {
     let points = [], index = 0, lat = 0, lng = 0;
     while (index < encoded.length) {
@@ -1861,19 +1824,17 @@ async function buildRouteGeometry(tour, mode) {
         allLatLng.push([tour[tour.length-1].lat,tour[tour.length-1].lon]); 
         return {routeLatLng:allLatLng,totalDurationSec}; 
     } 
-    // Use Stadia Maps per segment (chunk to avoid too many points)
     let chunkSize = 20;
     for(let i=0;i<tour.length-1;i+=chunkSize-1){ 
         let chunk = tour.slice(i,i+chunkSize);
         if(chunk.length<2) continue;
-        let coordPairs = chunk.map(c => [c.lon, c.lat]); // [lon,lat]
+        let coordPairs = chunk.map(c => [c.lon, c.lat]);
         let res = await fetchStadiaRoute(coordPairs, mode);
         if(res && res.routeCoords && res.routeCoords.length>1){
             if(allLatLng.length>0) allLatLng.pop();
             allLatLng.push(...res.routeCoords);
             totalDurationSec += res.duration;
         } else {
-            // fallback to straight line
             for(let j=0;j<chunk.length-1;j++){
                 let c1=chunk[j], c2=chunk[j+1];
                 let dist=haversine(c1.lat,c1.lon,c2.lat,c2.lon);
