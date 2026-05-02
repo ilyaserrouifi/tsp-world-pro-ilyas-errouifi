@@ -1737,21 +1737,53 @@ function exportGeoJSON() { let features = []; selectedCities.forEach(city => { f
 // ==================== STADIA MAPS ROUTING (Valhalla) ====================
 function getStadiaKey() { return localStorage.getItem('tsp_stadia_key') || ''; }
 function saveStadiaKey() { let k = document.getElementById('stadiaKeyInput').value.trim(); if(k) { localStorage.setItem('tsp_stadia_key', k); document.getElementById('stadiaStatus').innerHTML = '✅ Clé Stadia Maps sauvegardée.'; } else { localStorage.removeItem('tsp_stadia_key'); document.getElementById('stadiaStatus').innerHTML = '⚠️ Sans clé → lignes droites.'; } }
+async function fetchStadiaRoute(coordonnées, mode) {
+    const clé = getStadiaKey();
+    if (!clé) return null;
 
-async function fetchStadiaRoute(coords, mode) {
-    const key = getStadiaKey();
-    if (!key) return null;
-    // coords: array of [lon, lat]
-    const url = "https://api.stadiamaps.com/route/v1/route";
-    const profile = mode === 'foot' ? 'foot' : 'auto';
-    const params = new URLSearchParams({
-        api_key: key,
-        json: JSON.stringify({
-            locations: coords.map(c => ({ lat: c[1], lon: c[0] })),
-            costing: profile,
-            units: "km"
-        })
+    const URL = "https://api.stadiamaps.com/route/v1/route";
+    const profil = mode === 'pied' ? 'pedestrian' : 'auto'; 
+
+    const corps = JSON.stringify({
+        locations: coordonnées.map(c => ({ lat: c[0], lon: c[1] })), 
+        costing: profil,
+        units: "km"
     });
+
+    try {
+        const resp = await fetch(`${URL}?api_key=${clé}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: corps
+        });
+
+        if (!resp.ok) {
+            if (resp.status === 401) {
+                document.getElementById('stadiaStatus').innerHTML = '❌ Clé invalide';
+            }
+            return null;
+        }
+
+        const données = await resp.json();
+        
+        // Hada houwa l-farq: Stadia katsmiha trip.legs
+        if (!données.trip || !données.trip.legs || !données.trip.legs[0]) return null;
+
+        const forme = données.trip.legs[0].shape;
+        const décodé = décoderPolyline(forme); 
+       const routeLatLng = décodé.map(p => [p.lat, p.lon]);
+       const durée = données.trip.summary.time; // en secondes
+
+        return { coordonnées_de_l_itinéraire: routeLatLng, durée: durée }; 
+
+        return { coordonnées_de_l_itinéraire: routeLatLng, durée: durée };
+
+    } catch (e) {
+        console.warn("Erreur Stadia", e);
+        return null;
+    }
+}
+        // ... (khli bqiyat l-code dyal décodage kima hwa f image_b140e1.png)
     const useProxy = document.getElementById('useCorsProxyCheckbox') && document.getElementById('useCorsProxyCheckbox').checked;
     let fetchUrl = `${url}?${params.toString()}`;
     if (useProxy) fetchUrl = `https://cors-anywhere.herokuapp.com/${fetchUrl}`;
