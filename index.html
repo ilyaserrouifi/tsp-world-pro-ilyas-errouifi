@@ -1741,7 +1741,7 @@ async function fetchOrsRouteWithRetry(coords, mode, retries = 3) {
     let targetUrl = `https://api.openrouteservice.org/v2/directions/${profile}/geojson`;
     const useProxy = document.getElementById('useCorsProxyCheckbox') && document.getElementById('useCorsProxyCheckbox').checked;
     // Proxy Bridged (accepte POST, pas besoin de préflight)
-    let proxyUrl = `https://cors.bridged.cc/${targetUrl}`;
+    let proxyUrl = `https://cors-anywhere.herokuapp.com/${targetUrl}`;
     let url = useProxy ? proxyUrl : targetUrl;
     console.log("ORS fetch URL:", url);
     
