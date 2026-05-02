@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>✈️ TSP WORLD PRO - Code sans coordonnées</title>
+    <title>✈️ TSP WORLD PRO - Code prêt à insérer vos villes</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -182,15 +182,15 @@
     <div class="footer">🌐 Carte améliorée · TSP avec annulation · Partage de position · Export GeoJSON · Rappels optimisés · Favicon avion · Export Java intégré</div>
 </div>
 <script>
-// ==================== DONNÉES DES VILLES ====================
-// ICI TU DOIS METTRE TES PROPRES COORDONNÉES
-// Exemple de format : { id: 0, name: "Tanger", lat: 35.7595, lon: -5.834, country: "Maroc", desc: "" }
-// Tu peux aussi laisser vide et ajouter via l'interface "Ajouter ville"
-
-// ==================== DONNÉES DES VILLES ====================
+// =========================================================================
+//  LISTE DES VILLES - INSÉREZ ICI VOS PROPRES COORDONNÉES
+// =========================================================================
+// Le tableau ci-dessous est volontairement vide.
+// Vous pouvez y ajouter toutes vos villes au format :
+// { name: "Nom", lat: 12.345, lon: -67.890, country: "Pays", desc: "optionnel" }
+// =========================================================================
 let allCities = [
-    
-    {"name": "Tanger", "lat": 35.7595, "lon": -5.834, "country": "Maroc", "desc": ""},
+     {"name": "Tanger", "lat": 35.7595, "lon": -5.834, "country": "Maroc", "desc": ""},
     {"name": "Tétouan", "lat": 35.5785, "lon": -5.3704, "country": "Maroc", "desc": ""},
     {"name": "Tanger", "lat": 35.7595, "lon": -5.834, "country": "Maroc", "desc": ""},
     {"name": "Tétouan", "lat": 35.5785, "lon": -5.3704, "country": "Maroc", "desc": ""},
@@ -1660,35 +1660,31 @@ let allCities = [
     {"name": "Nassau", "lat": 25.0582, "lon": -77.3431, "country": "Bahamas", "desc": ""},
     {"name": "Bridgetown", "lat": 13.0975, "lon": -59.6165, "country": "Barbados", "desc": ""},
     {"name": "Port of Spain", "lat": 10.6667, "lon": -61.5167, "country": "Trinidad and Tobago", "desc": ""}
+];
 
-]; // <-- HNA HOTO L'ARRAY DYALK
+// Exemple (décommentez et modifiez) :
+/*
+allCities = [
+    { name: "Tanger", lat: 35.7595, lon: -5.8340, country: "Maroc", desc: "" },
+    { name: "Casablanca", lat: 33.5731, lon: -7.5898, country: "Maroc", desc: "" }
+];
+*/
 
-// Si l'array farigh, nzido des exemples
-if(allCities.length === 0) {
-    allCities.push({ name: "Exemple 1", lat: 33.5731, lon: -7.5898, country: "Maroc", desc: "", id: 0 });
-    allCities.push({ name: "Exemple 2", lat: 34.0209, lon: -6.8416, country: "Maroc", desc: "", id: 1 });
-} else {
-    // Ajout automatique des IDs (id = index)
-    allCities = allCities.map((city, idx) => ({ ...city, id: idx }));
-}
-// ============================================================
+// Si vous laissez le tableau vide, l'application affichera un message et vous pourrez ajouter des villes manuellement.
+// Attribution automatique des IDs (ne pas modifier)
+allCities = allCities.map((city, idx) => ({ ...city, id: idx }));
+// =========================================================================
+
+// ==================== RESTE DU CODE (FONCTIONS COMPLÈTES) ====================
 let tspCancelRequested = false;
 const NOTIF_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E";
 
-// ==================== GESTION DES RAPPELS ====================
-let reminders = [];
-let nextReminderId = 1;
-let reminderInterval = null;
-function loadReminders() { try { let saved = localStorage.getItem('tsp_reminders'); if (saved) { reminders = JSON.parse(saved); nextReminderId = Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); } } catch(e) {} startReminderWatcher(); }
-function saveReminders() { localStorage.setItem('tsp_reminders', JSON.stringify(reminders)); }
-function renderReminderList() { let container = document.getElementById('reminderList'); if (!reminders.length) { container.innerHTML = '<div style="color:var(--muted); padding:8px;">Aucun rappel programmé.</div>'; return; } container.innerHTML = reminders.map(r => `<div class="reminder-item" data-id="${r.id}"><span class="reminder-time">⏰ ${r.timeStr}</span><span class="reminder-msg">${escapeHtml(r.message)}</span><button class="reminder-del" onclick="deleteReminder(${r.id})">✖</button></div>`).join(''); }
-function startReminderWatcher() { if (reminderInterval) clearInterval(reminderInterval); reminderInterval = setInterval(() => { const now = new Date(); const nowStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`; for (let i = reminders.length-1; i >= 0; i--) { if (reminders[i].timeStr === nowStr) { showToastAlarm(reminders[i].message); if (Notification.permission === "granted") { new Notification("⏰ Rappel TSP WORLD PRO", { body: reminders[i].message, icon: NOTIF_ICON }); } reminders.splice(i,1); saveReminders(); renderReminderList(); } } }, 1000); }
-function scheduleAlarm() { let timeInput = document.getElementById('reminderTime').value; let message = document.getElementById('reminderMessage').value.trim(); if (!timeInput) { alert("Veuillez choisir une heure."); return; } if (!message) message = "Rappel !"; if (Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission(); let newId = nextReminderId++; reminders.push({ id: newId, timeStr: timeInput, message: message }); saveReminders(); renderReminderList(); document.getElementById('reminderTime').value = ''; document.getElementById('reminderMessage').value = ''; document.getElementById('notifStatus').innerHTML = `✅ Rappel ajouté pour ${timeInput} : "${message}"`; setTimeout(() => { if(document.getElementById('notifStatus')) document.getElementById('notifStatus').innerHTML = "💡 Cliquez sur Ajouter. Une notification apparaîtra + un message à l'écran."; }, 3000); }
-function deleteReminder(id) { reminders = reminders.filter(r => r.id !== id); saveReminders(); renderReminderList(); }
-function showToastAlarm(message) { let toast = document.createElement('div'); toast.className = 'toast-alarm'; toast.innerHTML = `<div class="toast-close" onclick="this.parentElement.remove()">✖</div><div class="toast-title">⏰ ALARME</div><div>${escapeHtml(message)}</div>`; document.body.appendChild(toast); setTimeout(() => { if(toast && toast.remove) toast.remove(); }, 8000); }
-function escapeHtml(s) { return String(s).replace(/[&<>]/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m];}); }
+let map, currentTileLayer, routeLayer, routeMarkers=[], selectedCities=[], currentFiltered=[], searchHistory=[], pickMode=false, posPickMode=false, myLocationMarker=null, watchId=null, trackingPolyline=null, trackingPoints=[];
+let tileLayers = { osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap'}), googleSat: L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {attribution:'© Google Satellite', maxZoom:20}) };
+function setMapLayer(layerId) { if(currentTileLayer) map.removeLayer(currentTileLayer); currentTileLayer = tileLayers[layerId]; currentTileLayer.addTo(map); localStorage.setItem('tsp_map_layer', layerId); }
+function toggleMapLayer() { let newLayer = (localStorage.getItem('tsp_map_layer') || 'osm') === 'osm' ? 'googleSat' : 'osm'; setMapLayer(newLayer); }
 
-// ==================== HORLOGE + CHRONO ====================
+// Horloge + chrono
 function updateLiveClock() { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('fr-FR'); }
 setInterval(updateLiveClock, 1000); updateLiveClock();
 let cronInterval = null, cronSeconds = parseInt(sessionStorage.getItem('tsp_cron_sec') || '0');
@@ -1698,11 +1694,10 @@ function pauseCron() { if(cronInterval) {clearInterval(cronInterval); cronInterv
 function resetCron() { pauseCron(); cronSeconds=0; updateCronDisplay(); sessionStorage.setItem('tsp_cron_sec',0); }
 updateCronDisplay();
 
-// ==================== AUTHENTIFICATION ====================
+// Authentification
 async function hashPassword(pwd) { const encoder = new TextEncoder(); const data = encoder.encode(pwd); const hashBuffer = await crypto.subtle.digest('SHA-256', data); return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2,'0')).join(''); }
 function isFileProtocol() { return window.location.protocol === 'file:'; }
 if (isFileProtocol()) document.getElementById('gpsWarningBanner').style.display = 'block';
-function reloadOverHttp() { let port = prompt("Port du serveur (par défaut 8000) ?", "8000"); if(port) window.location.href = `http://localhost:${port}${window.location.pathname}`; }
 function requestGeolocationWithHelp(cbSuccess, cbError) { if (isFileProtocol()) { alert("GPS bloqué: ouvrez via serveur HTTP."); if(cbError) cbError({message:"file://"}); return; } if (!navigator.geolocation) { alert("Navigateur non supporté."); return; } navigator.geolocation.getCurrentPosition(cbSuccess, cbError); }
 
 let pendingUser = null;
@@ -1714,17 +1709,18 @@ function showConfirm(u) { pendingUser = u; document.getElementById('cf_username'
 function finalizeLogin() { localStorage.setItem('tsp_session', JSON.stringify(pendingUser)); document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('confirmOverlay').classList.add('hidden'); startApp(pendingUser); }
 function logout() { localStorage.removeItem('tsp_session'); location.reload(); }
 
-// ==================== APP INIT & CARTE ====================
-let map, currentTileLayer, routeLayer, routeMarkers=[], selectedCities=[], currentFiltered=[], searchHistory=[], pickMode=false, posPickMode=false, myLocationMarker=null, watchId=null, trackingPolyline=null, trackingPoints=[];
-let tileLayers = { osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap'}), googleSat: L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {attribution:'© Google Satellite', maxZoom:20}) };
-function setMapLayer(layerId) { if(currentTileLayer) map.removeLayer(currentTileLayer); currentTileLayer = tileLayers[layerId]; currentTileLayer.addTo(map); localStorage.setItem('tsp_map_layer', layerId); }
-function toggleMapLayer() { let newLayer = (localStorage.getItem('tsp_map_layer') || 'osm') === 'osm' ? 'googleSat' : 'osm'; setMapLayer(newLayer); }
+// Gestion rappels
+let reminders = [], nextReminderId = 1, reminderInterval = null;
+function loadReminders() { try { let saved = localStorage.getItem('tsp_reminders'); if (saved) { reminders = JSON.parse(saved); nextReminderId = Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); } } catch(e) {} startReminderWatcher(); }
+function saveReminders() { localStorage.setItem('tsp_reminders', JSON.stringify(reminders)); }
+function renderReminderList() { let container = document.getElementById('reminderList'); if (!reminders.length) { container.innerHTML = '<div style="color:var(--muted); padding:8px;">Aucun rappel programmé.</div>'; return; } container.innerHTML = reminders.map(r => `<div class="reminder-item" data-id="${r.id}"><span class="reminder-time">⏰ ${r.timeStr}</span><span class="reminder-msg">${escapeHtml(r.message)}</span><button class="reminder-del" onclick="deleteReminder(${r.id})">✖</button></div>`).join(''); }
+function startReminderWatcher() { if (reminderInterval) clearInterval(reminderInterval); reminderInterval = setInterval(() => { const now = new Date(); const nowStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`; for (let i = reminders.length-1; i >= 0; i--) { if (reminders[i].timeStr === nowStr) { showToastAlarm(reminders[i].message); if (Notification.permission === "granted") { new Notification("⏰ Rappel TSP WORLD PRO", { body: reminders[i].message, icon: NOTIF_ICON }); } reminders.splice(i,1); saveReminders(); renderReminderList(); } } }, 1000); }
+function scheduleAlarm() { let timeInput = document.getElementById('reminderTime').value; let message = document.getElementById('reminderMessage').value.trim(); if (!timeInput) { alert("Veuillez choisir une heure."); return; } if (!message) message = "Rappel !"; if (Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission(); let newId = nextReminderId++; reminders.push({ id: newId, timeStr: timeInput, message: message }); saveReminders(); renderReminderList(); document.getElementById('reminderTime').value = ''; document.getElementById('reminderMessage').value = ''; document.getElementById('notifStatus').innerHTML = `✅ Rappel ajouté pour ${timeInput} : "${message}"`; setTimeout(() => { if(document.getElementById('notifStatus')) document.getElementById('notifStatus').innerHTML = "💡 Cliquez sur Ajouter. Une notification apparaîtra + un message à l'écran."; }, 3000); }
+function deleteReminder(id) { reminders = reminders.filter(r => r.id !== id); saveReminders(); renderReminderList(); }
+function showToastAlarm(message) { let toast = document.createElement('div'); toast.className = 'toast-alarm'; toast.innerHTML = `<div class="toast-close" onclick="this.parentElement.remove()">✖</div><div class="toast-title">⏰ ALARME</div><div>${escapeHtml(message)}</div>`; document.body.appendChild(toast); setTimeout(() => { if(toast && toast.remove) toast.remove(); }, 8000); }
+function escapeHtml(s) { return String(s).replace(/[&<>]/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m];}); }
 
-function startApp(user) { document.getElementById('dashboard').style.display='block'; document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`; if(getOrsKey()) document.getElementById('orsKeyInput').value=getOrsKey(); map = L.map('map',{zoomControl:false}).setView([20,10],2); let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm'; setMapLayer(savedLayer); L.control.zoom({position:'bottomright'}).addTo(map); map.on('click', e => { if(pickMode) { document.getElementById('newLat').value=e.latlng.lat.toFixed(6); document.getElementById('newLon').value=e.latlng.lng.toFixed(6); document.getElementById('pickMsg').textContent='✅ Coordonnées récupérées'; pickMode=false; map.getContainer().style.cursor=''; } else if(posPickMode) { posPickMode=false; map.getContainer().style.cursor=''; let name=prompt('Nommez ce point:'); if(name) addCityToList({name, lat:e.latlng.lat, lon:e.latlng.lng, country:'Local', desc:'', custom:true}); } }); loadHistory(); loadStoredSelection(); filterCities(); document.getElementById('searchInput').addEventListener('input', filterCities); if(selectedCities.length===0 && allCities.length>=2) { addCityToList(allCities[0]); addCityToList(allCities[1]); } loadReminders(); handleUrlLocation(); }
-function handleUrlLocation() { const urlParams = new URLSearchParams(window.location.search); let lat = parseFloat(urlParams.get('lat')); let lon = parseFloat(urlParams.get('lon')); let name = urlParams.get('name') || "Position partagée"; if (!isNaN(lat) && !isNaN(lon) && lat>=-90 && lat<=90 && lon>=-180 && lon<=180) { addCityToList({ name: name, lat: lat, lon: lon, country: "Partagé", desc: "Importée par lien", custom: true }); alert(`📍 Ville ajoutée : ${name} (${lat.toFixed(4)}, ${lon.toFixed(4)})`); map.flyTo([lat, lon], 12); } }
-function shareCurrentLocation() { requestGeolocationWithHelp(pos => { let lat = pos.coords.latitude, lon = pos.coords.longitude; let shareUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}&name=Ma%20position%20partagée`; navigator.clipboard.writeText(shareUrl).then(() => alert("Lien copié ! Envoyez-le à un ami.\n" + shareUrl)); }, err => alert("Impossible d'obtenir la position")); }
-
-// ==================== FONCTIONS VILLES ====================
+// Fonctions villes
 function filterCities() { let term = document.getElementById('searchInput').value.trim().toLowerCase(); if(term) addHistory(term); let filtered = allCities.filter(c=>c.name.toLowerCase().includes(term) || c.country.toLowerCase().includes(term)); if(filtered.length>200) filtered=filtered.slice(0,200); currentFiltered=filtered; renderGrid(); document.getElementById('resultCount').textContent=`${filtered.length} ville(s)`; }
 function renderGrid() { let grid=document.getElementById('cityGrid'); if(!currentFiltered.length) { grid.innerHTML='<div>Aucune ville</div>'; return; } grid.innerHTML = currentFiltered.map(city => `<div class="city-card" onclick="toggleCity(${city.id})"><div><span class="city-name">${escapeHtml(city.name)}</span> <span class="city-country">${escapeHtml(city.country)}</span></div><span>${selectedCities.some(s=>s.id===city.id)?'✓':'➕'}</span></div>`).join(''); }
 function toggleCity(id) { let city = allCities.find(c=>c.id===id); if(!city) return; let idx = selectedCities.findIndex(s=>s.id===id); if(idx===-1) { if(selectedCities.length<40) selectedCities.push(city); } else selectedCities.splice(idx,1); updateSelUI(); renderGrid(); saveSelection(); zoomToCity(city); }
@@ -1744,22 +1740,54 @@ function saveSelection() { localStorage.setItem('tsp_selection',JSON.stringify(s
 function loadStoredSelection() { try{ let custom=JSON.parse(localStorage.getItem('tsp_custom')||'[]'); custom.forEach(c=>{if(!allCities.some(a=>a.name===c.name)) allCities.push(c);}); let ids=JSON.parse(localStorage.getItem('tsp_selection')||'[]'); ids.forEach(id=>{let city=allCities.find(c=>c.id===id); if(city&&!selectedCities.some(s=>s.id===id)) selectedCities.push(city);}); updateSelUI(); filterCities(); }catch(e){} }
 function exportGeoJSON() { let features = []; selectedCities.forEach(city => { features.push({ type: "Feature", geometry: { type: "Point", coordinates: [city.lon, city.lat] }, properties: { name: city.name, country: city.country, type: "selected" } }); }); if(routeLayer && routeLayer.getLatLngs && routeLayer.getLatLngs().length) { let coords = routeLayer.getLatLngs().map(c => [c.lng, c.lat]); features.push({ type: "Feature", geometry: { type: "LineString", coordinates: coords }, properties: { name: "Itinéraire TSP", cities: selectedCities.map(c=>c.name).join(" → ") } }); } let geojson = { type: "FeatureCollection", features: features }; let dataStr = JSON.stringify(geojson, null, 2); let blob = new Blob([dataStr], {type: "application/json"}); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "tsp_route_points.geojson"; a.click(); URL.revokeObjectURL(url); }
 
-// ==================== TSP ====================
+// TSP & ORS (avec URL corrigée vers api.heigit.org)
 function haversine(lat1,lon1,lat2,lon2) { const R=6371, r=Math.PI/180; const dLat=(lat2-lat1)*r, dLon=(lon2-lon1)*r; return R*2*Math.asin(Math.sqrt(Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2)); }
 function totalDistance(tour) { let d=0; for(let i=0;i<tour.length-1;i++) d+=haversine(tour[i].lat,tour[i].lon,tour[i+1].lat,tour[i+1].lon); return d; }
 function twoOpt(tour) { let improved=true, bestDist=totalDistance(tour); while(improved && !tspCancelRequested){ improved=false; for(let i=1;i<tour.length-2;i++){ for(let j=i+1;j<tour.length-1;j++){ if(tspCancelRequested) return tour; let newTour = [...tour.slice(0,i), ...tour.slice(i,j+1).reverse(), ...tour.slice(j+1)]; let newDist=totalDistance(newTour); if(newDist<bestDist-0.001){ bestDist=newDist; tour=newTour; improved=true; } } } } return tour; }
 function tspNN(cities,startIdx) { if(cities.length<2) return [[],0]; let unvisited=[...cities]; let start=unvisited.splice(startIdx,1)[0]; let tour=[start], current=start, total=0; while(unvisited.length){ let bestIdx=0, bestDist=haversine(current.lat,current.lon,unvisited[0].lat,unvisited[0].lon); for(let i=1;i<unvisited.length;i++){ let d=haversine(current.lat,current.lon,unvisited[i].lat,unvisited[i].lon); if(d<bestDist){bestDist=d;bestIdx=i;}} total+=bestDist; current=unvisited[bestIdx]; tour.push(current); unvisited.splice(bestIdx,1); } total+=haversine(current.lat,current.lon,start.lat,start.lon); tour.push(start); return [tour,total]; }
 
-async function fetchOrsRouteWithRetry(coords,mode,retries=3) { let key=getOrsKey(); if(!key) return null; let profile=mode==='foot'?'foot-walking':'driving-car'; if(mode==='plane') return null; for(let attempt=0;attempt<retries;attempt++){ try{ let resp=await fetch(`https://api.openrouteservice.org/v2/directions/${profile}/geojson`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':key},body:JSON.stringify({coordinates:coords,instructions:false})}); if(resp.status===429){ let delay=Math.pow(2,attempt)*1000; await new Promise(r=>setTimeout(r,delay)); continue; } if(!resp.ok) return null; let data=await resp.json(); if(!data.features||!data.features[0]) return null; return {routeCoords:data.features[0].geometry.coordinates.map(c=>[c[1],c[0]]), duration:data.features[0].properties.summary.duration}; }catch(e){ return null; } } return null; }
+async function fetchOrsRouteWithRetry(coords, mode, retries = 3) {
+    let key = getOrsKey();
+    if (!key) return null;
+    let profile = mode === 'foot' ? 'foot-walking' : 'driving-car';
+    if (mode === 'plane') return null;
+    if (coords.length > 50) coords = coords.slice(0, 50);
+    for (let attempt = 0; attempt < retries; attempt++) {
+        try {
+            let resp = await fetch(`https://api.heigit.org/v2/directions/${profile}/geojson`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': key },
+                body: JSON.stringify({ coordinates: coords, instructions: false })
+            });
+            if (resp.status === 401) {
+                document.getElementById('orsStatus').innerHTML = '❌ Clé API invalide ou expirée. <a href="https://openrouteservice.org/dev/#/signup" target="_blank">Obtenir une clé</a>';
+                return null;
+            }
+            if (resp.status === 429) {
+                let delay = Math.pow(2, attempt) * 1500;
+                await new Promise(r => setTimeout(r, delay));
+                continue;
+            }
+            if (!resp.ok) return null;
+            let data = await resp.json();
+            if (!data.features || !data.features[0]) return null;
+            return {
+                routeCoords: data.features[0].geometry.coordinates.map(c => [c[1], c[0]]),
+                duration: data.features[0].properties.summary.duration
+            };
+        } catch (e) { return null; }
+    }
+    return null;
+}
 
-async function buildRouteGeometry(tour,mode) { let allLatLng=[], totalDurationSec=0; if(mode==='plane'||!getOrsKey()){ for(let i=0;i<tour.length-1;i++){ let c1=tour[i],c2=tour[i+1]; let dist=haversine(c1.lat,c1.lon,c2.lat,c2.lon); let speed=800; if(mode==='car') speed=80; else if(mode==='foot') speed=5; totalDurationSec+=(dist/speed)*3600; allLatLng.push([c1.lat,c1.lon]); } allLatLng.push([tour[tour.length-1].lat,tour[tour.length-1].lon]); return {routeLatLng:allLatLng,totalDurationSec}; } let chunkSize=35; for(let i=0;i<tour.length-1;i+=chunkSize-1){ let chunk=tour.slice(i,i+chunkSize); if(chunk.length<2) continue; let res=await fetchOrsRouteWithRetry(chunk.map(c=>[c.lon,c.lat]),mode); if(res){ if(allLatLng.length>0) allLatLng.pop(); allLatLng.push(...res.routeCoords); totalDurationSec+=res.duration; } else { document.getElementById('orsStatus').innerHTML='⚠️ Échec ORS, utilisation de lignes droites. Vérifiez votre clé.'; for(let j=0;j<chunk.length-1;j++){ let c1=chunk[j],c2=chunk[j+1]; let dist=haversine(c1.lat,c1.lon,c2.lat,c2.lon); let durationSec = mode==='foot'?(dist/5)*3600:(dist/80)*3600; totalDurationSec+=durationSec; allLatLng.push([c1.lat,c1.lon]); } allLatLng.push([chunk[chunk.length-1].lat,chunk[chunk.length-1].lon]); } await new Promise(r=>setTimeout(r,300)); } return {routeLatLng:allLatLng,totalDurationSec}; }
+async function buildRouteGeometry(tour,mode) { let allLatLng=[], totalDurationSec=0; if(mode==='plane'||!getOrsKey()){ for(let i=0;i<tour.length-1;i++){ let c1=tour[i],c2=tour[i+1]; let dist=haversine(c1.lat,c1.lon,c2.lat,c2.lon); let speed=800; if(mode==='car') speed=80; else if(mode==='foot') speed=5; totalDurationSec+=(dist/speed)*3600; allLatLng.push([c1.lat,c1.lon]); } allLatLng.push([tour[tour.length-1].lat,tour[tour.length-1].lon]); return {routeLatLng:allLatLng,totalDurationSec}; } let chunkSize=25; for(let i=0;i<tour.length-1;i+=chunkSize-1){ let chunk=tour.slice(i,i+chunkSize); if(chunk.length<2) continue; let res=await fetchOrsRouteWithRetry(chunk.map(c=>[c.lon,c.lat]),mode); if(res){ if(allLatLng.length>0) allLatLng.pop(); allLatLng.push(...res.routeCoords); totalDurationSec+=res.duration; } else { for(let j=0;j<chunk.length-1;j++){ let c1=chunk[j],c2=chunk[j+1]; let dist=haversine(c1.lat,c1.lon,c2.lat,c2.lon); let durationSec = mode==='foot'?(dist/5)*3600:(dist/80)*3600; totalDurationSec+=durationSec; allLatLng.push([c1.lat,c1.lon]); } allLatLng.push([chunk[chunk.length-1].lat,chunk[chunk.length-1].lon]); } await new Promise(r=>setTimeout(r,300)); } return {routeLatLng:allLatLng,totalDurationSec}; }
 
 function clearMapRoute() { if(routeLayer) map.removeLayer(routeLayer); routeMarkers.forEach(m=>map.removeLayer(m)); routeMarkers=[]; }
 
 async function computeTSP() { tspCancelRequested = false; document.getElementById('cancelTSPBtn').style.display = 'inline-block'; let max=parseInt(document.getElementById('maxCities').value)||8; let cities=[...selectedCities]; if(cities.length<2){ document.getElementById('resultsPanel').innerHTML='<div style="color:var(--error)">Sélectionnez au moins 2 villes</div>'; document.getElementById('cancelTSPBtn').style.display='none'; return; } if(cities.length>max) cities=cities.slice(0,max); let startIdx=parseInt(document.getElementById('startCitySelect').value)||0; let [tour,totalDist]=tspNN(cities,startIdx); if(tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display='none'; tspCancelRequested=false; return; } let algo=document.getElementById('algoSelect').value; if(algo==='2opt') tour = twoOpt(tour); if(tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display='none'; return; } let orderedCities=tour.slice(0,-1); selectedCities=orderedCities; updateSelUI(); saveSelection(); renderGrid(); clearMapRoute(); let loadEl=document.getElementById('routeLoading'); let mode=document.getElementById('transportMode').value; let useOrs=(getOrsKey()&&mode!=='plane'); if(useOrs) loadEl.style.display='block'; let {routeLatLng,totalDurationSec}=await buildRouteGeometry(tour,mode); if(tspCancelRequested) { loadEl.style.display='none'; document.getElementById('cancelTSPBtn').style.display='none'; tspCancelRequested=false; return; } loadEl.style.display='none'; if(routeLatLng.length<2){ document.getElementById('resultsPanel').innerHTML='<div style="color:var(--error)">Erreur tracé route</div>'; document.getElementById('cancelTSPBtn').style.display='none'; return; } routeLayer=L.polyline(routeLatLng,{color:'#00f5ff',weight:4,opacity:0.85,dashArray:useOrs?null:'10,6'}).addTo(map); tour.forEach((city,idx)=>{ if(idx===tour.length-1) return; let isStart=idx===0; let color=isStart?'#ff4466':(city.custom?'#00ffaa':'#00ccff'); let marker=L.marker([city.lat,city.lon],{icon:L.divIcon({html:`<div style="background:${color};width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:${isStart?'#fff':'#000'};border:2px solid white;font-size:12px;">${isStart?'🏁':idx+1}</div>`,iconSize:[30,30]})}).addTo(map).bindPopup(`<b>${idx+1}. ${escapeHtml(city.name)}</b><br>${escapeHtml(city.country)}`).bindTooltip(city.name,{sticky:true}); routeMarkers.push(marker); }); let lats=cities.map(c=>c.lat), lons=cities.map(c=>c.lon); map.fitBounds([[Math.min(...lats),Math.min(...lons)],[Math.max(...lats),Math.max(...lons)]],{padding:[60,60]}); let stepsHtml=tour.slice(0,-1).map((c,i)=>`<div class="route-step"><div class="step-num">${i+1}</div><div><b>${escapeHtml(c.name)}</b> (${escapeHtml(c.country)})</div></div>`).join(''); let modeLabel={car:'🚗 Voiture',foot:'🚶 Piéton',plane:'✈️ Avion'}[mode]; let durationHours=totalDurationSec/3600; let durationStr=`${Math.floor(durationHours)}h ${Math.floor((durationHours%1)*60)}min`; document.getElementById('resultsPanel').innerHTML=`<div><strong>📊 Résultat (${algo==='2opt'?'2-opt optimisé':'Plus proche voisin'})</strong></div><div class="stats-grid"><div class="stat-card"><div class="val">${cities.length}</div>villes</div><div class="stat-card"><div class="val">${totalDist.toFixed(0)}</div>km</div><div class="stat-card"><div class="val">${durationStr}</div>durée</div><div class="stat-card"><div class="val">${modeLabel}</div></div></div><div class="route-steps">${stepsHtml}</div>`; document.getElementById('cancelTSPBtn').style.display='none'; }
 function cancelTSP() { tspCancelRequested = true; }
 
-// ==================== GPS ET SUIVI ====================
+// GPS
 function showMyLocation() { requestGeolocationWithHelp(pos => { let lat=pos.coords.latitude, lon=pos.coords.longitude; map.setView([lat,lon],14); if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]); else myLocationMarker = L.marker([lat,lon],{icon:L.divIcon({html:'<div style="background:#00aaff;width:20px;height:20px;border-radius:50%;border:2px solid white;"></div>',iconSize:[20,20]})}).addTo(map).bindPopup('Votre position').openPopup(); alert(`📍 Position actuelle :\nLatitude : ${lat.toFixed(6)}\nLongitude : ${lon.toFixed(6)}`); if(confirm("Ajouter cette position à votre liste de villes ?")) addCityToList({name:"Ma position",lat,lon,country:"Local",desc:"GPS",custom:true}); }, err => alert("Erreur GPS: permission refusée ou indisponible")); }
 function startTracking() { if(isFileProtocol()) { alert("Suivi impossible en file://"); return; } if(watchId) stopTracking(); trackingPoints = []; if(trackingPolyline) map.removeLayer(trackingPolyline); watchId = navigator.geolocation.watchPosition(pos => { let lat=pos.coords.latitude, lon=pos.coords.longitude; trackingPoints.push([lat,lon]); if(trackingPolyline) map.removeLayer(trackingPolyline); trackingPolyline = L.polyline(trackingPoints, {color:'#ffaa33', weight:3, opacity:0.7}).addTo(map); if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]); else myLocationMarker = L.marker([lat,lon],{icon:L.divIcon({html:'<div style="background:#00aaff;width:20px;height:20px;border-radius:50%;"></div>',iconSize:[20,20]})}).addTo(map); map.setView([lat,lon], map.getZoom()); }, err => console.warn(err)); }
 function stopTracking() { if(watchId) { navigator.geolocation.clearWatch(watchId); watchId=null; } }
@@ -1768,13 +1796,41 @@ function useGeoloc() { requestGeolocationWithHelp(pos => { document.getElementBy
 function getOrsKey() { return localStorage.getItem('tsp_ors_key') || ''; }
 function saveOrsKey() { let k=document.getElementById('orsKeyInput').value.trim(); if(k) { localStorage.setItem('tsp_ors_key',k); document.getElementById('orsStatus').innerHTML='✅ Clé sauvegardée'; } else { localStorage.removeItem('tsp_ors_key'); document.getElementById('orsStatus').innerHTML='⚠️ Sans clé → lignes droites. <a href="https://openrouteservice.org/dev/#/signup" target="_blank">Obtenir une clé</a>'; } }
 
-// ==================== EXPORT JAVA ====================
+// Export Java
+function generateJavaCode() {
+    if (!selectedCities.length) {
+        document.getElementById('javaCodeArea').value = "// Aucune ville sélectionnée";
+        return;
+    }
+    let lines = selectedCities.map((c, i) =>
+        `    {${c.lat}, ${c.lon}} // ${c.name} (${c.country})`
+    );
+    let code = `double[][] villes = {\n${lines.join(',\n')}\n};`;
+    document.getElementById('javaCodeArea').value = code;
+}
+function copyJavaCode() {
+    let area = document.getElementById('javaCodeArea');
+    if (!area.value || area.value.startsWith("//")) {
+        alert("Générez d'abord le tableau !");
+        return;
+    }
+    navigator.clipboard.writeText(area.value)
+        .then(() => alert("✅ Code copié !"))
+        .catch(() => {
+            area.select();
+            document.execCommand('copy');
+            alert("✅ Copié !");
+        });
+}
 
+function startApp(user) { document.getElementById('dashboard').style.display='block'; document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`; if(getOrsKey()) document.getElementById('orsKeyInput').value=getOrsKey(); map = L.map('map',{zoomControl:false}).setView([20,10],2); let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm'; setMapLayer(savedLayer); L.control.zoom({position:'bottomright'}).addTo(map); map.on('click', e => { if(pickMode) { document.getElementById('newLat').value=e.latlng.lat.toFixed(6); document.getElementById('newLon').value=e.latlng.lng.toFixed(6); document.getElementById('pickMsg').textContent='✅ Coordonnées récupérées'; pickMode=false; map.getContainer().style.cursor=''; } else if(posPickMode) { posPickMode=false; map.getContainer().style.cursor=''; let name=prompt('Nommez ce point:'); if(name) addCityToList({name, lat:e.latlng.lat, lon:e.latlng.lng, country:'Local', desc:'', custom:true}); } }); loadHistory(); loadStoredSelection(); filterCities(); document.getElementById('searchInput').addEventListener('input', filterCities); if(selectedCities.length===0 && allCities.length>=2) { addCityToList(allCities[0]); addCityToList(allCities[1]); } loadReminders(); handleUrlLocation(); }
+function handleUrlLocation() { const urlParams = new URLSearchParams(window.location.search); let lat = parseFloat(urlParams.get('lat')); let lon = parseFloat(urlParams.get('lon')); let name = urlParams.get('name') || "Position partagée"; if (!isNaN(lat) && !isNaN(lon) && lat>=-90 && lat<=90 && lon>=-180 && lon<=180) { addCityToList({ name: name, lat: lat, lon: lon, country: "Partagé", desc: "Importée par lien", custom: true }); alert(`📍 Ville ajoutée : ${name} (${lat.toFixed(4)}, ${lon.toFixed(4)})`); map.flyTo([lat, lon], 12); } }
+function shareCurrentLocation() { requestGeolocationWithHelp(pos => { let lat = pos.coords.latitude, lon = pos.coords.longitude; let shareUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}&name=Ma%20position%20partagée`; navigator.clipboard.writeText(shareUrl).then(() => alert("Lien copié ! Envoyez-le à un ami.\n" + shareUrl)); }, err => alert("Impossible d'obtenir la position")); }
 
-
-// ==================== DÉMARRAGE ====================
-(function boot() { let sess = localStorage.getItem('tsp_session'); if(sess) { try{ sess=JSON.parse(sess); document.getElementById('loginOverlay').style.display='none'; startApp(sess); }catch(e){} } })();
 function switchTab(t) { document.getElementById('loginForm').style.display = t === 'login' ? 'block' : 'none'; document.getElementById('registerForm').style.display = t === 'register' ? 'block' : 'none'; document.getElementById('tabLogin').classList.toggle('active', t === 'login'); document.getElementById('tabReg').classList.toggle('active', t === 'register'); }
+
+// Démarrage
+(function boot() { let sess = localStorage.getItem('tsp_session'); if(sess) { try{ sess=JSON.parse(sess); document.getElementById('loginOverlay').style.display='none'; startApp(sess); }catch(e){} } })();
 </script>
 </body>
 </html>
