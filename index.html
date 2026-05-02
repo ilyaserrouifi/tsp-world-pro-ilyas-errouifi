@@ -1743,7 +1743,7 @@ function decodePolyline(encoded) {
         } while (b >= 0x20);
         let dlng = (result & 1) ? ~(result >> 1) : (result >> 1);
         lng += dlng;
-        points.pousser([lat / 1e5, lng / 1e5]);
+        points.push([lat / 1e5, lng / 1e5]);
     }
     return points;
 }
