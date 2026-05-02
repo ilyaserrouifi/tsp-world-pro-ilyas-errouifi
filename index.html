@@ -3,13 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>✈️ TSP WORLD PRO - Trajet corrigé</title>
+    <title>✈️ TSP WORLD PRO - Code sans coordonnées</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --cyan: #00f5ff; --cyan2: #0088ff; --bg: #070714; --surface: rgba(10,10,28,0.97); --border: rgba(0,245,255,0.25); --border-strong: rgba(0,245,255,0.7); --text: #e8eaf6; --muted: rgba(200,210,255,0.5); --error: #ff6b8a; --success: #00ffaa; --warning: #ffaa33; }
+        :root {
+            --cyan: #00f5ff;
+            --cyan2: #0088ff;
+            --bg: #070714;
+            --surface: rgba(10,10,28,0.97);
+            --border: rgba(0,245,255,0.25);
+            --border-strong: rgba(0,245,255,0.7);
+            --text: #e8eaf6;
+            --muted: rgba(200,210,255,0.5);
+            --error: #ff6b8a;
+            --success: #00ffaa;
+            --warning: #ffaa33;
+        }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
         #map { position:absolute; inset:0; z-index:1; }
@@ -48,12 +60,10 @@
         .time-panel { display: flex; justify-content: space-between; align-items: baseline; background: rgba(0,245,255,0.1); border-radius: 16px; padding: 8px 16px; margin-bottom: 16px; flex-wrap: wrap; }
         .current-time { font-family: monospace; font-size: 1.6rem; font-weight: 700; color: var(--cyan); }
         .chrono { font-family: monospace; font-size: 1.2rem; background: rgba(0,0,0,0.3); padding: 4px 12px; border-radius: 40px; }
-        .stadia-section { background: rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.2); border-radius:16px; padding:12px 16px; margin-bottom:16px; }
-        .stadia-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-        .stadia-row input { flex:1; padding:8px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50px; color:var(--text); font-size:0.82rem; }
-        .stadia-save-btn, .test-stadia-btn { padding:8px 16px; background:var(--cyan); border:none; border-radius:50px; color:#000; font-weight:700; cursor:pointer; }
-        .test-stadia-btn { background:var(--cyan2); color:white; margin-left:8px; }
-        .cors-proxy-label { display:flex; align-items:center; gap:8px; margin-top:8px; font-size:0.75rem; cursor:pointer; background:rgba(0,0,0,0.3); padding:4px 8px; border-radius:20px; }
+        .ors-section { background: rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.2); border-radius:16px; padding:12px 16px; margin-bottom:16px; }
+        .ors-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+        .ors-row input { flex:1; padding:8px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50px; color:var(--text); font-size:0.82rem; }
+        .ors-save-btn { padding:8px 16px; background:var(--cyan); border:none; border-radius:50px; color:#000; font-weight:700; cursor:pointer; }
         .section { margin-bottom:18px; border-bottom:1px solid rgba(0,245,255,0.1); padding-bottom:16px; }
         .section-title { font-weight:700; font-size:0.82rem; text-transform:uppercase; color:var(--muted); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
         .search-input { width:100%; padding:10px 16px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50px; color:var(--text); font-size:0.88rem; }
@@ -65,8 +75,7 @@
         .city-name { font-weight:600; font-size:0.88rem; }
         .city-country { font-size:0.72rem; color:var(--muted); }
         .selected-list { max-height:140px; overflow-y:auto; margin:8px 0; }
-        .sel-item { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.04); border-radius:50px; padding:7px 14px; font-size:0.82rem; margin-bottom:4px; cursor:pointer; }
-        .sel-item:hover { background:rgba(0,245,255,0.15); }
+        .sel-item { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.04); border-radius:50px; padding:7px 14px; font-size:0.82rem; margin-bottom:4px; }
         .btn { padding:9px 16px; border:none; border-radius:50px; cursor:pointer; font-weight:600; font-family:'Space Grotesk',sans-serif; font-size:0.8rem; }
         .btn-primary { background:linear-gradient(135deg,var(--cyan),var(--cyan2)); color:#000; }
         .btn-secondary { background:rgba(255,255,255,0.07); color:var(--text); border:1px solid rgba(255,255,255,0.1); }
@@ -82,7 +91,6 @@
         .java-export { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 12px; margin-top: 8px; }
         .java-export textarea { width: 100%; font-family: monospace; font-size: 0.7rem; background: #0a0a1a; border: 1px solid var(--cyan); color: #0f0; padding: 8px; border-radius: 10px; white-space: pre; }
         @media (max-width: 700px) { .dashboard { width: 380px; } }
-        .toast-alarm { position: fixed; bottom: 20px; left: 20px; background: #000; color: cyan; padding: 12px 20px; border-radius: 40px; z-index: 2000; font-weight: bold; box-shadow: 0 0 10px cyan; }
     </style>
 </head>
 <body>
@@ -99,6 +107,7 @@
             <div class="field"><label>Mot de passe</label><input type="password" id="loginPassword" placeholder="••••••••"></div>
             <button class="primary-btn" onclick="doLogin()">✅ Se connecter</button>
             <div class="err-msg" id="loginErr"></div>
+            <div style="font-size:0.7rem; margin-top:12px; color:#ffaa33;">⚠️ Authentification locale</div>
         </div>
         <div id="registerForm" style="display:none">
             <div class="field"><label>Pseudo</label><input type="text" id="regUsername"></div>
@@ -125,7 +134,7 @@
 </div>
 <div id="map"></div>
 <button class="toggle-dash" onclick="document.getElementById('dashboard').classList.toggle('collapsed')">⚙️ Menu</button>
-<button class="toggle-dash" style="right:100px" onclick="toggleMapLayer()">🗺️ Changer fond</button>
+<div class="map-switch" onclick="toggleMapLayer()">🗺️ Changer fond</div>
 <div class="dashboard" id="dashboard">
     <div class="dash-header"><div class="dash-title">✈️ TSP WORLD PRO</div></div>
     <div class="welcome-pill"><span>👋 Bonjour, <strong id="welcomeName"></strong></span><button class="logout-btn" onclick="logout()">🚪 Déconnexion</button></div>
@@ -138,54 +147,50 @@
             <button class="btn btn-secondary" onclick="resetCron()">🔄</button>
         </div>
     </div>
-    <div class="stadia-section">
-        <div class="section-title">🗺️ Clé API Stadia Maps (Routing)</div>
-        <div class="stadia-row">
-            <input type="password" id="stadiaKeyInput" placeholder="Collez votre clé Stadia Maps">
-            <button class="stadia-save-btn" onclick="saveStadiaKey()">Sauvegarder</button>
-            <button class="test-stadia-btn" onclick="testStadia()">🧪 Tester la clé</button>
-        </div>
-        <label class="cors-proxy-label">
-            <input type="checkbox" id="useCorsProxyCheckbox"> 🌐 Utiliser proxy CORS (si nécessaire)
-        </label>
-        <div class="ors-status" id="stadiaStatus">⚠️ Sans clé → lignes droites.</div>
-    </div>
+    <div class="ors-section"><div class="section-title">🔑 Clé API OpenRouteService</div><div class="ors-row"><input type="password" id="orsKeyInput" placeholder="Collez votre clé ORS"><button class="ors-save-btn" onclick="saveOrsKey()">Sauvegarder</button></div><div class="ors-status" id="orsStatus">⚠️ Sans clé → lignes droites. <a href="https://openrouteservice.org/dev/#/signup" target="_blank">Obtenir une clé</a></div></div>
     <div class="section">
-        <div class="section-title">⏰ Planifier un rappel</div>
+        <div class="section-title">⏰ Planifier un rappel (alarme)</div>
         <div class="notif-row" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
             <input type="time" id="reminderTime" step="1">
-            <input type="text" id="reminderMessage" placeholder="Message" style="flex:1;">
+            <input type="text" id="reminderMessage" placeholder="Message personnalisé" style="flex:1;">
             <button class="btn btn-primary" onclick="scheduleAlarm()">📌 Ajouter</button>
         </div>
         <div id="reminderList" class="reminder-list"></div>
+        <div class="notif-info" id="notifStatus">💡 Cliquez sur Ajouter. Une notification apparaîtra + un message à l'écran.</div>
     </div>
-    <div class="section"><div class="section-title">🔍 Rechercher une ville</div><input type="text" class="search-input" id="searchInput" placeholder="Ex: Casablanca"><div class="history-list" id="historyList"></div><div class="city-grid" id="cityGrid"></div><div class="result-count" id="resultCount"></div></div>
+    <div class="section"><div class="section-title">🔍 Rechercher une ville</div><input type="text" class="search-input" id="searchInput" placeholder="Ex: Tanger, Rabat..."><div class="history-list" id="historyList"></div><div class="city-grid" id="cityGrid"></div><div class="result-count" id="resultCount"></div></div>
     <div class="section"><div class="section-title">✅ Ma sélection — <span id="selCount">0</span> ville(s)</div><div class="selected-list" id="selectedList"></div><div class="btn-row">
         <button class="btn btn-danger" onclick="clearSelection()">🗑️ Vider</button>
         <button class="btn btn-secondary" onclick="showMyLocation()">📍 Me localiser</button>
         <button class="btn btn-secondary" onclick="startTracking()">📡 Suivre</button>
         <button class="btn btn-secondary" onclick="stopTracking()">⏹️ Arrêter</button>
-        <button class="btn btn-secondary" onclick="clearSearchHistory()">🗑️ Effacer historique</button>
+        <button class="btn btn-secondary" onclick="clearSearchHistory()" style="background:#ff888820;">🗑️ Effacer historique</button>
         <button class="btn btn-secondary" onclick="exportGeoJSON()">📤 Exporter GeoJSON</button>
         <button class="btn btn-secondary" onclick="shareCurrentLocation()">🔗 Partager ma position</button>
     </div></div>
     <div class="section">
-        <div class="section-title">☕ Export Java</div>
+        <div class="section-title">☕ Export Java (coordonnées)</div>
         <div class="java-export">
             <button class="btn btn-primary" onclick="generateJavaCode()" style="width:100%; margin-bottom:8px;">🔁 Générer le tableau Java</button>
-            <textarea id="javaCodeArea" rows="6" readonly placeholder="Cliquez sur 'Générer'"></textarea>
+            <textarea id="javaCodeArea" rows="6" readonly placeholder="Cliquez sur 'Générer' pour obtenir un tableau double[][] utilisable dans votre code Java."></textarea>
             <button class="btn btn-secondary" onclick="copyJavaCode()" style="margin-top:6px;">📋 Copier</button>
         </div>
     </div>
     <div class="section"><div class="section-title">🎯 Paramètres TSP</div><div class="tsp-params"><span>Max villes :</span><input type="number" id="maxCities" value="8" min="2" max="35"><span>Départ :</span><select id="startCitySelect"></select><span>Transport :</span><select id="transportMode"><option value="car">🚗 Voiture</option><option value="foot">🚶 Piéton</option><option value="plane">✈️ Avion</option></select><span>Algorithme :</span><select id="algoSelect"><option value="nn">Plus proche voisin</option><option value="2opt">2-opt</option></select></div><div class="btn-row"><button class="btn btn-primary" onclick="computeTSP()">🚀 Lancer le TSP</button><button class="btn btn-secondary" id="cancelTSPBtn" onclick="cancelTSP()" style="display:none;">❌ Annuler</button></div><div class="route-loading" id="routeLoading" style="display:none;">⏳ Calcul...</div></div>
-    <div class="section"><div class="section-title">➕ Ajouter une ville</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
+    <div class="section"><div class="section-title">➕ Ajouter une ville personnalisée</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
-    <div class="footer">🌐 Routes Stadia Maps (Valhalla) | Fallback lignes droites</div>
+    <div class="footer">🌐 Carte améliorée · TSP avec annulation · Partage de position · Export GeoJSON · Rappels optimisés · Favicon avion · Export Java intégré</div>
 </div>
 <script>
-// ==================== LES VILLES (LISTE COMPLETE) - REMPLACEE PAR TES VILLES ====================
+// ==================== DONNÉES DES VILLES ====================
+// ICI TU DOIS METTRE TES PROPRES COORDONNÉES
+// Exemple de format : { id: 0, name: "Tanger", lat: 35.7595, lon: -5.834, country: "Maroc", desc: "" }
+// Tu peux aussi laisser vide et ajouter via l'interface "Ajouter ville"
+
+// ==================== DONNÉES DES VILLES ====================
 let allCities = [
-     {"name": "Tanger", "lat": 35.7595, "lon": -5.834, "country": "Maroc", "desc": ""},
+    
+    {"name": "Tanger", "lat": 35.7595, "lon": -5.834, "country": "Maroc", "desc": ""},
     {"name": "Tétouan", "lat": 35.5785, "lon": -5.3704, "country": "Maroc", "desc": ""},
     {"name": "Tanger", "lat": 35.7595, "lon": -5.834, "country": "Maroc", "desc": ""},
     {"name": "Tétouan", "lat": 35.5785, "lon": -5.3704, "country": "Maroc", "desc": ""},
@@ -1655,21 +1660,35 @@ let allCities = [
     {"name": "Nassau", "lat": 25.0582, "lon": -77.3431, "country": "Bahamas", "desc": ""},
     {"name": "Bridgetown", "lat": 13.0975, "lon": -59.6165, "country": "Barbados", "desc": ""},
     {"name": "Port of Spain", "lat": 10.6667, "lon": -61.5167, "country": "Trinidad and Tobago", "desc": ""}
-    // HNA DIR LES VILLES LI 3NDEK. MITAL:
-    // { "name": "Tanger", "lat": 35.7595, "lon": -5.834, "country": "Maroc", "desc": "" },
-    // { "name": "Casablanca", "lat": 33.5731, "lon": -7.5898, "country": "Maroc", "desc": "" },
-    // ... (copi l'liste li kenti 3ndk l'9dim)
-];
-// ==============================================================================================
 
+]; // <-- HNA HOTO L'ARRAY DYALK
+
+// Si l'array farigh, nzido des exemples
+if(allCities.length === 0) {
+    allCities.push({ name: "Exemple 1", lat: 33.5731, lon: -7.5898, country: "Maroc", desc: "", id: 0 });
+    allCities.push({ name: "Exemple 2", lat: 34.0209, lon: -6.8416, country: "Maroc", desc: "", id: 1 });
+} else {
+    // Ajout automatique des IDs (id = index)
+    allCities = allCities.map((city, idx) => ({ ...city, id: idx }));
+}
+// ============================================================
 let tspCancelRequested = false;
 const NOTIF_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E";
 
-let map, currentTileLayer, routeLayer = null, routeMarkers=[], selectedCities=[], currentFiltered=[], searchHistory=[], pickMode=false, posPickMode=false, myLocationMarker=null, watchId=null, trackingPolyline=null, trackingPoints=[];
-let tileLayers = { osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap'}), googleSat: L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {attribution:'© Google Satellite', maxZoom:20}) };
-function setMapLayer(layerId) { if(currentTileLayer) map.removeLayer(currentTileLayer); currentTileLayer = tileLayers[layerId]; currentTileLayer.addTo(map); localStorage.setItem('tsp_map_layer', layerId); }
-function toggleMapLayer() { let newLayer = (localStorage.getItem('tsp_map_layer') || 'osm') === 'osm' ? 'googleSat' : 'osm'; setMapLayer(newLayer); }
+// ==================== GESTION DES RAPPELS ====================
+let reminders = [];
+let nextReminderId = 1;
+let reminderInterval = null;
+function loadReminders() { try { let saved = localStorage.getItem('tsp_reminders'); if (saved) { reminders = JSON.parse(saved); nextReminderId = Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); } } catch(e) {} startReminderWatcher(); }
+function saveReminders() { localStorage.setItem('tsp_reminders', JSON.stringify(reminders)); }
+function renderReminderList() { let container = document.getElementById('reminderList'); if (!reminders.length) { container.innerHTML = '<div style="color:var(--muted); padding:8px;">Aucun rappel programmé.</div>'; return; } container.innerHTML = reminders.map(r => `<div class="reminder-item" data-id="${r.id}"><span class="reminder-time">⏰ ${r.timeStr}</span><span class="reminder-msg">${escapeHtml(r.message)}</span><button class="reminder-del" onclick="deleteReminder(${r.id})">✖</button></div>`).join(''); }
+function startReminderWatcher() { if (reminderInterval) clearInterval(reminderInterval); reminderInterval = setInterval(() => { const now = new Date(); const nowStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`; for (let i = reminders.length-1; i >= 0; i--) { if (reminders[i].timeStr === nowStr) { showToastAlarm(reminders[i].message); if (Notification.permission === "granted") { new Notification("⏰ Rappel TSP WORLD PRO", { body: reminders[i].message, icon: NOTIF_ICON }); } reminders.splice(i,1); saveReminders(); renderReminderList(); } } }, 1000); }
+function scheduleAlarm() { let timeInput = document.getElementById('reminderTime').value; let message = document.getElementById('reminderMessage').value.trim(); if (!timeInput) { alert("Veuillez choisir une heure."); return; } if (!message) message = "Rappel !"; if (Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission(); let newId = nextReminderId++; reminders.push({ id: newId, timeStr: timeInput, message: message }); saveReminders(); renderReminderList(); document.getElementById('reminderTime').value = ''; document.getElementById('reminderMessage').value = ''; document.getElementById('notifStatus').innerHTML = `✅ Rappel ajouté pour ${timeInput} : "${message}"`; setTimeout(() => { if(document.getElementById('notifStatus')) document.getElementById('notifStatus').innerHTML = "💡 Cliquez sur Ajouter. Une notification apparaîtra + un message à l'écran."; }, 3000); }
+function deleteReminder(id) { reminders = reminders.filter(r => r.id !== id); saveReminders(); renderReminderList(); }
+function showToastAlarm(message) { let toast = document.createElement('div'); toast.className = 'toast-alarm'; toast.innerHTML = `<div class="toast-close" onclick="this.parentElement.remove()">✖</div><div class="toast-title">⏰ ALARME</div><div>${escapeHtml(message)}</div>`; document.body.appendChild(toast); setTimeout(() => { if(toast && toast.remove) toast.remove(); }, 8000); }
+function escapeHtml(s) { return String(s).replace(/[&<>]/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m];}); }
 
+// ==================== HORLOGE + CHRONO ====================
 function updateLiveClock() { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('fr-FR'); }
 setInterval(updateLiveClock, 1000); updateLiveClock();
 let cronInterval = null, cronSeconds = parseInt(sessionStorage.getItem('tsp_cron_sec') || '0');
@@ -1679,9 +1698,12 @@ function pauseCron() { if(cronInterval) {clearInterval(cronInterval); cronInterv
 function resetCron() { pauseCron(); cronSeconds=0; updateCronDisplay(); sessionStorage.setItem('tsp_cron_sec',0); }
 updateCronDisplay();
 
+// ==================== AUTHENTIFICATION ====================
 async function hashPassword(pwd) { const encoder = new TextEncoder(); const data = encoder.encode(pwd); const hashBuffer = await crypto.subtle.digest('SHA-256', data); return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2,'0')).join(''); }
 function isFileProtocol() { return window.location.protocol === 'file:'; }
-function requestGeolocationWithHelp(cbSuccess, cbError) { if (isFileProtocol()) { alert("GPS bloqué: serveur HTTP requis."); if(cbError) cbError({message:"file://"}); return; } if (!navigator.geolocation) { alert("Non supporté"); return; } navigator.geolocation.getCurrentPosition(cbSuccess, cbError); }
+if (isFileProtocol()) document.getElementById('gpsWarningBanner').style.display = 'block';
+function reloadOverHttp() { let port = prompt("Port du serveur (par défaut 8000) ?", "8000"); if(port) window.location.href = `http://localhost:${port}${window.location.pathname}`; }
+function requestGeolocationWithHelp(cbSuccess, cbError) { if (isFileProtocol()) { alert("GPS bloqué: ouvrez via serveur HTTP."); if(cbError) cbError({message:"file://"}); return; } if (!navigator.geolocation) { alert("Navigateur non supporté."); return; } navigator.geolocation.getCurrentPosition(cbSuccess, cbError); }
 
 let pendingUser = null;
 function getUsers() { return JSON.parse(localStorage.getItem('tsp_users') || '{}'); }
@@ -1692,349 +1714,67 @@ function showConfirm(u) { pendingUser = u; document.getElementById('cf_username'
 function finalizeLogin() { localStorage.setItem('tsp_session', JSON.stringify(pendingUser)); document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('confirmOverlay').classList.add('hidden'); startApp(pendingUser); }
 function logout() { localStorage.removeItem('tsp_session'); location.reload(); }
 
-let reminders = [], nextReminderId = 1, reminderInterval = null;
-function loadReminders() { try { let saved = localStorage.getItem('tsp_reminders'); if (saved) { reminders = JSON.parse(saved); nextReminderId = Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); } } catch(e) {} startReminderWatcher(); }
-function saveReminders() { localStorage.setItem('tsp_reminders', JSON.stringify(reminders)); }
-function renderReminderList() { let container = document.getElementById('reminderList'); if (!reminders.length) { container.innerHTML = '<div style="color:var(--muted); padding:8px;">Aucun rappel.</div>'; return; } container.innerHTML = reminders.map(r => `<div style="margin-bottom:5px;"><span>⏰ ${r.timeStr}</span> ${escapeHtml(r.message)} <button onclick="deleteReminder(${r.id})">✖</button></div>`).join(''); }
-function startReminderWatcher() { if (reminderInterval) clearInterval(reminderInterval); reminderInterval = setInterval(() => { const now = new Date(); const nowStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`; for (let i = reminders.length-1; i >= 0; i--) { if (reminders[i].timeStr === nowStr) { showToastAlarm(reminders[i].message); if (Notification.permission === "granted") { new Notification("⏰ Rappel", { body: reminders[i].message, icon: NOTIF_ICON }); } reminders.splice(i,1); saveReminders(); renderReminderList(); } } }, 1000); }
-function scheduleAlarm() { let timeInput = document.getElementById('reminderTime').value; let message = document.getElementById('reminderMessage').value.trim(); if (!timeInput) { alert("Choisissez une heure."); return; } if (!message) message = "Rappel !"; if (Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission(); let newId = nextReminderId++; reminders.push({ id: newId, timeStr: timeInput, message: message }); saveReminders(); renderReminderList(); document.getElementById('reminderTime').value = ''; document.getElementById('reminderMessage').value = ''; }
-function deleteReminder(id) { reminders = reminders.filter(r => r.id !== id); saveReminders(); renderReminderList(); }
-function showToastAlarm(message) { let toast = document.createElement('div'); toast.className = 'toast-alarm'; toast.innerHTML = `⏰ ${escapeHtml(message)}`; document.body.appendChild(toast); setTimeout(() => toast.remove(), 5000); }
-function escapeHtml(s) { return String(s).replace(/[&<>]/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m];}); }
+// ==================== APP INIT & CARTE ====================
+let map, currentTileLayer, routeLayer, routeMarkers=[], selectedCities=[], currentFiltered=[], searchHistory=[], pickMode=false, posPickMode=false, myLocationMarker=null, watchId=null, trackingPolyline=null, trackingPoints=[];
+let tileLayers = { osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap'}), googleSat: L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {attribution:'© Google Satellite', maxZoom:20}) };
+function setMapLayer(layerId) { if(currentTileLayer) map.removeLayer(currentTileLayer); currentTileLayer = tileLayers[layerId]; currentTileLayer.addTo(map); localStorage.setItem('tsp_map_layer', layerId); }
+function toggleMapLayer() { let newLayer = (localStorage.getItem('tsp_map_layer') || 'osm') === 'osm' ? 'googleSat' : 'osm'; setMapLayer(newLayer); }
 
-// ---------- Gestion des villes ----------
-function filterCities() {
-    let term = document.getElementById('searchInput').value.trim().toLowerCase();
-    if(term) addHistory(term);
-    let filtered = allCities.filter(c=>c.name.toLowerCase().includes(term) || c.country.toLowerCase().includes(term));
-    if(filtered.length>200) filtered=filtered.slice(0,200);
-    currentFiltered=filtered;
-    renderGrid();
-    document.getElementById('resultCount').textContent=`${filtered.length} ville(s)`;
-}
-function renderGrid() {
-    let grid=document.getElementById('cityGrid');
-    if(!currentFiltered.length) { grid.innerHTML='<div>Aucune ville</div>'; return; }
-    grid.innerHTML = currentFiltered.map(city => `<div class="city-card" onclick="toggleCity(${city.id})"><div><span class="city-name">${escapeHtml(city.name)}</span> <span class="city-country">${escapeHtml(city.country)}</span></div><span>${selectedCities.some(s=>s.id===city.id)?'✓':'➕'}</span></div>`).join('');
-}
-function toggleCity(id) {
-    let city = allCities.find(c=>c.id===id);
-    if(!city) return;
-    let idx = selectedCities.findIndex(s=>s.id===id);
-    if(idx===-1) {
-        if(selectedCities.length<40) selectedCities.push(city);
-    } else {
-        selectedCities.splice(idx,1);
-    }
-    updateSelUI();
-    renderGrid();
-    saveSelection();
-    zoomToCity(city);
-}
-function addCityToList(city) {
-    if(!selectedCities.some(s=>s.name===city.name && s.lat===city.lat)) {
-        let newId = 1;
-        if(allCities.length>0) newId = Math.max(...allCities.map(c=>c.id)) + 1;
-        city.id = newId;
-        if(!allCities.some(c=>c.name===city.name && c.lat===city.lat)) {
-            allCities.push(city);
-        }
-        if(!selectedCities.some(s=>s.id===city.id)) selectedCities.push(city);
-        updateSelUI();
-        renderGrid();
-        saveSelection();
-    }
-}
-function clearSelection() {
-    selectedCities=[];
-    clearMapRoute();
-    updateSelUI();
-    renderGrid();
-    saveSelection();
-}
-function updateSelUI() {
-    let list=document.getElementById('selectedList');
-    let countSpan=document.getElementById('selCount');
-    countSpan.innerText=selectedCities.length;
-    if(!selectedCities.length) {
-        list.innerHTML='<div>Aucune ville sélectionnée</div>';
-        document.getElementById('startCitySelect').innerHTML='<option value="-1">Aucune</option>';
-        return;
-    }
-    list.innerHTML = selectedCities.map((city,i)=>`
-        <div class="sel-item" data-idx="${i}">
-            <span style="flex:1" onclick="zoomToCity({lat:${city.lat},lon:${city.lon},name:'${escapeHtml(city.name).replace(/'/g,"\\'")}',country:'${escapeHtml(city.country).replace(/'/g,"\\'")}'})">
-                <strong>${i+1}</strong> ${escapeHtml(city.name)} (${escapeHtml(city.country)})
-            </span>
-            <button class="rm" onclick="event.stopPropagation();removeCity(${i})">✖</button>
-        </div>
-    `).join('');
-    let sel=document.getElementById('startCitySelect');
-    sel.innerHTML = selectedCities.map((c,i)=>`<option value="${i}">${escapeHtml(c.name)}</option>`).join('');
-}
-function removeCity(idx) {
-    if(idx>=0 && idx<selectedCities.length) {
-        selectedCities.splice(idx,1);
-        clearMapRoute();
-        updateSelUI();
-        renderGrid();
-        saveSelection();
-    }
-}
-function zoomToCity(city) {
-    if(map && city.lat && city.lon) {
-        map.flyTo([city.lat,city.lon],11);
-        L.popup().setLatLng([city.lat,city.lon]).setContent(`<b>${escapeHtml(city.name)}</b><br>${escapeHtml(city.country)}`).openOn(map);
-    }
-}
-function addCustomCity() {
-    let name=document.getElementById('newName').value.trim();
-    let country=document.getElementById('newCountry').value.trim();
-    let lat=parseFloat(document.getElementById('newLat').value);
-    let lon=parseFloat(document.getElementById('newLon').value);
-    let desc=document.getElementById('newDesc').value.trim();
-    if(!name||!country||isNaN(lat)||isNaN(lon)) {
-        alert('Tous les champs (Nom, Pays, Latitude, Longitude) sont requis.');
-        return;
-    }
-    if(lat<-90||lat>90||lon<-180||lon>180) {
-        alert('Coordonnées invalides.');
-        return;
-    }
-    let newId = 1;
-    if(allCities.length>0) newId = Math.max(...allCities.map(c=>c.id)) + 1;
-    let city = {id:newId, name, lat, lon, country, desc, custom:true};
-    allCities.push(city);
-    let custom = JSON.parse(localStorage.getItem('tsp_custom')||'[]');
-    custom.push(city);
-    localStorage.setItem('tsp_custom', JSON.stringify(custom));
-    addCityToList(city);
-    filterCities();
-    document.getElementById('newName').value='';
-    document.getElementById('newCountry').value='';
-    document.getElementById('newLat').value='';
-    document.getElementById('newLon').value='';
-    document.getElementById('newDesc').value='';
-    document.getElementById('pickMsg').textContent=`✅ ${escapeHtml(name)} ajoutée`;
-}
-function startMapPick() { pickMode=true; map.getContainer().style.cursor='crosshair'; document.getElementById('pickMsg').innerHTML='🔘 Cliquez sur la carte <span onclick="cancelPick()">Annuler</span>'; }
-function cancelPick() { pickMode=false; map.getContainer().style.cursor=''; document.getElementById('pickMsg').innerHTML=''; }
+function startApp(user) { document.getElementById('dashboard').style.display='block'; document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`; if(getOrsKey()) document.getElementById('orsKeyInput').value=getOrsKey(); map = L.map('map',{zoomControl:false}).setView([20,10],2); let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm'; setMapLayer(savedLayer); L.control.zoom({position:'bottomright'}).addTo(map); map.on('click', e => { if(pickMode) { document.getElementById('newLat').value=e.latlng.lat.toFixed(6); document.getElementById('newLon').value=e.latlng.lng.toFixed(6); document.getElementById('pickMsg').textContent='✅ Coordonnées récupérées'; pickMode=false; map.getContainer().style.cursor=''; } else if(posPickMode) { posPickMode=false; map.getContainer().style.cursor=''; let name=prompt('Nommez ce point:'); if(name) addCityToList({name, lat:e.latlng.lat, lon:e.latlng.lng, country:'Local', desc:'', custom:true}); } }); loadHistory(); loadStoredSelection(); filterCities(); document.getElementById('searchInput').addEventListener('input', filterCities); if(selectedCities.length===0 && allCities.length>=2) { addCityToList(allCities[0]); addCityToList(allCities[1]); } loadReminders(); handleUrlLocation(); }
+function handleUrlLocation() { const urlParams = new URLSearchParams(window.location.search); let lat = parseFloat(urlParams.get('lat')); let lon = parseFloat(urlParams.get('lon')); let name = urlParams.get('name') || "Position partagée"; if (!isNaN(lat) && !isNaN(lon) && lat>=-90 && lat<=90 && lon>=-180 && lon<=180) { addCityToList({ name: name, lat: lat, lon: lon, country: "Partagé", desc: "Importée par lien", custom: true }); alert(`📍 Ville ajoutée : ${name} (${lat.toFixed(4)}, ${lon.toFixed(4)})`); map.flyTo([lat, lon], 12); } }
+function shareCurrentLocation() { requestGeolocationWithHelp(pos => { let lat = pos.coords.latitude, lon = pos.coords.longitude; let shareUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}&name=Ma%20position%20partagée`; navigator.clipboard.writeText(shareUrl).then(() => alert("Lien copié ! Envoyez-le à un ami.\n" + shareUrl)); }, err => alert("Impossible d'obtenir la position")); }
+
+// ==================== FONCTIONS VILLES ====================
+function filterCities() { let term = document.getElementById('searchInput').value.trim().toLowerCase(); if(term) addHistory(term); let filtered = allCities.filter(c=>c.name.toLowerCase().includes(term) || c.country.toLowerCase().includes(term)); if(filtered.length>200) filtered=filtered.slice(0,200); currentFiltered=filtered; renderGrid(); document.getElementById('resultCount').textContent=`${filtered.length} ville(s)`; }
+function renderGrid() { let grid=document.getElementById('cityGrid'); if(!currentFiltered.length) { grid.innerHTML='<div>Aucune ville</div>'; return; } grid.innerHTML = currentFiltered.map(city => `<div class="city-card" onclick="toggleCity(${city.id})"><div><span class="city-name">${escapeHtml(city.name)}</span> <span class="city-country">${escapeHtml(city.country)}</span></div><span>${selectedCities.some(s=>s.id===city.id)?'✓':'➕'}</span></div>`).join(''); }
+function toggleCity(id) { let city = allCities.find(c=>c.id===id); if(!city) return; let idx = selectedCities.findIndex(s=>s.id===id); if(idx===-1) { if(selectedCities.length<40) selectedCities.push(city); } else selectedCities.splice(idx,1); updateSelUI(); renderGrid(); saveSelection(); zoomToCity(city); }
+function addCityToList(city) { if(!selectedCities.some(s=>s.name===city.name && s.lat===city.lat)) { let newId = Math.max(...allCities.map(c=>c.id),0)+1; city.id = newId; allCities.push(city); selectedCities.push(city); updateSelUI(); renderGrid(); saveSelection(); } }
+function clearSelection() { selectedCities=[]; clearMapRoute(); updateSelUI(); renderGrid(); saveSelection(); }
+function updateSelUI() { let list=document.getElementById('selectedList'); document.getElementById('selCount').innerText=selectedCities.length; if(!selectedCities.length) { list.innerHTML='<div>Aucune ville</div>'; document.getElementById('startCitySelect').innerHTML='<option>Aucune</option>'; return; } list.innerHTML = selectedCities.map((city,i)=>`<div class="sel-item" onclick="zoomToCity({lat:${city.lat},lon:${city.lon},name:'${escapeHtml(city.name).replace(/'/g,"\\'")}',country:'${escapeHtml(city.country).replace(/'/g,"\\'")}'})"><span class="num">${i+1}</span><span style="flex:1">${escapeHtml(city.name)} (${escapeHtml(city.country)})</span><button class="rm" onclick="event.stopPropagation();removeCity(${i})">✖</button></div>`).join(''); let sel=document.getElementById('startCitySelect'); sel.innerHTML = selectedCities.map((c,i)=>`<option value="${i}">${escapeHtml(c.name)}</option>`).join(''); }
+function removeCity(idx) { selectedCities.splice(idx,1); clearMapRoute(); updateSelUI(); renderGrid(); saveSelection(); }
+function zoomToCity(city) { map.flyTo([city.lat,city.lon],11); L.popup().setLatLng([city.lat,city.lon]).setContent(`<b>${escapeHtml(city.name)}</b><br>${escapeHtml(city.country)}`).openOn(map); }
+function addCustomCity() { let name=document.getElementById('newName').value.trim(), country=document.getElementById('newCountry').value.trim(), lat=parseFloat(document.getElementById('newLat').value), lon=parseFloat(document.getElementById('newLon').value), desc=document.getElementById('newDesc').value.trim(); if(!name||!country||isNaN(lat)||isNaN(lon)) { alert('Champs requis'); return; } if(lat<-90||lat>90||lon<-180||lon>180) { alert('Coordonnées invalides'); return; } let city = {id: Math.max(...allCities.map(c=>c.id),0)+1, name,lat,lon,country,desc,custom:true}; allCities.push(city); let custom = JSON.parse(localStorage.getItem('tsp_custom')||'[]'); custom.push(city); localStorage.setItem('tsp_custom',JSON.stringify(custom)); addCityToList(city); filterCities(); document.getElementById('newName').value=''; document.getElementById('newCountry').value=''; document.getElementById('newLat').value=''; document.getElementById('newLon').value=''; document.getElementById('newDesc').value=''; document.getElementById('pickMsg').textContent=`✅ ${escapeHtml(name)} ajoutée`; }
+function startMapPick() { pickMode=true; posPickMode=false; map.getContainer().style.cursor='crosshair'; document.getElementById('pickMsg').innerHTML='🔘 Cliquez sur la carte <span class="cancel-pick" onclick="cancelPick()">Annuler</span>'; }
+function cancelPick() { pickMode=false; posPickMode=false; map.getContainer().style.cursor=''; document.getElementById('pickMsg').innerHTML=''; }
 function loadHistory() { try{ searchHistory=JSON.parse(localStorage.getItem('tsp_history')||'[]'); }catch(e){} renderHistory(); }
 function addHistory(t) { searchHistory = [t, ...searchHistory.filter(h=>h!==t)].slice(0,12); localStorage.setItem('tsp_history',JSON.stringify(searchHistory)); renderHistory(); }
 function renderHistory() { let c=document.getElementById('historyList'); if(!searchHistory.length) { c.innerHTML=''; return; } c.innerHTML=searchHistory.map(t=>`<span class="history-tag" onclick="document.getElementById('searchInput').value='${escapeHtml(t).replace(/'/g,"\\'")}';filterCities()">🔍 ${escapeHtml(t)}</span>`).join(''); }
-function clearSearchHistory() { if(confirm("Supprimer l'historique ?")) { localStorage.removeItem('tsp_history'); searchHistory=[]; renderHistory(); } }
+function clearSearchHistory() { if(confirm("Supprimer tout l'historique ?")) { localStorage.removeItem('tsp_history'); searchHistory=[]; renderHistory(); document.getElementById('resultCount').innerHTML = "🗑️ Historique effacé !"; setTimeout(()=>{ if(document.getElementById('resultCount')) document.getElementById('resultCount').innerHTML = currentFiltered.length+" ville(s)"; },1500); } }
 function saveSelection() { localStorage.setItem('tsp_selection',JSON.stringify(selectedCities.map(c=>c.id))); }
-function loadStoredSelection() {
-    try{
-        let custom = JSON.parse(localStorage.getItem('tsp_custom')||'[]');
-        custom.forEach(c=>{
-            if(!allCities.some(a=>a.id===c.id || (a.name===c.name && a.lat===c.lat))) {
-                allCities.push(c);
-            }
-        });
-        let ids = JSON.parse(localStorage.getItem('tsp_selection')||'[]');
-        ids.forEach(id=>{
-            let city = allCities.find(c=>c.id===id);
-            if(city && !selectedCities.some(s=>s.id===id)) selectedCities.push(city);
-        });
-        updateSelUI();
-        filterCities();
-    }catch(e){}
-}
-function exportGeoJSON() {
-    let features = [];
-    selectedCities.forEach(city => { features.push({ type: "Feature", geometry: { type: "Point", coordinates: [city.lon, city.lat] }, properties: { name: city.name, country: city.country } }); });
-    if(routeLayer && routeLayer.getLatLngs && routeLayer.getLatLngs().length) {
-        let coords = routeLayer.getLatLngs().map(c => [c.lng, c.lat]);
-        features.push({ type: "Feature", geometry: { type: "LineString", coordinates: coords }, properties: { name: "Itinéraire TSP" } });
-    }
-    let geojson = { type: "FeatureCollection", features: features };
-    let blob = new Blob([JSON.stringify(geojson, null, 2)], {type: "application/json"});
-    let url = URL.createObjectURL(blob);
-    let a = document.createElement('a'); a.href = url; a.download = "tsp_route.geojson"; a.click();
-    URL.revokeObjectURL(url);
-}
+function loadStoredSelection() { try{ let custom=JSON.parse(localStorage.getItem('tsp_custom')||'[]'); custom.forEach(c=>{if(!allCities.some(a=>a.name===c.name)) allCities.push(c);}); let ids=JSON.parse(localStorage.getItem('tsp_selection')||'[]'); ids.forEach(id=>{let city=allCities.find(c=>c.id===id); if(city&&!selectedCities.some(s=>s.id===id)) selectedCities.push(city);}); updateSelUI(); filterCities(); }catch(e){} }
+function exportGeoJSON() { let features = []; selectedCities.forEach(city => { features.push({ type: "Feature", geometry: { type: "Point", coordinates: [city.lon, city.lat] }, properties: { name: city.name, country: city.country, type: "selected" } }); }); if(routeLayer && routeLayer.getLatLngs && routeLayer.getLatLngs().length) { let coords = routeLayer.getLatLngs().map(c => [c.lng, c.lat]); features.push({ type: "Feature", geometry: { type: "LineString", coordinates: coords }, properties: { name: "Itinéraire TSP", cities: selectedCities.map(c=>c.name).join(" → ") } }); } let geojson = { type: "FeatureCollection", features: features }; let dataStr = JSON.stringify(geojson, null, 2); let blob = new Blob([dataStr], {type: "application/json"}); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "tsp_route_points.geojson"; a.click(); URL.revokeObjectURL(url); }
 
-// ---------- Stadia & TSP ----------
-function getStadiaKey() { return localStorage.getItem('tsp_stadia_key') || ''; }
-function saveStadiaKey() { let k = document.getElementById('stadiaKeyInput').value.trim(); if(k) { localStorage.setItem('tsp_stadia_key', k); document.getElementById('stadiaStatus').innerHTML = '✅ Clé sauvegardée.'; } else { localStorage.removeItem('tsp_stadia_key'); document.getElementById('stadiaStatus').innerHTML = '⚠️ Pas de clé → lignes droites.'; } }
-function decodePolyline(encoded) {
-    if (!encoded) return [];
-    let points = [], index = 0, lat = 0, lng = 0;
-    while (index < encoded.length) {
-        let shift = 0, result = 0, b;
-        do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
-        let dlat = (result & 1) ? ~(result >> 1) : (result >> 1);
-        lat += dlat;
-        shift = 0; result = 0;
-        do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
-        let dlng = (result & 1) ? ~(result >> 1) : (result >> 1);
-        lng += dlng;
-        points.push([lat / 1e5, lng / 1e5]);
-    }
-    return points;
-}
-async function fetchStadiaRoute(coords, mode) {
-    const key = getStadiaKey();
-    if (!key) return null;
-    const url = `https://api.stadiamaps.com/route?api_key=${key}`;
-    const profile = mode === 'foot' ? 'foot' : 'auto';
-    const body = { locations: coords.map(c => ({ lat: c[1], lon: c[0] })), costing: profile, units: "km" };
-    const useProxy = document.getElementById('useCorsProxyCheckbox')?.checked || false;
-    const fetchUrl = useProxy ? `https://cors-anywhere.herokuapp.com/${url}` : url;
-    try {
-        const resp = await fetch(fetchUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        if (!resp.ok) { if (resp.status === 401) document.getElementById('stadiaStatus').innerHTML = '❌ Clé invalide'; return null; }
-        const data = await resp.json();
-        let shape = data.trip?.legs?.[0]?.shape || data.trip?.shape;
-        if (!shape) return null;
-        const points = decodePolyline(shape);
-        if (!points.length) return null;
-        const routeLatLng = points.map(p => [p[0], p[1]]);
-        const duration = data.trip.summary?.time || 0;
-        return { routeCoords: routeLatLng, duration: duration };
-    } catch(e) { console.error(e); return null; }
-}
-async function testStadia() {
-    let key = getStadiaKey();
-    if (!key) { alert("Aucune clé"); return; }
-    alert("Test...");
-    let testCoords = [[-7.5898,33.5731], [-6.8416,34.0209]];
-    let res = await fetchStadiaRoute(testCoords, "auto");
-    if (res && res.routeCoords && res.routeCoords.length > 1) alert(`✅ Succès ! Durée: ${Math.round(res.duration/60)} min`);
-    else alert("❌ Échec. Vérifiez clé ou activez proxy.");
-}
+// ==================== TSP ====================
 function haversine(lat1,lon1,lat2,lon2) { const R=6371, r=Math.PI/180; const dLat=(lat2-lat1)*r, dLon=(lon2-lon1)*r; return R*2*Math.asin(Math.sqrt(Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2)); }
 function totalDistance(tour) { let d=0; for(let i=0;i<tour.length-1;i++) d+=haversine(tour[i].lat,tour[i].lon,tour[i+1].lat,tour[i+1].lon); return d; }
 function twoOpt(tour) { let improved=true, bestDist=totalDistance(tour); while(improved && !tspCancelRequested){ improved=false; for(let i=1;i<tour.length-2;i++){ for(let j=i+1;j<tour.length-1;j++){ if(tspCancelRequested) return tour; let newTour = [...tour.slice(0,i), ...tour.slice(i,j+1).reverse(), ...tour.slice(j+1)]; let newDist=totalDistance(newTour); if(newDist<bestDist-0.001){ bestDist=newDist; tour=newTour; improved=true; } } } } return tour; }
 function tspNN(cities,startIdx) { if(cities.length<2) return [[],0]; let unvisited=[...cities]; let start=unvisited.splice(startIdx,1)[0]; let tour=[start], current=start, total=0; while(unvisited.length){ let bestIdx=0, bestDist=haversine(current.lat,current.lon,unvisited[0].lat,unvisited[0].lon); for(let i=1;i<unvisited.length;i++){ let d=haversine(current.lat,current.lon,unvisited[i].lat,unvisited[i].lon); if(d<bestDist){bestDist=d;bestIdx=i;}} total+=bestDist; current=unvisited[bestIdx]; tour.push(current); unvisited.splice(bestIdx,1); } total+=haversine(current.lat,current.lon,start.lat,start.lon); tour.push(start); return [tour,total]; }
-async function buildRouteGeometry(tour, mode) {
-    let allLatLng = [];
-    let totalDurationSec = 0;
-    if (mode === 'plane' || !getStadiaKey()) {
-        for (let i = 0; i < tour.length - 1; i++) {
-            let c1 = tour[i], c2 = tour[i+1];
-            let dist = haversine(c1.lat, c1.lon, c2.lat, c2.lon);
-            let speed = (mode === 'car' ? 80 : (mode === 'foot' ? 5 : 800));
-            totalDurationSec += (dist / speed) * 3600;
-            allLatLng.push([c1.lat, c1.lon]);
-        }
-        allLatLng.push([tour[tour.length-1].lat, tour[tour.length-1].lon]);
-        return { routeLatLng: allLatLng, totalDurationSec };
-    }
-    let chunkSize = 15;
-    for (let i = 0; i < tour.length - 1; i += chunkSize - 1) {
-        let chunk = tour.slice(i, i + chunkSize);
-        if (chunk.length < 2) continue;
-        let coordPairs = chunk.map(c => [c.lon, c.lat]);
-        let res = await fetchStadiaRoute(coordPairs, mode);
-        if (res && res.routeCoords && res.routeCoords.length > 1) {
-            if (allLatLng.length > 0) allLatLng.pop();
-            allLatLng.push(...res.routeCoords);
-            totalDurationSec += res.duration;
-        } else {
-            for (let j = 0; j < chunk.length - 1; j++) {
-                let c1 = chunk[j], c2 = chunk[j+1];
-                let dist = haversine(c1.lat, c1.lon, c2.lat, c2.lon);
-                let speed = (mode === 'car' ? 80 : (mode === 'foot' ? 5 : 800));
-                totalDurationSec += (dist / speed) * 3600;
-                allLatLng.push([c1.lat, c1.lon]);
-            }
-            allLatLng.push([chunk[chunk.length-1].lat, chunk[chunk.length-1].lon]);
-        }
-        await new Promise(r => setTimeout(r, 200));
-    }
-    return { routeLatLng: allLatLng, totalDurationSec };
-}
-function clearMapRoute() {
-    if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
-    routeMarkers.forEach(m => map.removeLayer(m));
-    routeMarkers = [];
-}
-async function computeTSP() {
-    tspCancelRequested = false;
-    document.getElementById('cancelTSPBtn').style.display = 'inline-block';
-    let max = parseInt(document.getElementById('maxCities').value) || 8;
-    let cities = [...selectedCities];
-    if (cities.length < 2) {
-        document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Sélectionnez au moins 2 villes</div>';
-        document.getElementById('cancelTSPBtn').style.display = 'none';
-        return;
-    }
-    if (cities.length > max) cities = cities.slice(0, max);
-    let startIdx = parseInt(document.getElementById('startCitySelect').value) || 0;
-    if(startIdx >= cities.length) startIdx = 0;
-    let [tour, totalDist] = tspNN(cities, startIdx);
-    if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; }
-    let algo = document.getElementById('algoSelect').value;
-    if (algo === '2opt') tour = twoOpt(tour);
-    if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; }
-    selectedCities = tour.slice(0, -1);
-    updateSelUI(); saveSelection(); renderGrid();
-    clearMapRoute();
-    let loadEl = document.getElementById('routeLoading');
-    let mode = document.getElementById('transportMode').value;
-    let useRouting = (getStadiaKey() && mode !== 'plane');
-    if (useRouting) loadEl.style.display = 'block';
-    let { routeLatLng, totalDurationSec } = await buildRouteGeometry(tour, mode);
-    loadEl.style.display = 'none';
-    if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; }
-    if (!routeLatLng || routeLatLng.length < 2) {
-        document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Erreur trajet. Vérifiez la clé ou passez en mode Avion.</div>';
-        document.getElementById('cancelTSPBtn').style.display = 'none';
-        return;
-    }
-    routeLayer = L.polyline(routeLatLng, { color: '#00f5ff', weight: 5, opacity: 0.8 }).addTo(map);
-    map.fitBounds(routeLayer.getBounds());
-    tour.forEach((city, idx) => {
-        if (idx === tour.length - 1) return;
-        let isStart = (idx === 0);
-        let color = isStart ? '#ff4466' : (city.custom ? '#00ffaa' : '#00ccff');
-        let marker = L.marker([city.lat, city.lon], { icon: L.divIcon({ html: `<div style="background:${color};width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:${isStart ? '#fff' : '#000'};border:2px solid white;font-size:13px;">${isStart ? '🏁' : idx+1}</div>`, iconSize: [32, 32] }) }).addTo(map).bindPopup(`${idx+1}. ${city.name}<br>${city.country}`);
-        routeMarkers.push(marker);
-    });
-    let durationHours = totalDurationSec / 3600;
-    let durationStr = `${Math.floor(durationHours)}h ${Math.floor((durationHours % 1) * 60)}min`;
-    let stepsHtml = tour.slice(0, -1).map((c,i)=>`<div><b>${i+1}</b> ${c.name} (${c.country})</div>`).join('');
-    document.getElementById('resultsPanel').innerHTML = `<div><strong>${algo === '2opt' ? '2-opt' : 'NN'}</strong> | ${cities.length} villes | ${totalDist.toFixed(0)} km | ${durationStr}</div><div class="route-steps">${stepsHtml}</div>`;
-    document.getElementById('cancelTSPBtn').style.display = 'none';
-}
+
+async function fetchOrsRouteWithRetry(coords,mode,retries=3) { let key=getOrsKey(); if(!key) return null; let profile=mode==='foot'?'foot-walking':'driving-car'; if(mode==='plane') return null; for(let attempt=0;attempt<retries;attempt++){ try{ let resp=await fetch(`https://api.openrouteservice.org/v2/directions/${profile}/geojson`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':key},body:JSON.stringify({coordinates:coords,instructions:false})}); if(resp.status===429){ let delay=Math.pow(2,attempt)*1000; await new Promise(r=>setTimeout(r,delay)); continue; } if(!resp.ok) return null; let data=await resp.json(); if(!data.features||!data.features[0]) return null; return {routeCoords:data.features[0].geometry.coordinates.map(c=>[c[1],c[0]]), duration:data.features[0].properties.summary.duration}; }catch(e){ return null; } } return null; }
+
+async function buildRouteGeometry(tour,mode) { let allLatLng=[], totalDurationSec=0; if(mode==='plane'||!getOrsKey()){ for(let i=0;i<tour.length-1;i++){ let c1=tour[i],c2=tour[i+1]; let dist=haversine(c1.lat,c1.lon,c2.lat,c2.lon); let speed=800; if(mode==='car') speed=80; else if(mode==='foot') speed=5; totalDurationSec+=(dist/speed)*3600; allLatLng.push([c1.lat,c1.lon]); } allLatLng.push([tour[tour.length-1].lat,tour[tour.length-1].lon]); return {routeLatLng:allLatLng,totalDurationSec}; } let chunkSize=35; for(let i=0;i<tour.length-1;i+=chunkSize-1){ let chunk=tour.slice(i,i+chunkSize); if(chunk.length<2) continue; let res=await fetchOrsRouteWithRetry(chunk.map(c=>[c.lon,c.lat]),mode); if(res){ if(allLatLng.length>0) allLatLng.pop(); allLatLng.push(...res.routeCoords); totalDurationSec+=res.duration; } else { document.getElementById('orsStatus').innerHTML='⚠️ Échec ORS, utilisation de lignes droites. Vérifiez votre clé.'; for(let j=0;j<chunk.length-1;j++){ let c1=chunk[j],c2=chunk[j+1]; let dist=haversine(c1.lat,c1.lon,c2.lat,c2.lon); let durationSec = mode==='foot'?(dist/5)*3600:(dist/80)*3600; totalDurationSec+=durationSec; allLatLng.push([c1.lat,c1.lon]); } allLatLng.push([chunk[chunk.length-1].lat,chunk[chunk.length-1].lon]); } await new Promise(r=>setTimeout(r,300)); } return {routeLatLng:allLatLng,totalDurationSec}; }
+
+function clearMapRoute() { if(routeLayer) map.removeLayer(routeLayer); routeMarkers.forEach(m=>map.removeLayer(m)); routeMarkers=[]; }
+
+async function computeTSP() { tspCancelRequested = false; document.getElementById('cancelTSPBtn').style.display = 'inline-block'; let max=parseInt(document.getElementById('maxCities').value)||8; let cities=[...selectedCities]; if(cities.length<2){ document.getElementById('resultsPanel').innerHTML='<div style="color:var(--error)">Sélectionnez au moins 2 villes</div>'; document.getElementById('cancelTSPBtn').style.display='none'; return; } if(cities.length>max) cities=cities.slice(0,max); let startIdx=parseInt(document.getElementById('startCitySelect').value)||0; let [tour,totalDist]=tspNN(cities,startIdx); if(tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display='none'; tspCancelRequested=false; return; } let algo=document.getElementById('algoSelect').value; if(algo==='2opt') tour = twoOpt(tour); if(tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display='none'; return; } let orderedCities=tour.slice(0,-1); selectedCities=orderedCities; updateSelUI(); saveSelection(); renderGrid(); clearMapRoute(); let loadEl=document.getElementById('routeLoading'); let mode=document.getElementById('transportMode').value; let useOrs=(getOrsKey()&&mode!=='plane'); if(useOrs) loadEl.style.display='block'; let {routeLatLng,totalDurationSec}=await buildRouteGeometry(tour,mode); if(tspCancelRequested) { loadEl.style.display='none'; document.getElementById('cancelTSPBtn').style.display='none'; tspCancelRequested=false; return; } loadEl.style.display='none'; if(routeLatLng.length<2){ document.getElementById('resultsPanel').innerHTML='<div style="color:var(--error)">Erreur tracé route</div>'; document.getElementById('cancelTSPBtn').style.display='none'; return; } routeLayer=L.polyline(routeLatLng,{color:'#00f5ff',weight:4,opacity:0.85,dashArray:useOrs?null:'10,6'}).addTo(map); tour.forEach((city,idx)=>{ if(idx===tour.length-1) return; let isStart=idx===0; let color=isStart?'#ff4466':(city.custom?'#00ffaa':'#00ccff'); let marker=L.marker([city.lat,city.lon],{icon:L.divIcon({html:`<div style="background:${color};width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:${isStart?'#fff':'#000'};border:2px solid white;font-size:12px;">${isStart?'🏁':idx+1}</div>`,iconSize:[30,30]})}).addTo(map).bindPopup(`<b>${idx+1}. ${escapeHtml(city.name)}</b><br>${escapeHtml(city.country)}`).bindTooltip(city.name,{sticky:true}); routeMarkers.push(marker); }); let lats=cities.map(c=>c.lat), lons=cities.map(c=>c.lon); map.fitBounds([[Math.min(...lats),Math.min(...lons)],[Math.max(...lats),Math.max(...lons)]],{padding:[60,60]}); let stepsHtml=tour.slice(0,-1).map((c,i)=>`<div class="route-step"><div class="step-num">${i+1}</div><div><b>${escapeHtml(c.name)}</b> (${escapeHtml(c.country)})</div></div>`).join(''); let modeLabel={car:'🚗 Voiture',foot:'🚶 Piéton',plane:'✈️ Avion'}[mode]; let durationHours=totalDurationSec/3600; let durationStr=`${Math.floor(durationHours)}h ${Math.floor((durationHours%1)*60)}min`; document.getElementById('resultsPanel').innerHTML=`<div><strong>📊 Résultat (${algo==='2opt'?'2-opt optimisé':'Plus proche voisin'})</strong></div><div class="stats-grid"><div class="stat-card"><div class="val">${cities.length}</div>villes</div><div class="stat-card"><div class="val">${totalDist.toFixed(0)}</div>km</div><div class="stat-card"><div class="val">${durationStr}</div>durée</div><div class="stat-card"><div class="val">${modeLabel}</div></div></div><div class="route-steps">${stepsHtml}</div>`; document.getElementById('cancelTSPBtn').style.display='none'; }
 function cancelTSP() { tspCancelRequested = true; }
 
-function showMyLocation() { requestGeolocationWithHelp(pos => { let lat=pos.coords.latitude, lon=pos.coords.longitude; map.setView([lat,lon],14); if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]); else myLocationMarker = L.marker([lat,lon]).addTo(map).bindPopup('Vous êtes ici').openPopup(); if(confirm("Ajouter cette position ?")) addCityToList({name:"Ma position",lat,lon,country:"Local",desc:"",custom:true}); }, err => alert("GPS refusé")); }
-function startTracking() { if(isFileProtocol()) { alert("Suivi impossible en file://"); return; } if(watchId) stopTracking(); trackingPoints = []; if(trackingPolyline) map.removeLayer(trackingPolyline); watchId = navigator.geolocation.watchPosition(pos => { let lat=pos.coords.latitude, lon=pos.coords.longitude; trackingPoints.push([lat,lon]); if(trackingPolyline) map.removeLayer(trackingPolyline); trackingPolyline = L.polyline(trackingPoints, {color:'#ffaa33', weight:3}).addTo(map); if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]); else myLocationMarker = L.marker([lat,lon]).addTo(map); map.setView([lat,lon], map.getZoom()); }, err => console.warn(err)); }
+// ==================== GPS ET SUIVI ====================
+function showMyLocation() { requestGeolocationWithHelp(pos => { let lat=pos.coords.latitude, lon=pos.coords.longitude; map.setView([lat,lon],14); if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]); else myLocationMarker = L.marker([lat,lon],{icon:L.divIcon({html:'<div style="background:#00aaff;width:20px;height:20px;border-radius:50%;border:2px solid white;"></div>',iconSize:[20,20]})}).addTo(map).bindPopup('Votre position').openPopup(); alert(`📍 Position actuelle :\nLatitude : ${lat.toFixed(6)}\nLongitude : ${lon.toFixed(6)}`); if(confirm("Ajouter cette position à votre liste de villes ?")) addCityToList({name:"Ma position",lat,lon,country:"Local",desc:"GPS",custom:true}); }, err => alert("Erreur GPS: permission refusée ou indisponible")); }
+function startTracking() { if(isFileProtocol()) { alert("Suivi impossible en file://"); return; } if(watchId) stopTracking(); trackingPoints = []; if(trackingPolyline) map.removeLayer(trackingPolyline); watchId = navigator.geolocation.watchPosition(pos => { let lat=pos.coords.latitude, lon=pos.coords.longitude; trackingPoints.push([lat,lon]); if(trackingPolyline) map.removeLayer(trackingPolyline); trackingPolyline = L.polyline(trackingPoints, {color:'#ffaa33', weight:3, opacity:0.7}).addTo(map); if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]); else myLocationMarker = L.marker([lat,lon],{icon:L.divIcon({html:'<div style="background:#00aaff;width:20px;height:20px;border-radius:50%;"></div>',iconSize:[20,20]})}).addTo(map); map.setView([lat,lon], map.getZoom()); }, err => console.warn(err)); }
 function stopTracking() { if(watchId) { navigator.geolocation.clearWatch(watchId); watchId=null; } }
 function useGeoloc() { requestGeolocationWithHelp(pos => { document.getElementById('newLat').value=pos.coords.latitude.toFixed(6); document.getElementById('newLon').value=pos.coords.longitude.toFixed(6); document.getElementById('pickMsg').textContent='📍 GPS récupéré'; }, err=>alert("GPS refusé")); }
-function generateJavaCode() { if (!selectedCities.length) { document.getElementById('javaCodeArea').value = "// Aucune ville sélectionnée"; return; } let lines = selectedCities.map(c => `    {${c.lat}, ${c.lon}} // ${c.name}`); document.getElementById('javaCodeArea').value = `double[][] villes = {\n${lines.join(',\n')}\n};`; }
-function copyJavaCode() { let area = document.getElementById('javaCodeArea'); if(!area.value) alert("Générez d'abord"); else { navigator.clipboard.writeText(area.value); alert("Copié !"); } }
-function startApp(user) {
-    document.getElementById('dashboard').style.display = 'block';
-    document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`;
-    let savedKey = getStadiaKey();
-    if (savedKey) document.getElementById('stadiaKeyInput').value = savedKey;
-    map = L.map('map', { zoomControl: false }).setView([31.5, -7.5], 6);
-    let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm';
-    setMapLayer(savedLayer);
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-    map.on('click', e => {
-        if (pickMode) {
-            document.getElementById('newLat').value = e.latlng.lat.toFixed(6);
-            document.getElementById('newLon').value = e.latlng.lng.toFixed(6);
-            document.getElementById('pickMsg').textContent = '✅ Coordonnées récupérées';
-            pickMode = false;
-            map.getContainer().style.cursor = '';
-        }
-    });
-    loadHistory();
-    loadStoredSelection();
-    filterCities();
-    document.getElementById('searchInput').addEventListener('input', filterCities);
-    loadReminders();
-}
-function shareCurrentLocation() { requestGeolocationWithHelp(pos => { let lat = pos.coords.latitude, lon = pos.coords.longitude; let shareUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}&name=Ma%20position`; navigator.clipboard.writeText(shareUrl).then(() => alert("Lien copié !")); }, err => alert("Erreur GPS")); }
-function switchTab(t) { document.getElementById('loginForm').style.display = t === 'login' ? 'block' : 'none'; document.getElementById('registerForm').style.display = t === 'register' ? 'block' : 'none'; document.getElementById('tabLogin').classList.toggle('active', t === 'login'); document.getElementById('tabReg').classList.toggle('active', t === 'register'); }
 
+function getOrsKey() { return localStorage.getItem('tsp_ors_key') || ''; }
+function saveOrsKey() { let k=document.getElementById('orsKeyInput').value.trim(); if(k) { localStorage.setItem('tsp_ors_key',k); document.getElementById('orsStatus').innerHTML='✅ Clé sauvegardée'; } else { localStorage.removeItem('tsp_ors_key'); document.getElementById('orsStatus').innerHTML='⚠️ Sans clé → lignes droites. <a href="https://openrouteservice.org/dev/#/signup" target="_blank">Obtenir une clé</a>'; } }
+
+// ==================== EXPORT JAVA ====================
+
+
+
+// ==================== DÉMARRAGE ====================
 (function boot() { let sess = localStorage.getItem('tsp_session'); if(sess) { try{ sess=JSON.parse(sess); document.getElementById('loginOverlay').style.display='none'; startApp(sess); }catch(e){} } })();
+function switchTab(t) { document.getElementById('loginForm').style.display = t === 'login' ? 'block' : 'none'; document.getElementById('registerForm').style.display = t === 'register' ? 'block' : 'none'; document.getElementById('tabLogin').classList.toggle('active', t === 'login'); document.getElementById('tabReg').classList.toggle('active', t === 'register'); }
 </script>
 </body>
 </html>
