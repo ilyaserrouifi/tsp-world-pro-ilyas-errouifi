@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>✈️ TSP WORLD PRO - Stadia Maps Routing</title>
+    <title>✈️ TSP WORLD PRO - Stadia Maps Routing (corrigé)</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1730,20 +1730,21 @@ function saveSelection() { localStorage.setItem('tsp_selection',JSON.stringify(s
 function loadStoredSelection() { try{ let custom=JSON.parse(localStorage.getItem('tsp_custom')||'[]'); custom.forEach(c=>{if(!allCities.some(a=>a.name===c.name)) allCities.push(c);}); let ids=JSON.parse(localStorage.getItem('tsp_selection')||'[]'); ids.forEach(id=>{let city=allCities.find(c=>c.id===id); if(city&&!selectedCities.some(s=>s.id===id)) selectedCities.push(city);}); updateSelUI(); filterCities(); }catch(e){} }
 function exportGeoJSON() { let features = []; selectedCities.forEach(city => { features.push({ type: "Feature", geometry: { type: "Point", coordinates: [city.lon, city.lat] }, properties: { name: city.name, country: city.country } }); }); if(routeLayer && routeLayer.getLatLngs && routeLayer.getLatLngs().length) { let coords = routeLayer.getLatLngs().map(c => [c.lng, c.lat]); features.push({ type: "Feature", geometry: { type: "LineString", coordinates: coords }, properties: { name: "Itinéraire TSP" } }); } let geojson = { type: "FeatureCollection", features: features }; let blob = new Blob([JSON.stringify(geojson, null, 2)], {type: "application/json"}); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "tsp_route.geojson"; a.click(); URL.revokeObjectURL(url); }
 
-// ==================== STADIA MAPS ROUTING (VALHALLA) ====================
+// ==================== STADIA MAPS ROUTING (VALHALLA) - CORRIGÉ ====================
 function getStadiaKey() { return localStorage.getItem('tsp_stadia_key') || ''; }
 function saveStadiaKey() { let k = document.getElementById('stadiaKeyInput').value.trim(); if(k) { localStorage.setItem('tsp_stadia_key', k); document.getElementById('stadiaStatus').innerHTML = '✅ Clé Stadia Maps sauvegardée.'; } else { localStorage.removeItem('tsp_stadia_key'); document.getElementById('stadiaStatus').innerHTML = '⚠️ Sans clé → lignes droites.'; } }
 
 async function fetchStadiaRoute(coords, mode) {
     const key = getStadiaKey();
     if (!key) return null;
-    // coords: [[lon,lat], ...]
+    // Correction : endpoint correct = /route (pas /route/v1/route)
+    const url = `https://api.stadiamaps.com/route?api_key=${key}`;
     const profile = mode === 'foot' ? 'foot' : 'auto';
-    const url = `https://api.stadiamaps.com/route/v1/route?api_key=${key}`;
     const requestBody = {
         locations: coords.map(c => ({ lat: c[1], lon: c[0] })),
         costing: profile,
-        units: "km"
+        units: "km",
+        directions_options: { units: "km" }
     };
     const useProxy = document.getElementById('useCorsProxyCheckbox') && document.getElementById('useCorsProxyCheckbox').checked;
     let fetchUrl = url;
@@ -1802,7 +1803,7 @@ async function testStadia() {
     let testCoords = [[-5.834, 35.7595], [-5.3704, 35.5785]]; // Tanger -> Tétouan
     let res = await fetchStadiaRoute(testCoords, "auto");
     if (res && res.routeCoords && res.routeCoords.length > 1) alert(`✅ Succès ! Durée: ${Math.round(res.duration/60)} min`);
-    else alert("❌ Échec. Vérifiez votre clé API Stadia Maps (l'API Routing est payante ? Essai gratuit disponible)");
+    else alert("❌ Échec. Vérifiez votre clé API Stadia Maps (l'API Routing est activée ?).");
 }
 
 // ==================== HAVERSINE & TSP ====================
@@ -1901,7 +1902,6 @@ async function computeTSP() {
 }
 function cancelTSP() { tspCancelRequested = true; }
 
-// GPS, tracking etc.
 function showMyLocation() { requestGeolocationWithHelp(pos => { let lat=pos.coords.latitude, lon=pos.coords.longitude; map.setView([lat,lon],14); if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]); else myLocationMarker = L.marker([lat,lon]).addTo(map).bindPopup('Vous êtes ici').openPopup(); if(confirm("Ajouter cette position ?")) addCityToList({name:"Ma position",lat,lon,country:"Local",desc:"",custom:true}); }, err => alert("GPS refusé")); }
 function startTracking() { if(isFileProtocol()) { alert("Suivi impossible en file://"); return; } if(watchId) stopTracking(); trackingPoints = []; if(trackingPolyline) map.removeLayer(trackingPolyline); watchId = navigator.geolocation.watchPosition(pos => { let lat=pos.coords.latitude, lon=pos.coords.longitude; trackingPoints.push([lat,lon]); if(trackingPolyline) map.removeLayer(trackingPolyline); trackingPolyline = L.polyline(trackingPoints, {color:'#ffaa33', weight:3}).addTo(map); if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]); else myLocationMarker = L.marker([lat,lon]).addTo(map); map.setView([lat,lon], map.getZoom()); }, err => console.warn(err)); }
 function stopTracking() { if(watchId) { navigator.geolocation.clearWatch(watchId); watchId=null; } }
