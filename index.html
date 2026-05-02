@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>✈️ TSP WORLD PRO - Stadia Maps (Trajet corrigé)</title>
+    <title>✈️ TSP WORLD PRO - Gestionnaire de tournées</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -182,7 +182,7 @@
     <div class="footer">🌐 Routes Stadia Maps (Valhalla) | Fallback lignes droites</div>
 </div>
 <script>
-// ==================== VOS VILLES (VIDE) ====================
+// ==================== AUCUNE COORDONNEE PRE-ENREGISTREE (vous ajoutez vos propres villes) ====================
 let allCities = [
      {"name": "Tanger", "lat": 35.7595, "lon": -5.834, "country": "Maroc", "desc": ""},
     {"name": "Tétouan", "lat": 35.5785, "lon": -5.3704, "country": "Maroc", "desc": ""},
@@ -1654,9 +1654,8 @@ let allCities = [
     {"name": "Nassau", "lat": 25.0582, "lon": -77.3431, "country": "Bahamas", "desc": ""},
     {"name": "Bridgetown", "lat": 13.0975, "lon": -59.6165, "country": "Barbados", "desc": ""},
     {"name": "Port of Spain", "lat": 10.6667, "lon": -61.5167, "country": "Trinidad and Tobago", "desc": ""}
-];  // REMPLISSEZ ICI : { name:"...", lat:..., lon:..., country:"...", desc:"..." }
-allCities = allCities.map((city, idx) => ({ ...city, id: idx }));
-// =========================================================
+];     // Démarrez vide. Les villes personnalisées seront sauvegardées localement.
+// ======================================================================================================
 
 let tspCancelRequested = false;
 const NOTIF_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E";
@@ -1698,16 +1697,16 @@ function deleteReminder(id) { reminders = reminders.filter(r => r.id !== id); sa
 function showToastAlarm(message) { let toast = document.createElement('div'); toast.className = 'toast-alarm'; toast.innerHTML = `⏰ ${escapeHtml(message)}`; document.body.appendChild(toast); setTimeout(() => toast.remove(), 5000); }
 function escapeHtml(s) { return String(s).replace(/[&<>]/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m];}); }
 
-// Gestion des villes
+// Gestion des villes (aucune ville préchargée)
 function filterCities() { let term = document.getElementById('searchInput').value.trim().toLowerCase(); if(term) addHistory(term); let filtered = allCities.filter(c=>c.name.toLowerCase().includes(term) || c.country.toLowerCase().includes(term)); if(filtered.length>200) filtered=filtered.slice(0,200); currentFiltered=filtered; renderGrid(); document.getElementById('resultCount').textContent=`${filtered.length} ville(s)`; }
-function renderGrid() { let grid=document.getElementById('cityGrid'); if(!currentFiltered.length) { grid.innerHTML='<div>Aucune ville</div>'; return; } grid.innerHTML = currentFiltered.map(city => `<div class="city-card" onclick="toggleCity(${city.id})"><div><span class="city-name">${escapeHtml(city.name)}</span> <span class="city-country">${escapeHtml(city.country)}</span></div><span>${selectedCities.some(s=>s.id===city.id)?'✓':'➕'}</span></div>`).join(''); }
+function renderGrid() { let grid=document.getElementById('cityGrid'); if(!currentFiltered.length) { grid.innerHTML='<div>Aucune ville (ajoutez-en via le formulaire)</div>'; return; } grid.innerHTML = currentFiltered.map(city => `<div class="city-card" onclick="toggleCity(${city.id})"><div><span class="city-name">${escapeHtml(city.name)}</span> <span class="city-country">${escapeHtml(city.country)}</span></div><span>${selectedCities.some(s=>s.id===city.id)?'✓':'➕'}</span></div>`).join(''); }
 function toggleCity(id) { let city = allCities.find(c=>c.id===id); if(!city) return; let idx = selectedCities.findIndex(s=>s.id===id); if(idx===-1) { if(selectedCities.length<40) selectedCities.push(city); } else selectedCities.splice(idx,1); updateSelUI(); renderGrid(); saveSelection(); zoomToCity(city); }
 function addCityToList(city) { if(!selectedCities.some(s=>s.name===city.name && s.lat===city.lat)) { let newId = Math.max(...allCities.map(c=>c.id),0)+1; city.id = newId; allCities.push(city); selectedCities.push(city); updateSelUI(); renderGrid(); saveSelection(); } }
 function clearSelection() { selectedCities=[]; clearMapRoute(); updateSelUI(); renderGrid(); saveSelection(); }
 function updateSelUI() { let list=document.getElementById('selectedList'); document.getElementById('selCount').innerText=selectedCities.length; if(!selectedCities.length) { list.innerHTML='<div>Aucune ville</div>'; document.getElementById('startCitySelect').innerHTML='<option>Aucune</option>'; return; } list.innerHTML = selectedCities.map((city,i)=>`<div class="sel-item" onclick="zoomToCity({lat:${city.lat},lon:${city.lon},name:'${escapeHtml(city.name).replace(/'/g,"\\'")}',country:'${escapeHtml(city.country).replace(/'/g,"\\'")}'})"><span>${i+1}</span><span style="flex:1">${escapeHtml(city.name)} (${escapeHtml(city.country)})</span><button class="rm" onclick="event.stopPropagation();removeCity(${i})">✖</button></div>`).join(''); let sel=document.getElementById('startCitySelect'); sel.innerHTML = selectedCities.map((c,i)=>`<option value="${i}">${escapeHtml(c.name)}</option>`).join(''); }
 function removeCity(idx) { selectedCities.splice(idx,1); clearMapRoute(); updateSelUI(); renderGrid(); saveSelection(); }
 function zoomToCity(city) { map.flyTo([city.lat,city.lon],11); L.popup().setLatLng([city.lat,city.lon]).setContent(`<b>${escapeHtml(city.name)}</b><br>${escapeHtml(city.country)}`).openOn(map); }
-function addCustomCity() { let name=document.getElementById('newName').value.trim(), country=document.getElementById('newCountry').value.trim(), lat=parseFloat(document.getElementById('newLat').value), lon=parseFloat(document.getElementById('newLon').value), desc=document.getElementById('newDesc').value.trim(); if(!name||!country||isNaN(lat)||isNaN(lon)) { alert('Champs requis'); return; } if(lat<-90||lat>90||lon<-180||lon>180) { alert('Coordonnées invalides'); return; } let city = {id: Math.max(...allCities.map(c=>c.id),0)+1, name,lat,lon,country,desc,custom:true}; allCities.push(city); let custom = JSON.parse(localStorage.getItem('tsp_custom')||'[]'); custom.push(city); localStorage.setItem('tsp_custom',JSON.stringify(custom)); addCityToList(city); filterCities(); document.getElementById('newName').value=''; document.getElementById('newCountry').value=''; document.getElementById('newLat').value=''; document.getElementById('newLon').value=''; document.getElementById('newDesc').value=''; document.getElementById('pickMsg').textContent=`✅ ${escapeHtml(name)} ajoutée`; }
+function addCustomCity() { let name=document.getElementById('newName').value.trim(), country=document.getElementById('newCountry').value.trim(), lat=parseFloat(document.getElementById('newLat').value), lon=parseFloat(document.getElementById('newLon').value), desc=document.getElementById('newDesc').value.trim(); if(!name||!country||isNaN(lat)||isNaN(lon)) { alert('Champs requis et coordonnées valides'); return; } if(lat<-90||lat>90||lon<-180||lon>180) { alert('Coordonnées invalides'); return; } let city = {id: Math.max(...allCities.map(c=>c.id),0)+1, name,lat,lon,country,desc,custom:true}; allCities.push(city); let custom = JSON.parse(localStorage.getItem('tsp_custom')||'[]'); custom.push(city); localStorage.setItem('tsp_custom',JSON.stringify(custom)); addCityToList(city); filterCities(); document.getElementById('newName').value=''; document.getElementById('newCountry').value=''; document.getElementById('newLat').value=''; document.getElementById('newLon').value=''; document.getElementById('newDesc').value=''; document.getElementById('pickMsg').textContent=`✅ ${escapeHtml(name)} ajoutée`; }
 function startMapPick() { pickMode=true; posPickMode=false; map.getContainer().style.cursor='crosshair'; document.getElementById('pickMsg').innerHTML='🔘 Cliquez sur la carte <span onclick="cancelPick()">Annuler</span>'; }
 function cancelPick() { pickMode=false; posPickMode=false; map.getContainer().style.cursor=''; document.getElementById('pickMsg').innerHTML=''; }
 function loadHistory() { try{ searchHistory=JSON.parse(localStorage.getItem('tsp_history')||'[]'); }catch(e){} renderHistory(); }
@@ -1718,29 +1717,19 @@ function saveSelection() { localStorage.setItem('tsp_selection',JSON.stringify(s
 function loadStoredSelection() { try{ let custom=JSON.parse(localStorage.getItem('tsp_custom')||'[]'); custom.forEach(c=>{if(!allCities.some(a=>a.name===c.name)) allCities.push(c);}); let ids=JSON.parse(localStorage.getItem('tsp_selection')||'[]'); ids.forEach(id=>{let city=allCities.find(c=>c.id===id); if(city&&!selectedCities.some(s=>s.id===id)) selectedCities.push(city);}); updateSelUI(); filterCities(); }catch(e){} }
 function exportGeoJSON() { let features = []; selectedCities.forEach(city => { features.push({ type: "Feature", geometry: { type: "Point", coordinates: [city.lon, city.lat] }, properties: { name: city.name, country: city.country } }); }); if(routeLayer && routeLayer.getLatLngs && routeLayer.getLatLngs().length) { let coords = routeLayer.getLatLngs().map(c => [c.lng, c.lat]); features.push({ type: "Feature", geometry: { type: "LineString", coordinates: coords }, properties: { name: "Itinéraire TSP" } }); } let geojson = { type: "FeatureCollection", features: features }; let blob = new Blob([JSON.stringify(geojson, null, 2)], {type: "application/json"}); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "tsp_route.geojson"; a.click(); URL.revokeObjectURL(url); }
 
-// ==================== STADIA MAPS ROUTING (CORRIGÉ - TRAJET FONCTIONNEL) ====================
 function getStadiaKey() { return localStorage.getItem('tsp_stadia_key') || ''; }
 function saveStadiaKey() { let k = document.getElementById('stadiaKeyInput').value.trim(); if(k) { localStorage.setItem('tsp_stadia_key', k); document.getElementById('stadiaStatus').innerHTML = '✅ Clé sauvegardée.'; } else { localStorage.removeItem('tsp_stadia_key'); document.getElementById('stadiaStatus').innerHTML = '⚠️ Pas de clé → lignes droites.'; } }
 
-// Décodeur polyline robuste
 function decodePolyline(encoded) {
     if (!encoded) return [];
     let points = [], index = 0, lat = 0, lng = 0;
     while (index < encoded.length) {
         let shift = 0, result = 0, b;
-        do {
-            b = encoded.charCodeAt(index++) - 63;
-            result |= (b & 0x1f) << shift;
-            shift += 5;
-        } while (b >= 0x20);
+        do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
         let dlat = (result & 1) ? ~(result >> 1) : (result >> 1);
         lat += dlat;
         shift = 0; result = 0;
-        do {
-            b = encoded.charCodeAt(index++) - 63;
-            result |= (b & 0x1f) << shift;
-            shift += 5;
-        } while (b >= 0x20);
+        do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
         let dlng = (result & 1) ? ~(result >> 1) : (result >> 1);
         lng += dlng;
         points.push([lat / 1e5, lng / 1e5]);
@@ -1753,41 +1742,21 @@ async function fetchStadiaRoute(coords, mode) {
     if (!key) return null;
     const url = `https://api.stadiamaps.com/route?api_key=${key}`;
     const profile = mode === 'foot' ? 'foot' : 'auto';
-    // coords = [[lon, lat], ...] pour l'API
-    const body = {
-        locations: coords.map(c => ({ lat: c[1], lon: c[0] })),
-        costing: profile,
-        units: "km"
-    };
+    const body = { locations: coords.map(c => ({ lat: c[1], lon: c[0] })), costing: profile, units: "km" };
     const useProxy = document.getElementById('useCorsProxyCheckbox')?.checked || false;
     const fetchUrl = useProxy ? `https://cors-anywhere.herokuapp.com/${url}` : url;
     try {
-        const resp = await fetch(fetchUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        if (!resp.ok) {
-            if (resp.status === 401) document.getElementById('stadiaStatus').innerHTML = '❌ Clé invalide';
-            return null;
-        }
+        const resp = await fetch(fetchUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (!resp.ok) { if (resp.status === 401) document.getElementById('stadiaStatus').innerHTML = '❌ Clé invalide'; return null; }
         const data = await resp.json();
-        // Récupérer le polyline
         let shape = data.trip?.legs?.[0]?.shape || data.trip?.shape;
-        if (!shape) {
-            console.warn("No shape in response", data);
-            return null;
-        }
+        if (!shape) return null;
         const points = decodePolyline(shape);
         if (!points.length) return null;
-        // Convertir en [lat, lon] pour Leaflet
         const routeLatLng = points.map(p => [p.lat, p.lon]);
         const duration = data.trip.summary?.time || 0;
         return { routeCoords: routeLatLng, duration: duration };
-    } catch(e) {
-        console.error("Stadia error", e);
-        return null;
-    }
+    } catch(e) { console.error(e); return null; }
 }
 
 async function testStadia() {
@@ -1800,7 +1769,6 @@ async function testStadia() {
     else alert("❌ Échec. Vérifiez la clé ou activez le proxy si nécessaire.");
 }
 
-// ==================== HAVERSINE & TSP ====================
 function haversine(lat1,lon1,lat2,lon2) { const R=6371, r=Math.PI/180; const dLat=(lat2-lat1)*r, dLon=(lon2-lon1)*r; return R*2*Math.asin(Math.sqrt(Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2)); }
 function totalDistance(tour) { let d=0; for(let i=0;i<tour.length-1;i++) d+=haversine(tour[i].lat,tour[i].lon,tour[i+1].lat,tour[i+1].lon); return d; }
 function twoOpt(tour) { let improved=true, bestDist=totalDistance(tour); while(improved && !tspCancelRequested){ improved=false; for(let i=1;i<tour.length-2;i++){ for(let j=i+1;j<tour.length-1;j++){ if(tspCancelRequested) return tour; let newTour = [...tour.slice(0,i), ...tour.slice(i,j+1).reverse(), ...tour.slice(j+1)]; let newDist=totalDistance(newTour); if(newDist<bestDist-0.001){ bestDist=newDist; tour=newTour; improved=true; } } } } return tour; }
@@ -1809,7 +1777,6 @@ function tspNN(cities,startIdx) { if(cities.length<2) return [[],0]; let unvisit
 async function buildRouteGeometry(tour, mode) {
     let allLatLng = [];
     let totalDurationSec = 0;
-    // Si mode avion ou pas de clé, lignes droites
     if (mode === 'plane' || !getStadiaKey()) {
         for (let i = 0; i < tour.length - 1; i++) {
             let c1 = tour[i], c2 = tour[i+1];
@@ -1821,7 +1788,6 @@ async function buildRouteGeometry(tour, mode) {
         allLatLng.push([tour[tour.length-1].lat, tour[tour.length-1].lon]);
         return { routeLatLng: allLatLng, totalDurationSec };
     }
-    // Utiliser Stadia Maps par segments (pour ne pas dépasser la limite)
     let chunkSize = 15;
     for (let i = 0; i < tour.length - 1; i += chunkSize - 1) {
         let chunk = tour.slice(i, i + chunkSize);
@@ -1829,12 +1795,10 @@ async function buildRouteGeometry(tour, mode) {
         let coordPairs = chunk.map(c => [c.lon, c.lat]);
         let res = await fetchStadiaRoute(coordPairs, mode);
         if (res && res.routeCoords && res.routeCoords.length > 1) {
-            // Éviter de dupliquer le point de jonction
             if (allLatLng.length > 0) allLatLng.pop();
             allLatLng.push(...res.routeCoords);
             totalDurationSec += res.duration;
         } else {
-            // Fallback local pour ce segment
             for (let j = 0; j < chunk.length - 1; j++) {
                 let c1 = chunk[j], c2 = chunk[j+1];
                 let dist = haversine(c1.lat, c1.lon, c2.lat, c2.lon);
@@ -1887,38 +1851,18 @@ async function computeTSP() {
         document.getElementById('cancelTSPBtn').style.display = 'none';
         return;
     }
-    // --- AFFICHAGE DE LA POLYLIGNE ---
-    
-    if (routeLatLng && routeLatLng.length > 0) {
-    let poly = L.polyline(routeLatLng, {
-        color: '#00f5ff',
-        weight: 5,
-        opacity: 0.8
-    }).addTo(map); // f l-code dyalk mkhdem 'map' mashi 'carte'
-
-    // Focus 3la l-trajet kamel
+    let poly = L.polyline(routeLatLng, { color: '#00f5ff', weight: 5, opacity: 0.8 }).addTo(map);
     map.fitBounds(poly.getBounds());
-}
-    // Marqueurs des villes
     tour.forEach((city, idx) => {
         if (idx === tour.length - 1) return;
         let isStart = (idx === 0);
         let color = isStart ? '#ff4466' : (city.custom ? '#00ffaa' : '#00ccff');
-        let marker = L.marker([city.lat, city.lon], {
-            icon: L.divIcon({
-                html: `<div style="background:${color};width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:${isStart ? '#fff' : '#000'};border:2px solid white;font-size:13px;">${isStart ? '🏁' : idx+1}</div>`,
-                iconSize: [32, 32]
-            })
-        }).addTo(map).bindPopup(`${idx+1}. ${city.name}<br>${city.country}`);
+        let marker = L.marker([city.lat, city.lon], { icon: L.divIcon({ html: `<div style="background:${color};width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:${isStart ? '#fff' : '#000'};border:2px solid white;font-size:13px;">${isStart ? '🏁' : idx+1}</div>`, iconSize: [32, 32] }) }).addTo(map).bindPopup(`${idx+1}. ${city.name}<br>${city.country}`);
         routeMarkers.push(marker);
     });
-    // Ajuster la vue
-    let lats = cities.map(c => c.lat), lons = cities.map(c => c.lon);
-    map.fitBounds([[Math.min(...lats), Math.min(...lons)], [Math.max(...lats), Math.max(...lons)]], { padding: [60, 60] });
-    let stepsHtml = tour.slice(0, -1).map((c, i) => `<div><b>${i+1}</b> ${c.name} (${c.country})</div>`).join('');
     let durationHours = totalDurationSec / 3600;
     let durationStr = `${Math.floor(durationHours)}h ${Math.floor((durationHours % 1) * 60)}min`;
-    document.getElementById('resultsPanel').innerHTML = `<div><strong>${algo === '2opt' ? '2-opt' : 'NN'}</strong> | ${cities.length} villes | ${totalDist.toFixed(0)} km | ${durationStr}</div><div class="route-steps">${stepsHtml}</div>`;
+    document.getElementById('resultsPanel').innerHTML = `<div><strong>${algo === '2opt' ? '2-opt' : 'NN'}</strong> | ${cities.length} villes | ${totalDist.toFixed(0)} km | ${durationStr}</div><div class="route-steps">${tour.slice(0, -1).map((c, i) => `<div><b>${i+1}</b> ${c.name} (${c.country})</div>`).join('')}</div>`;
     document.getElementById('cancelTSPBtn').style.display = 'none';
 }
 function cancelTSP() { tspCancelRequested = true; }
