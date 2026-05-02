@@ -1743,7 +1743,7 @@ function decodePolyline(encoded) {
         } while (b >= 0x20);
         let dlng = (result & 1) ? ~(result >> 1) : (result >> 1);
         lng += dlng;
-        points.push({ lat: lat / 1e5, lon: lng / 1e5 });
+        points.pousser([lat / 1e5, lng / 1e5]);
     }
     return points;
 }
@@ -1888,7 +1888,17 @@ async function computeTSP() {
         return;
     }
     // --- AFFICHAGE DE LA POLYLIGNE ---
-    routeLayer = L.polyline(routeLatLng, { color: '#00f5ff', weight: 5, opacity: 0.8 }).addTo(map);
+    
+    if (routeLatLng && routeLatLng.length > 0) {
+    let poly = L.polyline(routeLatLng, {
+        color: '#00f5ff',
+        weight: 5,
+        opacity: 0.8
+    }).addTo(map); // f l-code dyalk mkhdem 'map' mashi 'carte'
+
+    // Focus 3la l-trajet kamel
+    map.fitBounds(poly.getBounds());
+}
     // Marqueurs des villes
     tour.forEach((city, idx) => {
         if (idx === tour.length - 1) return;
