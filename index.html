@@ -28,6 +28,64 @@
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 10px; }
+        
+        /* SPLASH SCREEN */
+        .splash {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #0a0a1a, #020208);
+            z-index: 20000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease;
+            font-family: 'Syne', sans-serif;
+        }
+        .splash.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .splash-content {
+            text-align: center;
+            animation: fadeInScale 0.6s cubic-bezier(0.16,1,0.3,1);
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .splash-logo {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--cyan), var(--cyan2), #00ffaa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .splash-title {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .splash-sub {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-top: 0.5rem;
+            letter-spacing: 1px;
+        }
+        .splash-asso {
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: rgba(0,245,255,0.7);
+            border-top: 1px solid rgba(0,245,255,0.3);
+            padding-top: 1rem;
+            display: inline-block;
+        }
+        
         .overlay { position: fixed; inset: 0; background: rgba(4,4,18,0.96); backdrop-filter: blur(20px); z-index: 10000; display: flex; align-items: center; justify-content: center; transition: opacity 0.4s ease; }
         .overlay.hidden { opacity:0; pointer-events:none; }
         .auth-card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 28px; padding: 36px 32px; width: 460px; max-width: 92vw; box-shadow: 0 0 80px rgba(0,245,255,0.1); animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1); }
@@ -60,10 +118,6 @@
         .time-panel { display: flex; justify-content: space-between; align-items: baseline; background: rgba(0,245,255,0.1); border-radius: 16px; padding: 8px 16px; margin-bottom: 16px; flex-wrap: wrap; }
         .current-time { font-family: monospace; font-size: 1.6rem; font-weight: 700; color: var(--cyan); }
         .chrono { font-family: monospace; font-size: 1.2rem; background: rgba(0,0,0,0.3); padding: 4px 12px; border-radius: 40px; }
-        .ors-section { background: rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.2); border-radius:16px; padding:12px 16px; margin-bottom:16px; }
-        .ors-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-        .ors-row input { flex:1; padding:8px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50px; color:var(--text); font-size:0.82rem; }
-        .ors-save-btn { padding:8px 16px; background:var(--cyan); border:none; border-radius:50px; color:#000; font-weight:700; cursor:pointer; }
         .section { margin-bottom:18px; border-bottom:1px solid rgba(0,245,255,0.1); padding-bottom:16px; }
         .section-title { font-weight:700; font-size:0.82rem; text-transform:uppercase; color:var(--muted); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
         .search-input { width:100%; padding:10px 16px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50px; color:var(--text); font-size:0.88rem; }
@@ -102,7 +156,18 @@
     </style>
 </head>
 <body>
-<div id="loginOverlay" class="overlay">
+
+<!-- SPLASH SCREEN (5 secondes) -->
+<div id="splashScreen" class="splash">
+    <div class="splash-content">
+        <div class="splash-logo">✈️</div>
+        <div class="splash-title">TSP WORLD PRO</div>
+        <div class="splash-sub">Planification optimisée des tournées</div>
+        <div class="splash-asso">Association Errouifi </div>
+    </div>
+</div>
+
+<div id="loginOverlay" class="overlay hidden">
     <div class="auth-card">
         <div class="auth-logo">✈️ TSP WORLD PRO</div>
         <div class="auth-sub">Planifiez votre tournée mondiale optimisée</div>
@@ -143,7 +208,7 @@
 <div id="map"></div>
 <button class="toggle-dash" onclick="document.getElementById('dashboard').classList.toggle('collapsed')">⚙️ Menu</button>
 <div class="map-switch" onclick="toggleMapLayer()">🗺️ Changer fond</div>
-<div class="dashboard" id="dashboard">
+<div class="dashboard" id="dashboard" style="display:none;">
     <div class="dash-header"><div class="dash-title">✈️ TSP WORLD PRO</div></div>
     <div class="welcome-pill"><span>👋 Bonjour, <strong id="welcomeName"></strong></span><button class="logout-btn" onclick="logout()">🚪 Déconnexion</button></div>
     <div id="gpsWarningBanner" style="display:none;" class="gps-warning">⚠️ Géolocalisation bloquée – ouvrez via serveur HTTP (ex: Live Server).</div>
@@ -155,7 +220,6 @@
             <button class="btn btn-secondary" onclick="resetCron()">🔄</button>
         </div>
     </div>
-    <div class="ors-section"><div class="section-title">🔑 Clé API OpenRouteService (intégrée)</div><div class="ors-row"><input type="password" id="orsKeyInput" placeholder="Clé API"><button class="ors-save-btn" onclick="saveOrsKey()">Sauvegarder</button></div><div class="ors-status" id="orsStatus">✅ Clé préchargée, prête à l'emploi.</div></div>
     <div class="section">
         <div class="section-title">⏰ Planifier un rappel (alarme)</div>
         <div class="notif-row" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
@@ -189,11 +253,10 @@
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
     <div class="footer">🌐 Carte améliorée · TSP avec routage ORS intégré · Export Java · Rappels optimisés</div>
 </div>
+
 <script>
 // ==================== DONNÉES DES VILLES (EXEMPLES) ====================
-// Remplacez cette liste par vos propres villes (sans champ "id")
 let allCities = [
-   
     {"name": "Tanger", "lat": 35.7595, "lon": -5.834, "country": "Maroc", "desc": ""},
     {"name": "Tétouan", "lat": 35.5785, "lon": -5.3704, "country": "Maroc", "desc": ""},
     {"name": "Tanger", "lat": 35.7595, "lon": -5.834, "country": "Maroc", "desc": ""},
@@ -1663,9 +1726,7 @@ let allCities = [
     {"name": "Port-au-Prince", "lat": 18.5944, "lon": -72.3074, "country": "Haiti", "desc": ""},
     {"name": "Nassau", "lat": 25.0582, "lon": -77.3431, "country": "Bahamas", "desc": ""},
     {"name": "Bridgetown", "lat": 13.0975, "lon": -59.6165, "country": "Barbados", "desc": ""},
-    {"name": "Port of Spain", "lat": 10.6667, "lon": -61.5167, "country": "Trinidad and Tobago", "desc": ""} 
 ];
-// Attribution automatique des IDs
 allCities = allCities.map((city, idx) => ({ ...city, id: idx }));
 
 // ==================== VARIABLES GLOBALES ====================
@@ -1719,7 +1780,39 @@ let tileLayers = { osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/
 function setMapLayer(layerId) { if(currentTileLayer) map.removeLayer(currentTileLayer); currentTileLayer = tileLayers[layerId]; currentTileLayer.addTo(map); localStorage.setItem('tsp_map_layer', layerId); }
 function toggleMapLayer() { let newLayer = (localStorage.getItem('tsp_map_layer') || 'osm') === 'osm' ? 'googleSat' : 'osm'; setMapLayer(newLayer); }
 
-function startApp(user) { document.getElementById('dashboard').style.display='block'; document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`; if(getOrsKey()) document.getElementById('orsKeyInput').value=getOrsKey(); map = L.map('map',{zoomControl:false}).setView([20,10],2); let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm'; setMapLayer(savedLayer); L.control.zoom({position:'bottomright'}).addTo(map); map.on('click', e => { if(pickMode) { document.getElementById('newLat').value=e.latlng.lat.toFixed(6); document.getElementById('newLon').value=e.latlng.lng.toFixed(6); document.getElementById('pickMsg').textContent='✅ Coordonnées récupérées'; pickMode=false; map.getContainer().style.cursor=''; } else if(posPickMode) { posPickMode=false; map.getContainer().style.cursor=''; let name=prompt('Nommez ce point:'); if(name) addCityToList({name, lat:e.latlng.lat, lon:e.latlng.lng, country:'Local', desc:'', custom:true}); } }); loadHistory(); loadStoredSelection(); filterCities(); document.getElementById('searchInput').addEventListener('input', filterCities); if(selectedCities.length===0 && allCities.length>=2) { addCityToList(allCities[0]); addCityToList(allCities[1]); } loadReminders(); handleUrlLocation(); }
+function startApp(user) { 
+    document.getElementById('dashboard').style.display='block'; 
+    document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`; 
+    map = L.map('map',{zoomControl:false}).setView([20,10],2); 
+    let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm'; 
+    setMapLayer(savedLayer); 
+    L.control.zoom({position:'bottomright'}).addTo(map); 
+    map.on('click', e => { 
+        if(pickMode) { 
+            document.getElementById('newLat').value=e.latlng.lat.toFixed(6); 
+            document.getElementById('newLon').value=e.latlng.lng.toFixed(6); 
+            document.getElementById('pickMsg').textContent='✅ Coordonnées récupérées'; 
+            pickMode=false; 
+            map.getContainer().style.cursor=''; 
+        } else if(posPickMode) { 
+            posPickMode=false; 
+            map.getContainer().style.cursor=''; 
+            let name=prompt('Nommez ce point:'); 
+            if(name) addCityToList({name, lat:e.latlng.lat, lon:e.latlng.lng, country:'Local', desc:'', custom:true}); 
+        } 
+    }); 
+    loadHistory(); 
+    loadStoredSelection(); 
+    filterCities(); 
+    document.getElementById('searchInput').addEventListener('input', filterCities); 
+    if(selectedCities.length===0 && allCities.length>=2) { 
+        addCityToList(allCities[0]); 
+        addCityToList(allCities[1]); 
+    } 
+    loadReminders(); 
+    handleUrlLocation(); 
+}
+
 function handleUrlLocation() { const urlParams = new URLSearchParams(window.location.search); let lat = parseFloat(urlParams.get('lat')); let lon = parseFloat(urlParams.get('lon')); let name = urlParams.get('name') || "Position partagée"; if (!isNaN(lat) && !isNaN(lon) && lat>=-90 && lat<=90 && lon>=-180 && lon<=180) { addCityToList({ name: name, lat: lat, lon: lon, country: "Partagé", desc: "Importée par lien", custom: true }); alert(`📍 Ville ajoutée : ${name} (${lat.toFixed(4)}, ${lon.toFixed(4)})`); map.flyTo([lat, lon], 12); } }
 function shareCurrentLocation() { requestGeolocationWithHelp(pos => { let lat = pos.coords.latitude, lon = pos.coords.longitude; let shareUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}&name=Ma%20position%20partagée`; navigator.clipboard.writeText(shareUrl).then(() => alert("Lien copié ! Envoyez-le à un ami.\n" + shareUrl)); }, err => alert("Impossible d'obtenir la position")); }
 
@@ -1743,11 +1836,19 @@ function saveSelection() { localStorage.setItem('tsp_selection',JSON.stringify(s
 function loadStoredSelection() { try{ let custom=JSON.parse(localStorage.getItem('tsp_custom')||'[]'); custom.forEach(c=>{if(!allCities.some(a=>a.name===c.name)) allCities.push(c);}); let ids=JSON.parse(localStorage.getItem('tsp_selection')||'[]'); ids.forEach(id=>{let city=allCities.find(c=>c.id===id); if(city&&!selectedCities.some(s=>s.id===id)) selectedCities.push(city);}); updateSelUI(); filterCities(); }catch(e){} }
 function exportGeoJSON() { let features = []; selectedCities.forEach(city => { features.push({ type: "Feature", geometry: { type: "Point", coordinates: [city.lon, city.lat] }, properties: { name: city.name, country: city.country, type: "selected" } }); }); if(routeLayer && routeLayer.getLatLngs && routeLayer.getLatLngs().length) { let coords = routeLayer.getLatLngs().map(c => [c.lng, c.lat]); features.push({ type: "Feature", geometry: { type: "LineString", coordinates: coords }, properties: { name: "Itinéraire TSP", cities: selectedCities.map(c=>c.name).join(" → ") } }); } let geojson = { type: "FeatureCollection", features: features }; let dataStr = JSON.stringify(geojson, null, 2); let blob = new Blob([dataStr], {type: "application/json"}); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "tsp_route_points.geojson"; a.click(); URL.revokeObjectURL(url); }
 
-// ==================== TSP & ROUTING CORRIGÉ ====================
+// ==================== TSP & ROUTING ====================
 function haversine(lat1,lon1,lat2,lon2) { const R=6371, r=Math.PI/180; const dLat=(lat2-lat1)*r, dLon=(lon2-lon1)*r; return R*2*Math.asin(Math.sqrt(Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2)); }
 function totalDistance(tour) { let d=0; for(let i=0;i<tour.length-1;i++) d+=haversine(tour[i].lat,tour[i].lon,tour[i+1].lat,tour[i+1].lon); return d; }
 function twoOpt(tour) { let improved=true, bestDist=totalDistance(tour); while(improved && !tspCancelRequested){ improved=false; for(let i=1;i<tour.length-2;i++){ for(let j=i+1;j<tour.length-1;j++){ if(tspCancelRequested) return tour; let newTour = [...tour.slice(0,i), ...tour.slice(i,j+1).reverse(), ...tour.slice(j+1)]; let newDist=totalDistance(newTour); if(newDist<bestDist-0.001){ bestDist=newDist; tour=newTour; improved=true; } } } } return tour; }
 function tspNN(cities,startIdx) { if(cities.length<2) return [[],0]; let unvisited=[...cities]; let start=unvisited.splice(startIdx,1)[0]; let tour=[start], current=start, total=0; while(unvisited.length){ let bestIdx=0, bestDist=haversine(current.lat,current.lon,unvisited[0].lat,unvisited[0].lon); for(let i=1;i<unvisited.length;i++){ let d=haversine(current.lat,current.lon,unvisited[i].lat,unvisited[i].lon); if(d<bestDist){bestDist=d;bestIdx=i;}} total+=bestDist; current=unvisited[bestIdx]; tour.push(current); unvisited.splice(bestIdx,1); } total+=haversine(current.lat,current.lon,start.lat,start.lon); tour.push(start); return [tour,total]; }
+
+const DEFAULT_ORS_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjZkYzEwNzIyZWU4ZDRkNzliMGM4NmJiYTU3OWRhM2NlIiwiaCI6Im11cm11cjY0In0=";
+function getOrsKey() { 
+    let saved = localStorage.getItem('tsp_ors_key');
+    if (saved && saved.trim() !== "") return saved;
+    localStorage.setItem('tsp_ors_key', DEFAULT_ORS_KEY);
+    return DEFAULT_ORS_KEY;
+}
 
 async function fetchOrsRouteWithRetry(coords, mode, retries = 3) {
     let key = getOrsKey();
@@ -1936,26 +2037,6 @@ function startTracking() { if(isFileProtocol()) { alert("Suivi impossible en fil
 function stopTracking() { if(watchId) { navigator.geolocation.clearWatch(watchId); watchId=null; } }
 function useGeoloc() { requestGeolocationWithHelp(pos => { document.getElementById('newLat').value=pos.coords.latitude.toFixed(6); document.getElementById('newLon').value=pos.coords.longitude.toFixed(6); document.getElementById('pickMsg').textContent='📍 GPS récupéré'; }, err=>alert("GPS refusé")); }
 
-// ==================== API KEY INTÉGRÉE ====================
-const DEFAULT_ORS_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjZkYzEwNzIyZWU4ZDRkNzliMGM4NmJiYTU3OWRhM2NlIiwiaCI6Im11cm11cjY0In0=";
-function getOrsKey() { 
-    let saved = localStorage.getItem('tsp_ors_key');
-    if (saved && saved.trim() !== "") return saved;
-    // Sinon, utiliser la clé par défaut et la sauvegarder
-    localStorage.setItem('tsp_ors_key', DEFAULT_ORS_KEY);
-    return DEFAULT_ORS_KEY;
-}
-function saveOrsKey() { 
-    let k = document.getElementById('orsKeyInput').value.trim(); 
-    if (k) { 
-        localStorage.setItem('tsp_ors_key', k); 
-        document.getElementById('orsStatus').innerHTML = '✅ Clé sauvegardée (api.heigit.org)'; 
-    } else { 
-        localStorage.removeItem('tsp_ors_key'); 
-        document.getElementById('orsStatus').innerHTML = '⚠️ Sans clé → lignes droites. <a href="https://openrouteservice.org/dev/#/signup" target="_blank">Obtenir une clé</a>'; 
-    } 
-}
-
 // ==================== EXPORT JAVA ====================
 function generateJavaCode() {
     let cities = selectedCities;
@@ -1969,18 +2050,26 @@ function generateJavaCode() {
 }
 function copyJavaCode() { let textarea = document.getElementById('javaCodeArea'); textarea.select(); document.execCommand('copy'); alert("Code Java copié dans le presse-papier !"); }
 
-// ==================== DÉMARRAGE ====================
-(function boot() { 
-    let sess = localStorage.getItem('tsp_session'); 
-    if(sess) { 
-        try{ sess=JSON.parse(sess); document.getElementById('loginOverlay').style.display='none'; startApp(sess); }catch(e){} 
-    } 
-    // Pré-remplir le champ avec la clé par défaut si aucune n'est stockée
-    if (!localStorage.getItem('tsp_ors_key')) {
-        localStorage.setItem('tsp_ors_key', DEFAULT_ORS_KEY);
-    }
-    document.getElementById('orsKeyInput').value = getOrsKey();
-})();
+// ==================== DÉMARRAGE AVEC SPLASH SCREEN ====================
+document.addEventListener('DOMContentLoaded', () => {
+    const splash = document.getElementById('splashScreen');
+    // Masquer le splash après 5 secondes
+    setTimeout(() => {
+        splash.classList.add('hidden');
+        // Après disparition, lancer le vrai démarrage (login ou app)
+        let sess = localStorage.getItem('tsp_session');
+        if (sess) {
+            try {
+                sess = JSON.parse(sess);
+                document.getElementById('loginOverlay').style.display = 'none';
+                startApp(sess);
+            } catch(e) {}
+        } else {
+            document.getElementById('loginOverlay').classList.remove('hidden');
+        }
+    }, 5000);
+});
+
 function switchTab(t) { document.getElementById('loginForm').style.display = t === 'login' ? 'block' : 'none'; document.getElementById('registerForm').style.display = t === 'register' ? 'block' : 'none'; document.getElementById('tabLogin').classList.toggle('active', t === 'login'); document.getElementById('tabReg').classList.toggle('active', t === 'register'); }
 </script>
 </body>
