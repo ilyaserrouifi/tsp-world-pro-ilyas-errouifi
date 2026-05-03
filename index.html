@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>✈️ TSP WORLD PRO - Indications sur la carte</title>
+    <title>✈️ TSP WORLD PRO - Partage de position personnalisé</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -89,7 +89,6 @@
         .selected-list { max-height:140px; overflow-y:auto; margin:8px 0; }
         .sel-item { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.04); border-radius:50px; padding:7px 14px; font-size:0.82rem; margin-bottom:4px; cursor:pointer; }
         .place-detail-card { background: rgba(0,245,255,0.05); border-radius: 16px; padding: 12px; margin: 8px 0; border-left: 4px solid var(--cyan); }
-        .place-detail-card h4 { margin-bottom: 6px; color: var(--cyan); }
         .btn { padding:9px 16px; border:none; border-radius:50px; cursor:pointer; font-weight:600; font-family:'Space Grotesk',sans-serif; font-size:0.8rem; }
         .btn-primary { background:linear-gradient(135deg,var(--cyan),var(--cyan2)); color:#000; }
         .btn-secondary { background:rgba(255,255,255,0.07); color:var(--text); border:1px solid rgba(255,255,255,0.1); }
@@ -198,7 +197,7 @@
         <div id="searchFeedback" class="info-note" style="font-size:0.7rem; margin-top:5px;"></div>
     </div>
 
-    <!-- PANEL DÉTAILS DU LIEU SÉLECTIONNÉ -->
+    <!-- PANEL DÉTAILS -->
     <div class="section">
         <div class="section-title">📍 Détails du lieu sélectionné</div>
         <div id="placeDetails" class="place-detail-card">
@@ -235,14 +234,14 @@
     </div>
     <div class="section"><div class="section-title">➕ Ajouter une ville personnalisée</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
-    <div class="footer">🌐 Routage réel OSRM (sans clé) · TSP · Export Java · Rappels</div>
+    <div class="footer">🌐 Routage réel OSRM (sans clé) · TSP · Export Java · Rappels · Partage de position personnalisé</div>
 </div>
 
 <script>
 // ==================== GESTION DES VILLES SÉLECTIONNÉES ====================
 let selectedCities = [];
 let nextCityId = 1;
-let selectionMarkers = []; // pour stocker les marqueurs sur la carte
+let selectionMarkers = []; // marqueurs sur la carte
 
 function loadSelected() {
     let saved = localStorage.getItem('tsp_selected_cities');
@@ -257,13 +256,10 @@ function loadSelected() {
 }
 function saveSelected() { localStorage.setItem('tsp_selected_cities', JSON.stringify(selectedCities)); }
 
-// Mettre à jour les marqueurs sur la carte pour toutes les villes sélectionnées
 function updateMarkersOnMap() {
     if (!map) return;
-    // Supprimer les anciens marqueurs
     selectionMarkers.forEach(m => map.removeLayer(m));
     selectionMarkers = [];
-    // Ajouter un marqueur pour chaque ville sélectionnée
     selectedCities.forEach(city => {
         let popupContent = `
             <div style="min-width:150px;">
@@ -274,14 +270,8 @@ function updateMarkersOnMap() {
                 <button onclick="window.zoomToCityById(${city.id})" style="margin-top:4px; padding:2px 8px; background:#00f5ff; border:none; border-radius:20px;">🎯 Centrer</button>
             </div>
         `;
-        let marker = L.marker([city.lat, city.lon], {
-            title: city.name,
-            riseOnHover: true
-        }).bindPopup(popupContent).addTo(map);
-        marker.on('click', () => {
-            // Afficher aussi les détails dans le panneau
-            showPlaceDetails(city.name, city.lat, city.lon, city.country, city.desc);
-        });
+        let marker = L.marker([city.lat, city.lon], { title: city.name }).bindPopup(popupContent).addTo(map);
+        marker.on('click', () => showPlaceDetails(city.name, city.lat, city.lon, city.country, city.desc));
         selectionMarkers.push(marker);
     });
 }
@@ -312,7 +302,7 @@ function removeCity(idx) {
     saveSelected();
     updateSelUI();
     updateMarkersOnMap();
-    clearMapRoute(); // efface l'itinéraire car la sélection a changé
+    clearMapRoute();
     if (selectedCities.length === 0) document.getElementById('placeDetails').innerHTML = '<span style="color:var(--muted);">Aucun lieu sélectionné</span>';
 }
 function clearSelection() {
@@ -343,7 +333,6 @@ function zoomToCity(idx) {
     let city = selectedCities[idx];
     if (city) {
         map.flyTo([city.lat, city.lon], 12);
-        // Ouvrir le popup du marqueur correspondant
         let marker = selectionMarkers.find(m => m.getLatLng().lat === city.lat && m.getLatLng().lng === city.lon);
         if (marker) marker.openPopup();
     }
@@ -412,6 +401,48 @@ document.getElementById('dynamicSearch').addEventListener('input', function(e) {
     searchTimeout = setTimeout(() => performSearch(val), 500);
 });
 
+// ==================== FONCTIONS DE PARTAGE AMÉLIORÉES ====================
+// Partager sa position actuelle (génère un lien)
+function shareCurrentLocation() {
+    requestGeolocationWithHelp(pos => {
+        let lat = pos.coords.latitude, lon = pos.coords.longitude;
+        // On crée un lien sans nom fixe, pour que le receveur puisse choisir le nom
+        let shareUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            alert("Lien copié ! Envoyez-le à un ami.\nIl pourra donner un nom personnalisé à cette position.");
+        });
+    }, err => alert("Impossible d'obtenir votre position"));
+}
+
+// Gestion de l'URL à l'ouverture : demande un nom personnalisé pour la position reçue
+function handleUrlLocation() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let lat = parseFloat(urlParams.get('lat'));
+    let lon = parseFloat(urlParams.get('lon'));
+    let suggestedName = urlParams.get('name') || ""; // éventuel nom suggéré (par défaut vide)
+    if (!isNaN(lat) && !isNaN(lon)) {
+        // Proposer un nom par défaut mais laisser l'utilisateur le modifier
+        let defaultName = suggestedName ? suggestedName : `Position partagée (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+        let customName = prompt("🟢 Une position vous a été partagée.\nDonnez-lui un nom (vous pourrez le modifier plus tard) :", defaultName);
+        if (customName && customName.trim() !== "") {
+            addCityToList({
+                name: customName.trim(),
+                lat: lat,
+                lon: lon,
+                country: "Partagé",
+                desc: `Position reçue par lien (${new Date().toLocaleString()})`,
+                custom: true
+            });
+            map.flyTo([lat, lon], 12);
+            alert(`✅ "${customName}" ajouté à votre sélection.`);
+        } else {
+            alert("Ajout annulé.");
+        }
+        // Nettoyer l'URL pour ne pas ré-afficher le prompt au rechargement
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+}
+
 // ==================== RESTE DES FONCTIONS (carte, TSP, horloge, rappels, etc.) ====================
 let map, currentTileLayer, routeLayer, routeMarkers = [];
 let tspCancelRequested = false;
@@ -422,7 +453,7 @@ let pickMode = false, myLocationMarker = null, watchId = null, trackingPolyline 
 
 function escapeHtml(s) { return String(s).replace(/[&<>]/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m];}); }
 
-// Rappels
+// Rappels (identique)
 function loadReminders() { try { let saved = localStorage.getItem('tsp_reminders'); if (saved) { reminders = JSON.parse(saved); nextReminderId = Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); } } catch(e) {} startReminderWatcher(); }
 function saveReminders() { localStorage.setItem('tsp_reminders', JSON.stringify(reminders)); }
 function renderReminderList() { let container = document.getElementById('reminderList'); if (!reminders.length) { container.innerHTML = '<div style="color:var(--muted); padding:8px;">Aucun rappel programmé.</div>'; return; } container.innerHTML = reminders.map(r => `<div class="reminder-item" data-id="${r.id}"><span class="reminder-time">⏰ ${r.timeStr}</span><span class="reminder-msg">${escapeHtml(r.message)}</span><button class="reminder-del" onclick="deleteReminder(${r.id})">✖</button></div>`).join(''); }
@@ -440,7 +471,7 @@ function pauseCron() { if(cronInterval) {clearInterval(cronInterval); cronInterv
 function resetCron() { pauseCron(); cronSeconds=0; updateCronDisplay(); sessionStorage.setItem('tsp_cron_sec',0); }
 updateCronDisplay();
 
-// Authentification locale
+// Authentification locale (inchangée)
 async function hashPassword(pwd) { const encoder = new TextEncoder(); const data = encoder.encode(pwd); const hashBuffer = await crypto.subtle.digest('SHA-256', data); return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2,'0')).join(''); }
 function isFileProtocol() { return window.location.protocol === 'file:'; }
 if (isFileProtocol()) document.getElementById('gpsWarningBanner').style.display = 'block';
@@ -477,10 +508,10 @@ function startApp(user) {
     });
     loadSelected();
     loadReminders();
-    handleUrlLocation();
+    handleUrlLocation(); // gère le partage de position avec nom personnalisé
 }
-function handleUrlLocation() { const urlParams = new URLSearchParams(window.location.search); let lat = parseFloat(urlParams.get('lat')); let lon = parseFloat(urlParams.get('lon')); let name = urlParams.get('name') || "Position partagée"; if (!isNaN(lat) && !isNaN(lon)) { addCityToList({ name: name, lat: lat, lon: lon, country: "Partagé", custom: true }); alert(`📍 Ville ajoutée : ${name}`); map.flyTo([lat, lon], 12); } }
-function shareCurrentLocation() { requestGeolocationWithHelp(pos => { let lat = pos.coords.latitude, lon = pos.coords.longitude; let shareUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}&name=Ma%20position`; navigator.clipboard.writeText(shareUrl).then(() => alert("Lien copié !")); }, err => alert("Impossible")); }
+
+// GPS / tracking
 function showMyLocation() { requestGeolocationWithHelp(pos => { let lat=pos.coords.latitude, lon=pos.coords.longitude; map.setView([lat,lon],14); if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]); else myLocationMarker = L.marker([lat,lon],{icon:L.divIcon({html:'<div style="background:#00aaff;width:20px;height:20px;border-radius:50%;border:2px solid white;"></div>',iconSize:[20,20]})}).addTo(map).bindPopup('Votre position').openPopup(); if(confirm("Ajouter cette position à votre liste de villes ?")) addCityToList({name:"Ma position",lat,lon,country:"Local",desc:"GPS",custom:true}); }, err => alert("Erreur GPS")); }
 function startTracking() { if(isFileProtocol()) { alert("Suivi impossible en file://"); return; } if(watchId) stopTracking(); trackingPoints = []; if(trackingPolyline) map.removeLayer(trackingPolyline); watchId = navigator.geolocation.watchPosition(pos => { let lat=pos.coords.latitude, lon=pos.coords.longitude; trackingPoints.push([lat,lon]); if(trackingPolyline) map.removeLayer(trackingPolyline); trackingPolyline = L.polyline(trackingPoints, {color:'#ffaa33', weight:3, opacity:0.7}).addTo(map); if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]); else myLocationMarker = L.marker([lat,lon],{icon:L.divIcon({html:'<div style="background:#00aaff;width:20px;height:20px;border-radius:50%;"></div>',iconSize:[20,20]})}).addTo(map); map.setView([lat,lon], map.getZoom()); }, err => console.warn(err)); }
 function stopTracking() { if(watchId) { navigator.geolocation.clearWatch(watchId); watchId=null; } }
@@ -490,75 +521,15 @@ function cancelPick() { pickMode=false; map.getContainer().style.cursor=''; docu
 function useGeoloc() { requestGeolocationWithHelp(pos => { document.getElementById('newLat').value=pos.coords.latitude.toFixed(6); document.getElementById('newLon').value=pos.coords.longitude.toFixed(6); document.getElementById('pickMsg').textContent='📍 GPS récupéré'; }, err=>alert("GPS refusé")); }
 function exportGeoJSON() { let features = []; selectedCities.forEach(city => { features.push({ type: "Feature", geometry: { type: "Point", coordinates: [city.lon, city.lat] }, properties: { name: city.name, country: city.country } }); }); if(routeLayer && routeLayer.getLatLngs && routeLayer.getLatLngs().length) { let coords = routeLayer.getLatLngs().map(c => [c.lng, c.lat]); features.push({ type: "Feature", geometry: { type: "LineString", coordinates: coords }, properties: { name: "Itinéraire TSP" } }); } let geojson = { type: "FeatureCollection", features: features }; let blob = new Blob([JSON.stringify(geojson,null,2)], {type: "application/json"}); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "tsp.geojson"; a.click(); URL.revokeObjectURL(url); }
 
-// TSP & OSRM
+// TSP & OSRM (inchangé)
 function haversine(lat1,lon1,lat2,lon2) { const R=6371, r=Math.PI/180; const dLat=(lat2-lat1)*r, dLon=(lon2-lon1)*r; return R*2*Math.asin(Math.sqrt(Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2)); }
 function totalDistance(tour) { let d=0; for(let i=0;i<tour.length-1;i++) d+=haversine(tour[i].lat,tour[i].lon,tour[i+1].lat,tour[i+1].lon); return d; }
 function twoOpt(tour) { let improved=true, bestDist=totalDistance(tour); while(improved && !tspCancelRequested){ improved=false; for(let i=1;i<tour.length-2;i++){ for(let j=i+1;j<tour.length-1;j++){ if(tspCancelRequested) return tour; let newTour = [...tour.slice(0,i), ...tour.slice(i,j+1).reverse(), ...tour.slice(j+1)]; let newDist=totalDistance(newTour); if(newDist<bestDist-0.001){ bestDist=newDist; tour=newTour; improved=true; } } } } return tour; }
 function tspNN(cities,startIdx) { if(cities.length<2) return [[],0]; let unvisited=[...cities]; let start=unvisited.splice(startIdx,1)[0]; let tour=[start], current=start, total=0; while(unvisited.length){ let bestIdx=0, bestDist=haversine(current.lat,current.lon,unvisited[0].lat,unvisited[0].lon); for(let i=1;i<unvisited.length;i++){ let d=haversine(current.lat,current.lon,unvisited[i].lat,unvisited[i].lon); if(d<bestDist){bestDist=d;bestIdx=i;}} total+=bestDist; current=unvisited[bestIdx]; tour.push(current); unvisited.splice(bestIdx,1); } total+=haversine(current.lat,current.lon,start.lat,start.lon); tour.push(start); return [tour,total]; }
 async function fetchOsrmRoute(lat1, lon1, lat2, lon2, mode) { let profile = mode === 'foot' ? 'foot' : 'driving'; let url = `https://router.project-osrm.org/route/v1/${profile}/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`; try { let resp = await fetch(url); if (!resp.ok) return null; let data = await resp.json(); if (!data.routes || data.routes.length === 0) return null; let route = data.routes[0]; let distanceKm = route.distance / 1000; let durationSec = route.duration; let coords = route.geometry.coordinates.map(c => [c[1], c[0]]); return { routeCoords: coords, distanceKm, durationSec }; } catch(e) { return null; } }
 async function buildRouteGeometry(tour, mode) { if (tour.length < 2) return { routeLatLng: [], totalDistanceKm: 0, totalDurationSec: 0 }; let allLatLng = []; let totalDistanceKm = 0; let totalDurationSec = 0; for (let i = 0; i < tour.length - 1; i++) { if (tspCancelRequested) return { routeLatLng: [], totalDistanceKm: 0, totalDurationSec: 0 }; let c1 = tour[i], c2 = tour[i+1]; if (mode === 'plane') { let dist = haversine(c1.lat, c1.lon, c2.lat, c2.lon); totalDistanceKm += dist; totalDurationSec += (dist / 800) * 3600; if (allLatLng.length === 0 || allLatLng[allLatLng.length-1][0] !== c1.lat || allLatLng[allLatLng.length-1][1] !== c1.lon) allLatLng.push([c1.lat, c1.lon]); allLatLng.push([c2.lat, c2.lon]); } else { let result = await fetchOsrmRoute(c1.lat, c1.lon, c2.lat, c2.lon, mode); if (result && result.routeCoords && result.routeCoords.length > 0) { let segmentCoords = result.routeCoords; if (allLatLng.length > 0 && segmentCoords.length > 0) { let last = allLatLng[allLatLng.length-1]; let first = segmentCoords[0]; if (Math.abs(last[0]-first[0])<1e-7 && Math.abs(last[1]-first[1])<1e-7) segmentCoords.shift(); } allLatLng.push(...segmentCoords); totalDistanceKm += result.distanceKm; totalDurationSec += result.durationSec; } else { let dist = haversine(c1.lat, c1.lon, c2.lat, c2.lon); totalDistanceKm += dist; let speedKmh = (mode === 'foot') ? 5 : 80; totalDurationSec += (dist / speedKmh) * 3600; if (allLatLng.length === 0 || allLatLng[allLatLng.length-1][0] !== c1.lat || allLatLng[allLatLng.length-1][1] !== c1.lon) allLatLng.push([c1.lat, c1.lon]); allLatLng.push([c2.lat, c2.lon]); } await new Promise(r => setTimeout(r, 200)); } } return { routeLatLng: allLatLng, totalDistanceKm, totalDurationSec }; }
-function clearMapRoute() {
-    if(routeLayer) map.removeLayer(routeLayer);
-    routeMarkers.forEach(m=>map.removeLayer(m));
-    routeMarkers=[];
-    // On ne supprime pas les marqueurs de sélection ici
-}
-async function computeTSP() {
-    tspCancelRequested = false;
-    document.getElementById('cancelTSPBtn').style.display = 'inline-block';
-    let max = parseInt(document.getElementById('maxCities').value) || 8;
-    let cities = [...selectedCities];
-    if (cities.length < 2) {
-        document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Sélectionnez au moins 2 villes</div>';
-        document.getElementById('cancelTSPBtn').style.display = 'none';
-        return;
-    }
-    if (cities.length > max) cities = cities.slice(0, max);
-    let startIdx = parseInt(document.getElementById('startCitySelect').value) || 0;
-    let [tour, straightDist] = tspNN(cities, startIdx);
-    if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; }
-    let algo = document.getElementById('algoSelect').value;
-    if (algo === '2opt') tour = twoOpt(tour);
-    if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; }
-    let orderedCities = tour.slice(0, -1);
-    selectedCities = orderedCities;
-    saveSelected();
-    updateSelUI();
-    updateMarkersOnMap();  // met à jour les marqueurs
-    clearMapRoute();
-    let loadEl = document.getElementById('routeLoading');
-    let mode = document.getElementById('transportMode').value;
-    loadEl.style.display = 'block';
-    let { routeLatLng, totalDistanceKm, totalDurationSec } = await buildRouteGeometry(tour, mode);
-    loadEl.style.display = 'none';
-    if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; }
-    if (routeLatLng.length < 2) {
-        document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Erreur tracé route</div>';
-        document.getElementById('cancelTSPBtn').style.display = 'none';
-        return;
-    }
-    routeLayer = L.polyline(routeLatLng, { color: '#00f5ff', weight: 4, opacity: 0.85 }).addTo(map);
-    tour.slice(0, -1).forEach((city, idx) => {
-        let isStart = (idx === 0);
-        let color = isStart ? '#ff4466' : (city.custom ? '#00ffaa' : '#00ccff');
-        let marker = L.marker([city.lat, city.lon], {
-            icon: L.divIcon({
-                html: `<div style="background:${color};width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:${isStart ? '#fff' : '#000'};border:2px solid white;font-size:12px;">${isStart ? '🏁' : idx+1}</div>`,
-                iconSize: [30, 30]
-            })
-        }).addTo(map).bindPopup(`<b>${idx+1}. ${escapeHtml(city.name)}</b><br>${escapeHtml(city.country)}`);
-        routeMarkers.push(marker);
-    });
-    let lats = cities.map(c => c.lat), lons = cities.map(c => c.lon);
-    map.fitBounds([[Math.min(...lats), Math.min(...lons)], [Math.max(...lats), Math.max(...lons)]], { padding: [60, 60] });
-    let stepsHtml = tour.slice(0, -1).map((c, i) => `<div><b>${i+1}. ${escapeHtml(c.name)}</b> (${escapeHtml(c.country)})</div>`).join('');
-    let modeLabel = { car: '🚗 Voiture', foot: '🚶 Piéton', plane: '✈️ Avion' }[mode];
-    let durationHours = totalDurationSec / 3600;
-    let durationStr = `${Math.floor(durationHours)}h ${Math.floor((durationHours % 1) * 60)}min`;
-    let distanceKm = totalDistanceKm.toFixed(0);
-    document.getElementById('resultsPanel').innerHTML = `<div><strong>📊 Résultat (${algo === '2opt' ? '2-opt optimisé' : 'Plus proche voisin'})</strong></div><div class="stats-grid"><div class="stat-card"><div class="val">${cities.length}</div>villes</div><div class="stat-card"><div class="val">${distanceKm}</div>km</div><div class="stat-card"><div class="val">${durationStr}</div>durée</div><div class="stat-card"><div class="val">${modeLabel}</div></div></div><div class="route-steps">${stepsHtml}</div>`;
-    document.getElementById('cancelTSPBtn').style.display = 'none';
-}
+function clearMapRoute() { if(routeLayer) map.removeLayer(routeLayer); routeMarkers.forEach(m=>map.removeLayer(m)); routeMarkers=[]; }
+async function computeTSP() { tspCancelRequested = false; document.getElementById('cancelTSPBtn').style.display = 'inline-block'; let max = parseInt(document.getElementById('maxCities').value) || 8; let cities = [...selectedCities]; if (cities.length < 2) { document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Sélectionnez au moins 2 villes</div>'; document.getElementById('cancelTSPBtn').style.display = 'none'; return; } if (cities.length > max) cities = cities.slice(0, max); let startIdx = parseInt(document.getElementById('startCitySelect').value) || 0; let [tour, straightDist] = tspNN(cities, startIdx); if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } let algo = document.getElementById('algoSelect').value; if (algo === '2opt') tour = twoOpt(tour); if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } let orderedCities = tour.slice(0, -1); selectedCities = orderedCities; saveSelected(); updateSelUI(); updateMarkersOnMap(); clearMapRoute(); let loadEl = document.getElementById('routeLoading'); let mode = document.getElementById('transportMode').value; loadEl.style.display = 'block'; let { routeLatLng, totalDistanceKm, totalDurationSec } = await buildRouteGeometry(tour, mode); loadEl.style.display = 'none'; if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } if (routeLatLng.length < 2) { document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Erreur tracé route</div>'; document.getElementById('cancelTSPBtn').style.display = 'none'; return; } routeLayer = L.polyline(routeLatLng, { color: '#00f5ff', weight: 4, opacity: 0.85 }).addTo(map); tour.slice(0, -1).forEach((city, idx) => { let isStart = (idx === 0); let color = isStart ? '#ff4466' : (city.custom ? '#00ffaa' : '#00ccff'); let marker = L.marker([city.lat, city.lon], { icon: L.divIcon({ html: `<div style="background:${color};width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:${isStart ? '#fff' : '#000'};border:2px solid white;font-size:12px;">${isStart ? '🏁' : idx+1}</div>`, iconSize: [30, 30] }) }).addTo(map).bindPopup(`<b>${idx+1}. ${escapeHtml(city.name)}</b><br>${escapeHtml(city.country)}`); routeMarkers.push(marker); }); let lats = cities.map(c => c.lat), lons = cities.map(c => c.lon); map.fitBounds([[Math.min(...lats), Math.min(...lons)], [Math.max(...lats), Math.max(...lons)]], { padding: [60, 60] }); let stepsHtml = tour.slice(0, -1).map((c, i) => `<div><b>${i+1}. ${escapeHtml(c.name)}</b> (${escapeHtml(c.country)})</div>`).join(''); let modeLabel = { car: '🚗 Voiture', foot: '🚶 Piéton', plane: '✈️ Avion' }[mode]; let durationHours = totalDurationSec / 3600; let durationStr = `${Math.floor(durationHours)}h ${Math.floor((durationHours % 1) * 60)}min`; let distanceKm = totalDistanceKm.toFixed(0); document.getElementById('resultsPanel').innerHTML = `<div><strong>📊 Résultat (${algo === '2opt' ? '2-opt optimisé' : 'Plus proche voisin'})</strong></div><div class="stats-grid"><div class="stat-card"><div class="val">${cities.length}</div>villes</div><div class="stat-card"><div class="val">${distanceKm}</div>km</div><div class="stat-card"><div class="val">${durationStr}</div>durée</div><div class="stat-card"><div class="val">${modeLabel}</div></div></div><div class="route-steps">${stepsHtml}</div>`; document.getElementById('cancelTSPBtn').style.display = 'none'; }
 function cancelTSP() { tspCancelRequested = true; }
 
 // Export Java
@@ -583,6 +554,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 5000);
 });
 function switchTab(t) { document.getElementById('loginForm').style.display = t === 'login' ? 'block' : 'none'; document.getElementById('registerForm').style.display = t === 'register' ? 'block' : 'none'; document.getElementById('tabLogin').classList.toggle('active', t === 'login'); document.getElementById('tabReg').classList.toggle('active', t === 'register'); }
+
+// Exposer les fonctions nécessaires globalement pour les boutons HTML
+window.shareCurrentLocation = shareCurrentLocation;
+window.showMyLocation = showMyLocation;
+window.startTracking = startTracking;
+window.stopTracking = stopTracking;
+window.exportGeoJSON = exportGeoJSON;
+window.clearSelection = clearSelection;
+window.computeTSP = computeTSP;
+window.cancelTSP = cancelTSP;
+window.generateJavaCode = generateJavaCode;
+window.copyJavaCode = copyJavaCode;
+window.scheduleAlarm = scheduleAlarm;
+window.startCron = startCron;
+window.pauseCron = pauseCron;
+window.resetCron = resetCron;
+window.addCustomCity = addCustomCity;
+window.startMapPick = startMapPick;
+window.useGeoloc = useGeoloc;
+window.toggleMapLayer = toggleMapLayer;
+window.zoomToCity = zoomToCity;
+window.showPlaceDetails = showPlaceDetails;
+window.zoomToCityById = zoomToCityById;
+window.selectSearchResult = selectSearchResult;
 </script>
 </body>
 </html>
