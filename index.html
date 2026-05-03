@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>✈️ TSP WORLD PRO - Routing ORS corrigé</title>
+    <title>✈️ TSP WORLD PRO - Routing ORS intégré</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -155,7 +155,7 @@
             <button class="btn btn-secondary" onclick="resetCron()">🔄</button>
         </div>
     </div>
-    <div class="ors-section"><div class="section-title">🔑 Clé API OpenRouteService (heigit.org)</div><div class="ors-row"><input type="password" id="orsKeyInput" placeholder="Collez votre clé ORS"><button class="ors-save-btn" onclick="saveOrsKey()">Sauvegarder</button></div><div class="ors-status" id="orsStatus">⚠️ Sans clé → lignes droites. <a href="https://openrouteservice.org/dev/#/signup" target="_blank">Obtenir une clé</a></div></div>
+    <div class="ors-section"><div class="section-title">🔑 Clé API OpenRouteService (intégrée)</div><div class="ors-row"><input type="password" id="orsKeyInput" placeholder="Clé API"><button class="ors-save-btn" onclick="saveOrsKey()">Sauvegarder</button></div><div class="ors-status" id="orsStatus">✅ Clé préchargée, prête à l'emploi.</div></div>
     <div class="section">
         <div class="section-title">⏰ Planifier un rappel (alarme)</div>
         <div class="notif-row" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
@@ -187,13 +187,13 @@
     <div class="section"><div class="section-title">🎯 Paramètres TSP</div><div class="tsp-params"><span>Max villes :</span><input type="number" id="maxCities" value="8" min="2" max="35"><span>Départ :</span><select id="startCitySelect"></select><span>Transport :</span><select id="transportMode"><option value="car">🚗 Voiture</option><option value="foot">🚶 Piéton</option><option value="plane">✈️ Avion</option></select><span>Algorithme :</span><select id="algoSelect"><option value="nn">Plus proche voisin</option><option value="2opt">2-opt</option></select></div><div class="btn-row"><button class="btn btn-primary" onclick="computeTSP()">🚀 Lancer le TSP</button><button class="btn btn-secondary" id="cancelTSPBtn" onclick="cancelTSP()" style="display:none;">❌ Annuler</button></div><div class="route-loading" id="routeLoading" style="display:none;">⏳ Calcul...</div></div>
     <div class="section"><div class="section-title">➕ Ajouter une ville personnalisée</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
-    <div class="footer">🌐 Carte améliorée · TSP avec routage ORS corrigé · Export Java intégré · Rappels optimisés</div>
+    <div class="footer">🌐 Carte améliorée · TSP avec routage ORS intégré · Export Java · Rappels optimisés</div>
 </div>
 <script>
 // ==================== DONNÉES DES VILLES (EXEMPLES) ====================
 // Remplacez cette liste par vos propres villes (sans champ "id")
 let allCities = [
-    { "name": "Tanger", "lat": 35.7595, "lon": -5.834, "country": "Maroc"," desc": "" },
+   
     {"name": "Tanger", "lat": 35.7595, "lon": -5.834, "country": "Maroc", "desc": ""},
     {"name": "Tétouan", "lat": 35.5785, "lon": -5.3704, "country": "Maroc", "desc": ""},
     {"name": "Tanger", "lat": 35.7595, "lon": -5.834, "country": "Maroc", "desc": ""},
@@ -1663,9 +1663,9 @@ let allCities = [
     {"name": "Port-au-Prince", "lat": 18.5944, "lon": -72.3074, "country": "Haiti", "desc": ""},
     {"name": "Nassau", "lat": 25.0582, "lon": -77.3431, "country": "Bahamas", "desc": ""},
     {"name": "Bridgetown", "lat": 13.0975, "lon": -59.6165, "country": "Barbados", "desc": ""},
-    {"name": "Port of Spain", "lat": 10.6667, "lon": -61.5167, "country": "Trinidad and Tobago", "desc": ""}
+    {"name": "Port of Spain", "lat": 10.6667, "lon": -61.5167, "country": "Trinidad and Tobago", "desc": ""} 
 ];
-// Attribution automatique des IDs (ne pas modifier)
+// Attribution automatique des IDs
 allCities = allCities.map((city, idx) => ({ ...city, id: idx }));
 
 // ==================== VARIABLES GLOBALES ====================
@@ -1936,9 +1936,25 @@ function startTracking() { if(isFileProtocol()) { alert("Suivi impossible en fil
 function stopTracking() { if(watchId) { navigator.geolocation.clearWatch(watchId); watchId=null; } }
 function useGeoloc() { requestGeolocationWithHelp(pos => { document.getElementById('newLat').value=pos.coords.latitude.toFixed(6); document.getElementById('newLon').value=pos.coords.longitude.toFixed(6); document.getElementById('pickMsg').textContent='📍 GPS récupéré'; }, err=>alert("GPS refusé")); }
 
-// ==================== API KEY ====================
-function getOrsKey() { return localStorage.getItem('tsp_ors_key') || ''; }
-function saveOrsKey() { let k = document.getElementById('orsKeyInput').value.trim(); if (k) { localStorage.setItem('tsp_ors_key', k); document.getElementById('orsStatus').innerHTML = '✅ Clé sauvegardée (api.heigit.org)'; } else { localStorage.removeItem('tsp_ors_key'); document.getElementById('orsStatus').innerHTML = '⚠️ Sans clé → lignes droites. <a href="https://openrouteservice.org/dev/#/signup" target="_blank">Obtenir une clé</a>'; } }
+// ==================== API KEY INTÉGRÉE ====================
+const DEFAULT_ORS_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjZkYzEwNzIyZWU4ZDRkNzliMGM4NmJiYTU3OWRhM2NlIiwiaCI6Im11cm11cjY0In0=";
+function getOrsKey() { 
+    let saved = localStorage.getItem('tsp_ors_key');
+    if (saved && saved.trim() !== "") return saved;
+    // Sinon, utiliser la clé par défaut et la sauvegarder
+    localStorage.setItem('tsp_ors_key', DEFAULT_ORS_KEY);
+    return DEFAULT_ORS_KEY;
+}
+function saveOrsKey() { 
+    let k = document.getElementById('orsKeyInput').value.trim(); 
+    if (k) { 
+        localStorage.setItem('tsp_ors_key', k); 
+        document.getElementById('orsStatus').innerHTML = '✅ Clé sauvegardée (api.heigit.org)'; 
+    } else { 
+        localStorage.removeItem('tsp_ors_key'); 
+        document.getElementById('orsStatus').innerHTML = '⚠️ Sans clé → lignes droites. <a href="https://openrouteservice.org/dev/#/signup" target="_blank">Obtenir une clé</a>'; 
+    } 
+}
 
 // ==================== EXPORT JAVA ====================
 function generateJavaCode() {
@@ -1954,7 +1970,17 @@ function generateJavaCode() {
 function copyJavaCode() { let textarea = document.getElementById('javaCodeArea'); textarea.select(); document.execCommand('copy'); alert("Code Java copié dans le presse-papier !"); }
 
 // ==================== DÉMARRAGE ====================
-(function boot() { let sess = localStorage.getItem('tsp_session'); if(sess) { try{ sess=JSON.parse(sess); document.getElementById('loginOverlay').style.display='none'; startApp(sess); }catch(e){} } })();
+(function boot() { 
+    let sess = localStorage.getItem('tsp_session'); 
+    if(sess) { 
+        try{ sess=JSON.parse(sess); document.getElementById('loginOverlay').style.display='none'; startApp(sess); }catch(e){} 
+    } 
+    // Pré-remplir le champ avec la clé par défaut si aucune n'est stockée
+    if (!localStorage.getItem('tsp_ors_key')) {
+        localStorage.setItem('tsp_ors_key', DEFAULT_ORS_KEY);
+    }
+    document.getElementById('orsKeyInput').value = getOrsKey();
+})();
 function switchTab(t) { document.getElementById('loginForm').style.display = t === 'login' ? 'block' : 'none'; document.getElementById('registerForm').style.display = t === 'register' ? 'block' : 'none'; document.getElementById('tabLogin').classList.toggle('active', t === 'login'); document.getElementById('tabReg').classList.toggle('active', t === 'register'); }
 </script>
 </body>
