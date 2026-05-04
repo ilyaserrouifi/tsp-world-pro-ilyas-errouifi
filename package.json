@@ -1,0 +1,16 @@
+{
+  "name": "tsp-world-pro",
+  "version": "1.0.0",
+  "description": "TSP WORLD PRO with real-time network (Socket.io, Express)",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.6.1"
+  },
+  "keywords": ["tsp", "socket.io", "real-time", "livreurs", "chat"],
+  "author": "Ilyas Errouifi",
+  "license": "ISC"
+}
