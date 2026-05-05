@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>✈️ TSP WORLD PRO - Navigation GPS auto‑rotation + offset polyline</title>
+    <title>✈️ TSP WORLD PRO - Traçage à points lumineux multiples</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -337,7 +337,7 @@
     </div>
     <div class="section"><div class="section-title">➕ Ajouter une ville personnalisée</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
-    <div class="footer">🌐 Routage OSRM · TSP · Export Java · Rappels · Tracking pro avec auto‑rotation · Offset polyline · Points animés</div>
+    <div class="footer">🌐 Routage OSRM · TSP · Export Java · Rappels · Tracking pro avec auto‑rotation · Polyline offset + 30 points lumineux animés</div>
 </div>
 
 <script>
@@ -588,7 +588,6 @@ function offsetLatLngs(points, offsetMeters) {
         if (len === 0) { result.push(p); continue; }
         let nx = -dy / len;   // vecteur normal (perpendiculaire)
         let ny =  dx / len;
-        // Conversion en degrés : 1° de latitude ≈ 111320 m, 1° de longitude varie avec la latitude
         let dLat = nx * offsetMeters / 111320;
         let dLon = ny * offsetMeters / (111320 * Math.cos(p[0] * Math.PI / 180));
         result.push([p[0] + dLat, p[1] + dLon]);
@@ -596,18 +595,18 @@ function offsetLatLngs(points, offsetMeters) {
     return result;
 }
 
-// ==================== ANIMATION DES POINTS ====================
+// ==================== ANIMATION AVEC 30 POINTS LUMINEUX ====================
 let dotAnimationInterval = null;
-let animatedDots = [];
+let animatedDots = [];   // stocke les marqueurs (L.circleMarker)
 
 function animateDotsOnRoute(points) {
-    // Supprime les points existants
+    // Supprime les anciens points
     animatedDots.forEach(dot => map.removeLayer(dot));
     animatedDots = [];
     if (dotAnimationInterval) clearInterval(dotAnimationInterval);
     if (points.length < 2) return;
 
-    // Calcul des distances cumulées
+    // Calcul des distances cumulées le long de la polyligne
     let totalLen = 0;
     let segments = [];
     for (let i = 0; i < points.length - 1; i++) {
@@ -625,25 +624,27 @@ function animateDotsOnRoute(points) {
     }
     if (totalLen === 0) return;
 
-    const NUM_DOTS = 6;
+    // Nombre de points : 30 pour un effet "trainée" dense
+    const NUM_DOTS = 30;
     let offsets = Array.from({length: NUM_DOTS}, (_, i) => i / NUM_DOTS);
-    let progress = 0;
+    let progress = 0; // de 0 à 1
 
-    // Création des marqueurs circulaires
+    // Créer les cercles (blancs, très petits, avec ombre)
     for (let i = 0; i < NUM_DOTS; i++) {
         let dot = L.circleMarker(points[0], {
-            radius: 4,
+            radius: 2.5,
             color: 'transparent',
             fillColor: '#ffffff',
-            fillOpacity: 0,
-            weight: 0
+            fillOpacity: 0.8,
+            weight: 0,
+            className: 'moving-dot'
         }).addTo(map);
         animatedDots.push(dot);
     }
 
-    // Animation
+    // Animation fluide (rafraîchissement toutes les 40ms)
     dotAnimationInterval = setInterval(() => {
-        progress = (progress + 0.003) % 1;
+        progress = (progress + 0.004) % 1;  // vitesse modérée
         for (let i = 0; i < NUM_DOTS; i++) {
             let t = (progress + offsets[i]) % 1;
             let targetLen = t * totalLen;
@@ -654,11 +655,17 @@ function animateDotsOnRoute(points) {
             let segT = seg.len > 0 ? (targetLen - seg.cumLen) / seg.len : 0;
             let lat = seg.start[0] + (seg.end[0] - seg.start[0]) * segT;
             let lon = seg.start[1] + (seg.end[1] - seg.start[1]) * segT;
-            let opacity = 0.3 + 0.7 * ((i + 1) / NUM_DOTS);
+            
+            // Effet de "trainée" : les points en tête sont plus gros et opaques
+            let intensity = 0.3 + 0.7 * (i / NUM_DOTS);
+            let radius = 2 + intensity * 2.5;  // entre 2 et 4.5 pixels
             animatedDots[i].setLatLng([lat, lon]);
-            animatedDots[i].setStyle({ fillOpacity: opacity, radius: 3 + i * 0.8 });
+            animatedDots[i].setStyle({ 
+                fillOpacity: intensity,
+                radius: radius
+            });
         }
-    }, 50);
+    }, 40); // 25 fps
 }
 
 // ==================== TRACKING PRO ====================
@@ -722,7 +729,7 @@ function stopTrackingPro() {
         map.setBearing(0, { animate: true, duration: 0.8 });
     }
 
-    // Arrêt de l'animation des points
+    // Arrêter l'animation des points
     if (dotAnimationInterval) clearInterval(dotAnimationInterval);
     animatedDots.forEach(dot => map.removeLayer(dot));
     animatedDots = [];
@@ -733,7 +740,7 @@ function stopTrackingPro() {
     document.getElementById('trackingInfo').style.display = 'none';
 }
 
-// Mise à jour GPS avec auto-rotation + offset polyline + points animés
+// Mise à jour GPS
 function onTrackingUpdate(pos) {
     let lat = pos.coords.latitude;
     let lon = pos.coords.longitude;
@@ -745,16 +752,16 @@ function onTrackingUpdate(pos) {
 
     trackingPoints.push([lat, lon]);
 
-    // Trace offset (3 mètres à droite)
+    // Tracé offset (3 mètres à droite)
     if (trackingPolyline) map.removeLayer(trackingPolyline);
     let offsetPoints = offsetLatLngs(trackingPoints, 3);
     trackingPolyline = L.polyline(offsetPoints, {
         color: '#00f5ff',
         weight: 5,
-        opacity: 0.9
+        opacity: 0.85
     }).addTo(map);
 
-    // Animation des points sur le tracé offset
+    // Lancer l'animation des points sur ce nouveau tracé
     animateDotsOnRoute(offsetPoints);
 
     // Marqueur avec flèche orientée
@@ -804,7 +811,7 @@ function onTrackingUpdate(pos) {
     // Centrage fluide
     map.flyTo([lat, lon], map.getZoom(), { animate: true, duration: 0.8 });
 
-    // Mise à jour du panneau d'info
+    // Mise à jour panneau info
     document.getElementById('ti_lat').textContent = lat.toFixed(6) + '°';
     document.getElementById('ti_lon').textContent = lon.toFixed(6) + '°';
     document.getElementById('ti_speed').textContent = speed != null ? (speed * 3.6).toFixed(1) + ' km/h' : '0 km/h';
@@ -827,7 +834,6 @@ function updateDirectionDisplay(heading) {
 
     let needle = document.getElementById('compassNeedle');
     if (needle) needle.setAttribute('transform', `rotate(${heading}, 40, 40)`);
-    
     let compassLabel = document.getElementById('compassLabel');
     if (compassLabel) compassLabel.textContent = `${Math.round(heading)}°`;
 }
