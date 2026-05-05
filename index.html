@@ -7,6 +7,8 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Plugin pour la rotation de la carte (boussole) -->
+    <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -113,6 +115,28 @@
         .map-switch { position: fixed; bottom: 20px; left: 20px; z-index: 1001; background: var(--surface); border: 1px solid var(--cyan); border-radius: 40px; padding: 6px 12px; cursor: pointer; font-size: 0.8rem; backdrop-filter: blur(8px); color: var(--cyan); }
         @media (max-width: 700px) { .dashboard { width: 380px; } }
         .gps-warning { background: rgba(255,170,0,0.2); border-left: 3px solid var(--warning); padding: 6px 12px; border-radius: 12px; margin-bottom: 12px; font-size: 0.7rem; }
+
+        /* Styles de la boussole ajoutée */
+        #compass {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            z-index: 1002;
+            cursor: pointer;
+            user-select: none;
+            filter: drop-shadow(0 0 12px rgba(0,245,255,0.5));
+        }
+        #compass:hover {
+            filter: drop-shadow(0 0 22px rgba(0,245,255,0.9));
+        }
+        #compassLabel {
+            text-align: center;
+            font-size: 0.65rem;
+            color: #00f5ff;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
@@ -166,6 +190,24 @@
 <div id="map"></div>
 <button class="toggle-dash" onclick="document.getElementById('dashboard').classList.toggle('collapsed')">⚙️ Menu</button>
 <div class="map-switch" onclick="toggleMapLayer()">🗺️ Changer fond</div>
+
+<!-- Boussole rotative (compass) -->
+<div id="compass" title="Cliquer pour réorienter vers le nord" onclick="resetNorth()">
+    <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="38" fill="rgba(7,7,20,0.85)" stroke="rgba(0,245,255,0.6)" stroke-width="1.5"/>
+        <text x="40" y="19" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="800" fill="#ff4466">N</text>
+        <text x="40" y="65" text-anchor="middle" font-family="sans-serif" font-size="8" fill="rgba(200,210,255,0.6)">S</text>
+        <text x="65" y="44" text-anchor="middle" font-family="sans-serif" font-size="8" fill="rgba(200,210,255,0.6)">E</text>
+        <text x="15" y="44" text-anchor="middle" font-family="sans-serif" font-size="8" fill="rgba(200,210,255,0.6)">O</text>
+        <g id="compassNeedle" transform="rotate(0,40,40)">
+            <polygon points="40,8 37,40 43,40" fill="#ff4466"/>
+            <polygon points="40,72 37,40 43,40" fill="#00f5ff" opacity="0.7"/>
+            <circle cx="40" cy="40" r="3.5" fill="#fff"/>
+        </g>
+    </svg>
+    <div id="compassLabel">↺ Nord</div>
+</div>
+
 <div class="dashboard" id="dashboard" style="display:none;">
     <div class="dash-header"><div class="dash-title">✈️ TSP WORLD PRO</div></div>
     <div class="welcome-pill"><span>👋 Bonjour, <strong id="welcomeName"></strong></span><button class="logout-btn" onclick="logout()">🚪 Déconnexion</button></div>
@@ -402,11 +444,9 @@ document.getElementById('dynamicSearch').addEventListener('input', function(e) {
 });
 
 // ==================== FONCTIONS DE PARTAGE AMÉLIORÉES ====================
-// Partager sa position actuelle (génère un lien)
 function shareCurrentLocation() {
     requestGeolocationWithHelp(pos => {
         let lat = pos.coords.latitude, lon = pos.coords.longitude;
-        // On crée un lien sans nom fixe, pour que le receveur puisse choisir le nom
         let shareUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}`;
         navigator.clipboard.writeText(shareUrl).then(() => {
             alert("Lien copié ! Envoyez-le à un ami.\nIl pourra donner un nom personnalisé à cette position.");
@@ -414,14 +454,12 @@ function shareCurrentLocation() {
     }, err => alert("Impossible d'obtenir votre position"));
 }
 
-// Gestion de l'URL à l'ouverture : demande un nom personnalisé pour la position reçue
 function handleUrlLocation() {
     const urlParams = new URLSearchParams(window.location.search);
     let lat = parseFloat(urlParams.get('lat'));
     let lon = parseFloat(urlParams.get('lon'));
-    let suggestedName = urlParams.get('name') || ""; // éventuel nom suggéré (par défaut vide)
+    let suggestedName = urlParams.get('name') || "";
     if (!isNaN(lat) && !isNaN(lon)) {
-        // Proposer un nom par défaut mais laisser l'utilisateur le modifier
         let defaultName = suggestedName ? suggestedName : `Position partagée (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
         let customName = prompt("🟢 Une position vous a été partagée.\nDonnez-lui un nom (vous pourrez le modifier plus tard) :", defaultName);
         if (customName && customName.trim() !== "") {
@@ -438,7 +476,6 @@ function handleUrlLocation() {
         } else {
             alert("Ajout annulé.");
         }
-        // Nettoyer l'URL pour ne pas ré-afficher le prompt au rechargement
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 }
@@ -453,7 +490,7 @@ let pickMode = false, myLocationMarker = null, watchId = null, trackingPolyline 
 
 function escapeHtml(s) { return String(s).replace(/[&<>]/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m];}); }
 
-// Rappels (identique)
+// Rappels
 function loadReminders() { try { let saved = localStorage.getItem('tsp_reminders'); if (saved) { reminders = JSON.parse(saved); nextReminderId = Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); } } catch(e) {} startReminderWatcher(); }
 function saveReminders() { localStorage.setItem('tsp_reminders', JSON.stringify(reminders)); }
 function renderReminderList() { let container = document.getElementById('reminderList'); if (!reminders.length) { container.innerHTML = '<div style="color:var(--muted); padding:8px;">Aucun rappel programmé.</div>'; return; } container.innerHTML = reminders.map(r => `<div class="reminder-item" data-id="${r.id}"><span class="reminder-time">⏰ ${r.timeStr}</span><span class="reminder-msg">${escapeHtml(r.message)}</span><button class="reminder-del" onclick="deleteReminder(${r.id})">✖</button></div>`).join(''); }
@@ -471,7 +508,7 @@ function pauseCron() { if(cronInterval) {clearInterval(cronInterval); cronInterv
 function resetCron() { pauseCron(); cronSeconds=0; updateCronDisplay(); sessionStorage.setItem('tsp_cron_sec',0); }
 updateCronDisplay();
 
-// Authentification locale (inchangée)
+// Authentification locale
 async function hashPassword(pwd) { const encoder = new TextEncoder(); const data = encoder.encode(pwd); const hashBuffer = await crypto.subtle.digest('SHA-256', data); return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2,'0')).join(''); }
 function isFileProtocol() { return window.location.protocol === 'file:'; }
 if (isFileProtocol()) document.getElementById('gpsWarningBanner').style.display = 'block';
@@ -485,18 +522,43 @@ function showConfirm(u) { pendingUser = u; document.getElementById('cf_username'
 function finalizeLogin() { localStorage.setItem('tsp_session', JSON.stringify(pendingUser)); document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('confirmOverlay').classList.add('hidden'); startApp(pendingUser); }
 function logout() { localStorage.removeItem('tsp_session'); location.reload(); }
 
-// Carte
+// Carte AVEC ROTATION
 let tileLayers = { osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap'}), googleSat: L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {attribution:'© Google Satellite', maxZoom:20}) };
 function setMapLayer(layerId) { if(currentTileLayer) map.removeLayer(currentTileLayer); currentTileLayer = tileLayers[layerId]; currentTileLayer.addTo(map); localStorage.setItem('tsp_map_layer', layerId); }
 function toggleMapLayer() { let newLayer = (localStorage.getItem('tsp_map_layer') || 'osm') === 'osm' ? 'googleSat' : 'osm'; setMapLayer(newLayer); }
 
+// Boussole + rotation
+function updateCompass() {
+    let bearing = map.getBearing ? map.getBearing() : 0;
+    document.getElementById('compassNeedle').setAttribute('transform', `rotate(${-bearing}, 40, 40)`);
+    document.getElementById('compassLabel').innerHTML = bearing === 0 ? '↺ Nord' : `${Math.round(bearing)}°`;
+}
+function resetNorth() {
+    if (map.setBearing) map.setBearing(0);
+    updateCompass();
+}
+window.resetNorth = resetNorth;
+
 function startApp(user) {
     document.getElementById('dashboard').style.display='block';
     document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`;
-    map = L.map('map',{zoomControl:false}).setView([20,10],2);
+    // Carte avec support rotation
+    map = L.map('map', {
+        zoomControl: false,
+        rotate: true,
+        touchRotate: true,
+        rotateControl: false,
+        bearing: 0
+    }).setView([20, 10], 2);
     let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm';
     setMapLayer(savedLayer);
     L.control.zoom({position:'bottomright'}).addTo(map);
+    
+    // Écoute des événements de rotation et mouvement
+    map.on('rotate', updateCompass);
+    map.on('move', updateCompass);
+    updateCompass();
+    
     map.on('click', e => {
         if(pickMode) {
             document.getElementById('newLat').value=e.latlng.lat.toFixed(6);
@@ -508,10 +570,10 @@ function startApp(user) {
     });
     loadSelected();
     loadReminders();
-    handleUrlLocation(); // gère le partage de position avec nom personnalisé
+    handleUrlLocation();
 }
 
-// GPS / tracking
+// GPS / tracking (inchangé)
 function showMyLocation() { requestGeolocationWithHelp(pos => { let lat=pos.coords.latitude, lon=pos.coords.longitude; map.setView([lat,lon],14); if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]); else myLocationMarker = L.marker([lat,lon],{icon:L.divIcon({html:'<div style="background:#00aaff;width:20px;height:20px;border-radius:50%;border:2px solid white;"></div>',iconSize:[20,20]})}).addTo(map).bindPopup('Votre position').openPopup(); if(confirm("Ajouter cette position à votre liste de villes ?")) addCityToList({name:"Ma position",lat,lon,country:"Local",desc:"GPS",custom:true}); }, err => alert("Erreur GPS")); }
 function startTracking() { if(isFileProtocol()) { alert("Suivi impossible en file://"); return; } if(watchId) stopTracking(); trackingPoints = []; if(trackingPolyline) map.removeLayer(trackingPolyline); watchId = navigator.geolocation.watchPosition(pos => { let lat=pos.coords.latitude, lon=pos.coords.longitude; trackingPoints.push([lat,lon]); if(trackingPolyline) map.removeLayer(trackingPolyline); trackingPolyline = L.polyline(trackingPoints, {color:'#ffaa33', weight:3, opacity:0.7}).addTo(map); if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]); else myLocationMarker = L.marker([lat,lon],{icon:L.divIcon({html:'<div style="background:#00aaff;width:20px;height:20px;border-radius:50%;"></div>',iconSize:[20,20]})}).addTo(map); map.setView([lat,lon], map.getZoom()); }, err => console.warn(err)); }
 function stopTracking() { if(watchId) { navigator.geolocation.clearWatch(watchId); watchId=null; } }
