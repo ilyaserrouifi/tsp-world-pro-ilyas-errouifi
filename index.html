@@ -337,7 +337,7 @@
     </div>
     <div class="section"><div class="section-title">➕ Ajouter une ville personnalisée</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
-    <div class="footer">🌐 Routage réel OSRM · TSP · Export Java · Rappels · Tracking pro avec son & boussole</div>
+    <div class="footer">🌐 Routage réel OSRM · TSP · Export Java · Rappels · Tracking pro avec son & boussole · Rotation PC: Shift+glisser</div>
 </div>
 
 <script>
@@ -579,6 +579,7 @@ let lastHeading = 0;
 let trackingPolyline = null;
 let watchId = null;
 let trackingPoints = [];
+let myLocationMarker = null;
 
 function toggleTracking() {
     if (isTracking) stopTrackingPro();
@@ -641,13 +642,12 @@ function onTrackingUpdate(pos) {
     let heading = pos.coords.heading;
     let accuracy = pos.coords.accuracy;
 
-    soundTick(); // petit bip à chaque position
+    soundTick();
 
     trackingPoints.push([lat, lon]);
     if (trackingPolyline) map.removeLayer(trackingPolyline);
     trackingPolyline = L.polyline(trackingPoints, { color: '#ffaa33', weight: 4, opacity: 0.85 }).addTo(map);
 
-    // Mise à jour du marqueur de position
     if (myLocationMarker) {
         myLocationMarker.setLatLng([lat, lon]);
     } else {
@@ -660,10 +660,8 @@ function onTrackingUpdate(pos) {
         }).addTo(map);
     }
 
-    // La carte suit l'utilisateur en douceur
     map.flyTo([lat, lon], map.getZoom(), { animate: true, duration: 1.0 });
 
-    // Mise à jour de la carte d'info
     document.getElementById('ti_lat').textContent = lat.toFixed(6) + '°';
     document.getElementById('ti_lon').textContent = lon.toFixed(6) + '°';
     document.getElementById('ti_speed').textContent = speed != null ? (speed * 3.6).toFixed(1) + ' km/h' : '0 km/h';
@@ -685,7 +683,6 @@ function updateDirectionDisplay(heading) {
     let idx = Math.round(heading / 45) % 8;
     document.getElementById('ti_dir').innerHTML = names[dirs[idx]] || `${Math.round(heading)}°`;
 
-    // Met à jour l'aiguille de la boussole
     let needle = document.getElementById('compassNeedle');
     if (needle) needle.setAttribute('transform', `rotate(${-heading},40,40)`);
 }
@@ -693,7 +690,6 @@ function updateDirectionDisplay(heading) {
 // ==================== CARTE & ROTATION ====================
 let map, currentTileLayer, routeLayer, routeMarkers = [];
 let tspCancelRequested = false;
-let myLocationMarker = null;
 
 const tileLayers = {
     osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
@@ -723,7 +719,7 @@ function resetNorth() {
 }
 window.resetNorth = resetNorth;
 
-// ==================== FONCTIONS UTILES (GPS, horloge, rappels, TSP, etc.) ====================
+// ==================== FONCTIONS UTILES ====================
 function isFileProtocol() { return window.location.protocol === 'file:'; }
 if (isFileProtocol()) document.getElementById('gpsWarningBanner').style.display = 'block';
 
@@ -752,7 +748,7 @@ function showMyLocation() {
     }, err => alert("Erreur GPS"));
 }
 
-// Rappels (alarmes)
+// Rappels
 let reminders = [], nextReminderId = 1, reminderInterval = null;
 function loadReminders() {
     try {
@@ -831,6 +827,8 @@ function startApp(user) {
     document.getElementById('dashboard').style.display = 'block';
     document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`;
     map = L.map('map', { zoomControl: false, rotate: true, touchRotate: true, rotateControl: false, bearing: 0 }).setView([20,10], 2);
+    // Fix rotation sur PC : utiliser la touche Shift (au lieu de Ctrl)
+    map.dragging.rotateModifierKey = 'Shift';
     let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm';
     setMapLayer(savedLayer);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
@@ -865,7 +863,7 @@ function cancelTSP() { tspCancelRequested = true; }
 function generateJavaCode() { if (!selectedCities.length) { document.getElementById('javaCodeArea').value = "// Aucune ville sélectionnée."; return; } let coordsArray = selectedCities.map(c => `    {${c.lat}, ${c.lon}}`).join(",\n"); let javaCode = `public class TSPCoords {\n    public static double[][] getCoordinates() {\n        return new double[][] {\n${coordsArray}\n        };\n    }\n}`; document.getElementById('javaCodeArea').value = javaCode; }
 function copyJavaCode() { let textarea = document.getElementById('javaCodeArea'); textarea.select(); document.execCommand('copy'); alert("Code Java copié !"); }
 
-// Switch tabs authentification
+// Switch tabs
 function switchTab(t) {
     document.getElementById('loginForm').style.display = t === 'login' ? 'block' : 'none';
     document.getElementById('registerForm').style.display = t === 'register' ? 'block' : 'none';
@@ -873,7 +871,7 @@ function switchTab(t) {
     document.getElementById('tabReg').classList.toggle('active', t === 'register');
 }
 
-// Expositions globales
+// Exports globaux
 window.switchTab = switchTab;
 window.doLogin = doLogin;
 window.doRegister = doRegister;
@@ -903,7 +901,7 @@ window.toggleTracking = toggleTracking;
 window.startTracking = startTrackingPro;
 window.stopTracking = stopTrackingPro;
 
-// Lancement après splash
+// Démarrage
 document.addEventListener('DOMContentLoaded', () => {
     const splash = document.getElementById('splashScreen');
     setTimeout(() => {
