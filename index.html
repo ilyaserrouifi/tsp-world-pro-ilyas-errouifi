@@ -3,45 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>✈️ TSP WORLD PRO - Suivi de livraison multi‑rôles</title>
+    <title>✈️ TSP WORLD PRO - Navigation GPS auto‑rotation + offset polyline</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-    
-    <!-- Firebase modules (à remplacer par vos clés) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, query, where, orderBy, getDocs } 
-            from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } 
-            from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "VOTRE_API_KEY",          // Remplacez par votre clé
-            authDomain: "VOTRE_PROJECT_ID.firebaseapp.com",
-            projectId: "VOTRE_PROJECT_ID",
-            storageBucket: "VOTRE_PROJECT_ID.appspot.com",
-            messagingSenderId: "VOTRE_SENDER_ID",
-            appId: "VOTRE_APP_ID"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        window.db = getFirestore(app);
-        window.auth = getAuth(app);
-        window.fsDoc = doc;
-        window.fsSetDoc = setDoc;
-        window.fsOnSnapshot = onSnapshot;
-        window.fsCollection = collection;
-        window.fsAddDoc = addDoc;
-        window.fsQuery = query;
-        window.fsWhere = where;
-        window.fsOrderBy = orderBy;
-        window.fsGetDocs = getDocs;
-        console.log("Firebase initialisé");
-    </script>
-    
     <style>
         :root {
             --cyan: #00f5ff;
@@ -109,7 +76,7 @@
         .toggle-dash:hover { background: var(--cyan); color: #000; box-shadow: 0 0 12px var(--cyan); }
         .dash-header { display: flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
         .dash-title { font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800; background: linear-gradient(135deg,var(--cyan),var(--cyan2),#00ffaa); -webkit-background-clip:text; background-clip:text; color:transparent; }
-        .welcome-pill { background: rgba(0,245,255,0.08); border: 1px dashed rgba(0,245,255,0.3); border-radius: 50px; padding: 7px 14px; display:flex; align-items:center; gap:10px; margin-bottom:16px; font-size:0.78rem; flex-wrap:wrap; }
+        .welcome-pill { background: rgba(0,245,255,0.08); border: 1px dashed rgba(0,245,255,0.3); border-radius: 50px; padding: 7px 14px; display:flex; align-items:center; gap:10px; margin-bottom:16px; font-size:0.78rem; }
         .logout-btn { background: rgba(255,80,80,0.12); border:1px solid rgba(255,100,100,0.4); color:#ff8888; padding:4px 12px; border-radius:50px; cursor:pointer; font-size:0.7rem; }
         .time-panel { display: flex; justify-content: space-between; align-items: baseline; background: rgba(0,245,255,0.1); border-radius: 16px; padding: 8px 16px; margin-bottom: 16px; flex-wrap: wrap; }
         .current-time { font-family: monospace; font-size: 1.6rem; font-weight: 700; color: var(--cyan); }
@@ -214,84 +181,6 @@
             margin:6px 0 2px; display:block;
             transition: transform 0.5s ease;
         }
-
-        /* Rôles */
-        .role-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 12px;
-            border-radius: 50px;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-        .role-client      { background: rgba(0,255,170,0.15); color: #00ffaa; border: 1px solid #00ffaa44; }
-        .role-livreur     { background: rgba(0,136,255,0.15); color: #0088ff; border: 1px solid #0088ff44; }
-        .role-responsable { background: rgba(255,170,0,0.15); color: #ffaa33; border: 1px solid #ffaa3344; }
-
-        .role-panel { display: none; }
-        .role-panel.active { display: block; }
-
-        .livreur-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(0,245,255,0.2);
-            border-radius: 16px;
-            padding: 12px 16px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .livreur-card:hover { background: rgba(0,245,255,0.07); border-color: var(--cyan); }
-        .livreur-card .status-dot {
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        .status-dot.actif   { background: #00ffaa; box-shadow: 0 0 8px #00ffaa; animation: trackPulse 1.5s infinite; }
-        .status-dot.inactif { background: #666; }
-
-        .livraison-card {
-            background: rgba(0,0,0,0.3);
-            border-left: 3px solid var(--cyan);
-            border-radius: 12px;
-            padding: 10px 14px;
-            margin-bottom: 8px;
-            font-size: 0.82rem;
-        }
-        .livraison-card.en_attente { border-left-color: #ffaa33; }
-        .livraison-card.en_cours   { border-left-color: #0088ff; }
-        .livraison-card.livre      { border-left-color: #00ffaa; }
-
-        .chat-box {
-            background: rgba(0,0,0,0.4);
-            border-radius: 16px;
-            padding: 10px;
-            max-height: 200px;
-            overflow-y: auto;
-            margin-bottom: 8px;
-        }
-        .msg-bubble {
-            max-width: 80%;
-            padding: 7px 12px;
-            border-radius: 16px;
-            margin-bottom: 6px;
-            font-size: 0.8rem;
-            word-break: break-word;
-        }
-        .msg-bubble.sent {
-            background: linear-gradient(135deg, var(--cyan), var(--cyan2));
-            color: #000;
-            margin-left: auto;
-            border-bottom-right-radius: 4px;
-        }
-        .msg-bubble.received {
-            background: rgba(255,255,255,0.08);
-            border-bottom-left-radius: 4px;
-        }
-        .msg-time { font-size: 0.65rem; opacity: 0.6; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -325,19 +214,6 @@
             <div class="field"><label>Nom</label><input type="text" id="regLastName"></div>
             <div class="field"><label>Mot de passe</label><input type="password" id="regPassword"></div>
             <div class="field"><label>Confirmer</label><input type="password" id="regConfirm"></div>
-            <div class="field"><label>Téléphone</label><input type="tel" id="regPhone" placeholder="06XXXXXXXX"></div>
-            <div class="field">
-                <label>Rôle</label>
-                <div class="tab-row" style="margin-bottom:0;">
-                    <button type="button" class="tab-btn active" id="roleClient" onclick="selectRole('client')">👤 Client</button>
-                    <button type="button" class="tab-btn" id="roleLivreur" onclick="selectRole('livreur')">🚴 Livreur</button>
-                    <button type="button" class="tab-btn" id="roleResp" onclick="selectRole('responsable')">👔 Responsable</button>
-                </div>
-            </div>
-            <div class="field" id="codeEntrepriseField" style="display:none;">
-                <label>Code Entreprise</label>
-                <input type="text" id="regCodeEntreprise" placeholder="Code donné par le responsable">
-            </div>
             <button class="primary-btn" onclick="doRegister()">📝 S'inscrire</button>
             <div class="err-msg" id="regErr"></div>
         </div>
@@ -461,31 +337,678 @@
     </div>
     <div class="section"><div class="section-title">➕ Ajouter une ville personnalisée</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
-    <div class="footer">🌐 Routage OSRM · TSP · Export Java · Rappels · Tracking pro · Système multi‑rôles avec Firebase</div>
+    <div class="footer">🌐 Routage OSRM · TSP · Export Java · Rappels · Tracking pro avec auto‑rotation · Offset polyline · Points animés</div>
 </div>
 
 <script>
-// ==================== VARIABLES GLOBALES ====================
+// ==================== GESTION DES VILLES SÉLECTIONNÉES ====================
+let selectedCities = [];
+let nextCityId = 1;
+let selectionMarkers = [];
+
+function loadSelected() {
+    let saved = localStorage.getItem('tsp_selected_cities');
+    if (saved) {
+        try {
+            selectedCities = JSON.parse(saved);
+            if (selectedCities.length) nextCityId = Math.max(...selectedCities.map(c=>c.id), 0) + 1;
+        } catch(e) {}
+    }
+    updateSelUI();
+    updateMarkersOnMap();
+}
+function saveSelected() { localStorage.setItem('tsp_selected_cities', JSON.stringify(selectedCities)); }
+
+function updateMarkersOnMap() {
+    if (!map) return;
+    selectionMarkers.forEach(m => map.removeLayer(m));
+    selectionMarkers = [];
+    selectedCities.forEach(city => {
+        let popupContent = `
+            <div style="min-width:150px;">
+                <b>${escapeHtml(city.name)}</b><br>
+                <i>${escapeHtml(city.country)}</i><br>
+                📍 ${city.lat.toFixed(5)}, ${city.lon.toFixed(5)}<br>
+                ${city.desc ? `<small>${escapeHtml(city.desc)}</small><br>` : ''}
+                <button onclick="window.zoomToCityById(${city.id})" style="margin-top:4px; padding:2px 8px; background:#00f5ff; border:none; border-radius:20px;">🎯 Centrer</button>
+            </div>
+        `;
+        let marker = L.marker([city.lat, city.lon], { title: city.name }).bindPopup(popupContent).addTo(map);
+        marker.on('click', () => showPlaceDetails(city.name, city.lat, city.lon, city.country, city.desc));
+        selectionMarkers.push(marker);
+    });
+}
+window.zoomToCityById = function(id) {
+    let city = selectedCities.find(c => c.id === id);
+    if (city) map.flyTo([city.lat, city.lon], 13);
+};
+
+function updateSelUI() {
+    let container = document.getElementById('selectedList');
+    document.getElementById('selCount').innerText = selectedCities.length;
+    if (!selectedCities.length) {
+        container.innerHTML = '<div>Aucune ville sélectionnée</div>';
+        document.getElementById('startCitySelect').innerHTML = '<option>Aucune</option>';
+        return;
+    }
+    container.innerHTML = selectedCities.map((city, i) => `
+        <div class="sel-item" onclick="showPlaceDetails('${escapeHtml(city.name)}', ${city.lat}, ${city.lon}, '${escapeHtml(city.country)}', '${escapeHtml(city.desc || '')}'); zoomToCity(${i});">
+            <span>${i+1}. ${escapeHtml(city.name)} (${escapeHtml(city.country)})</span>
+            <button class="rm" onclick="event.stopPropagation();removeCity(${i})">✖</button>
+        </div>
+    `).join('');
+    let sel = document.getElementById('startCitySelect');
+    sel.innerHTML = selectedCities.map((c,i) => `<option value="${i}">${escapeHtml(c.name)}</option>`).join('');
+}
+function removeCity(idx) {
+    selectedCities.splice(idx,1);
+    saveSelected();
+    updateSelUI();
+    updateMarkersOnMap();
+    clearMapRoute();
+    if (selectedCities.length === 0) document.getElementById('placeDetails').innerHTML = '<span style="color:var(--muted);">Aucun lieu sélectionné</span>';
+}
+function clearSelection() {
+    selectedCities = [];
+    saveSelected();
+    updateSelUI();
+    updateMarkersOnMap();
+    clearMapRoute();
+    document.getElementById('placeDetails').innerHTML = '<span style="color:var(--muted);">Aucun lieu sélectionné</span>';
+}
+function addCityToList(city) {
+    if (!selectedCities.some(c => c.name === city.name && Math.abs(c.lat - city.lat) < 0.001)) {
+        let newId = nextCityId++;
+        let newCity = { ...city, id: newId, desc: city.desc || '' };
+        selectedCities.push(newCity);
+        saveSelected();
+        updateSelUI();
+        updateMarkersOnMap();
+        showPlaceDetails(newCity.name, newCity.lat, newCity.lon, newCity.country, newCity.desc);
+        return true;
+    } else {
+        let existing = selectedCities.find(c => c.name === city.name);
+        if (existing) showPlaceDetails(existing.name, existing.lat, existing.lon, existing.country, existing.desc);
+        return false;
+    }
+}
+function zoomToCity(idx) {
+    let city = selectedCities[idx];
+    if (city) {
+        map.flyTo([city.lat, city.lon], 12);
+        let marker = selectionMarkers.find(m => m.getLatLng().lat === city.lat && m.getLatLng().lng === city.lon);
+        if (marker) marker.openPopup();
+    }
+}
+function showPlaceDetails(name, lat, lon, country, description) {
+    let detailsDiv = document.getElementById('placeDetails');
+    detailsDiv.innerHTML = `
+        <h4>📍 ${escapeHtml(name)}</h4>
+        <p><strong>Pays :</strong> ${escapeHtml(country)}</p>
+        <p><strong>Coordonnées :</strong> ${lat.toFixed(6)}°, ${lon.toFixed(6)}°</p>
+        ${description ? `<p><strong>Description :</strong> ${escapeHtml(description)}</p>` : ''}
+        <button class="btn-secondary" onclick="map.flyTo([${lat}, ${lon}], 14);">🎯 Centrer la carte</button>
+    `;
+}
+
+// ==================== RECHERCHE DYNAMIQUE ====================
+let searchTimeout = null;
+async function performSearch(query) {
+    if (!query || query.length < 3) {
+        document.getElementById('searchResults').style.display = 'none';
+        document.getElementById('searchFeedback').innerHTML = 'Tapez au moins 3 caractères...';
+        return;
+    }
+    document.getElementById('searchResults').style.display = 'block';
+    document.getElementById('searchFeedback').innerHTML = '⏳ Recherche en cours...';
+    try {
+        let resp = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=8&addressdetails=1`);
+        let data = await resp.json();
+        if (!data.length) {
+            document.getElementById('searchResults').innerHTML = '<div class="city-card">Aucun résultat</div>';
+            document.getElementById('searchFeedback').innerHTML = '❌ Aucun lieu trouvé';
+            return;
+        }
+        let resultsHtml = '';
+        for (let place of data) {
+            let name = place.display_name.split(',')[0];
+            let country = place.address?.country || 'Monde';
+            resultsHtml += `
+                <div class="city-card" onclick="selectSearchResult('${escapeHtml(name)}', ${place.lat}, ${place.lon}, '${escapeHtml(country)}', '')">
+                    <span><strong>${escapeHtml(name)}</strong> (${escapeHtml(country)})</span>
+                    <span>➕</span>
+                </div>
+            `;
+        }
+        document.getElementById('searchResults').innerHTML = resultsHtml;
+        document.getElementById('searchFeedback').innerHTML = `✅ ${data.length} résultat(s) trouvé(s)`;
+    } catch(e) {
+        document.getElementById('searchResults').innerHTML = '<div class="city-card">Erreur réseau</div>';
+        document.getElementById('searchFeedback').innerHTML = '❌ Erreur de connexion';
+    }
+}
+function selectSearchResult(name, lat, lon, country, description) {
+    let added = addCityToList({ name, lat: parseFloat(lat), lon: parseFloat(lon), country, desc: description });
+    if (added) {
+        document.getElementById('searchFeedback').innerHTML = `✅ ${escapeHtml(name)} ajouté à la sélection !`;
+        map.flyTo([lat, lon], 12);
+    } else {
+        document.getElementById('searchFeedback').innerHTML = `⚠️ ${escapeHtml(name)} déjà sélectionné.`;
+    }
+    document.getElementById('dynamicSearch').value = '';
+    document.getElementById('searchResults').style.display = 'none';
+}
+document.getElementById('dynamicSearch').addEventListener('input', function(e) {
+    let val = e.target.value.trim();
+    if (searchTimeout) clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => performSearch(val), 500);
+});
+
+// ==================== PARTAGE DE POSITION ====================
+function shareCurrentLocation() {
+    requestGeolocationWithHelp(pos => {
+        let lat = pos.coords.latitude, lon = pos.coords.longitude;
+        let shareUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            alert("Lien copié ! Envoyez-le à un ami.\nIl pourra donner un nom personnalisé à cette position.");
+        });
+    }, err => alert("Impossible d'obtenir votre position"));
+}
+function handleUrlLocation() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let lat = parseFloat(urlParams.get('lat'));
+    let lon = parseFloat(urlParams.get('lon'));
+    let suggestedName = urlParams.get('name') || "";
+    if (!isNaN(lat) && !isNaN(lon)) {
+        let defaultName = suggestedName ? suggestedName : `Position partagée (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+        let customName = prompt("🟢 Une position vous a été partagée.\nDonnez-lui un nom :", defaultName);
+        if (customName && customName.trim() !== "") {
+            addCityToList({
+                name: customName.trim(),
+                lat: lat,
+                lon: lon,
+                country: "Partagé",
+                desc: `Position reçue par lien (${new Date().toLocaleString()})`,
+                custom: true
+            });
+            map.flyTo([lat, lon], 12);
+            alert(`✅ "${customName}" ajouté à votre sélection.`);
+        } else alert("Ajout annulé.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+}
+
+// ==================== SONS (Web Audio) ====================
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function getAudioCtx() { if (!audioCtx) audioCtx = new AudioCtx(); return audioCtx; }
+function playBeep(freq=880, duration=0.15, type='sine', vol=0.3) {
+    try {
+        let ctx = getAudioCtx();
+        let osc = ctx.createOscillator();
+        let gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(vol, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + duration);
+    } catch(e) { console.warn("Audio error", e); }
+}
+function soundStart() {
+    playBeep(600,0.08,'sine',0.25);
+    setTimeout(()=>playBeep(900,0.08,'sine',0.25),90);
+    setTimeout(()=>playBeep(1200,0.15,'sine',0.3),180);
+}
+function soundStop() {
+    playBeep(800,0.08,'sine',0.2);
+    setTimeout(()=>playBeep(500,0.08,'sine',0.2),90);
+    setTimeout(()=>playBeep(300,0.15,'sine',0.25),180);
+}
+function soundTick()  { playBeep(1000,0.04,'sine',0.08); }
+function soundWarn()  {
+    playBeep(400,0.2,'square',0.15);
+    setTimeout(()=>playBeep(300,0.3,'square',0.15),250);
+}
+
+// ==================== OFFSET POLYLINE ====================
+// Calcule une ligne parallèle décalée de `offsetMeters` mètres (positif = à droite)
+function offsetLatLngs(points, offsetMeters) {
+    if (points.length < 2) return points;
+    let result = [];
+    for (let i = 0; i < points.length; i++) {
+        let p = points[i];
+        let prev = points[Math.max(0, i - 1)];
+        let next = points[Math.min(points.length - 1, i + 1)];
+        let dx = next[1] - prev[1]; // delta lon
+        let dy = next[0] - prev[0]; // delta lat
+        let len = Math.sqrt(dx*dx + dy*dy);
+        if (len === 0) { result.push(p); continue; }
+        let nx = -dy / len;   // vecteur normal (perpendiculaire)
+        let ny =  dx / len;
+        // Conversion en degrés : 1° de latitude ≈ 111320 m, 1° de longitude varie avec la latitude
+        let dLat = nx * offsetMeters / 111320;
+        let dLon = ny * offsetMeters / (111320 * Math.cos(p[0] * Math.PI / 180));
+        result.push([p[0] + dLat, p[1] + dLon]);
+    }
+    return result;
+}
+
+// ==================== ANIMATION DES POINTS ====================
+let dotAnimationInterval = null;
+let animatedDots = [];
+
+function animateDotsOnRoute(points) {
+    // Supprime les points existants
+    animatedDots.forEach(dot => map.removeLayer(dot));
+    animatedDots = [];
+    if (dotAnimationInterval) clearInterval(dotAnimationInterval);
+    if (points.length < 2) return;
+
+    // Calcul des distances cumulées
+    let totalLen = 0;
+    let segments = [];
+    for (let i = 0; i < points.length - 1; i++) {
+        let d = Math.sqrt(
+            Math.pow(points[i+1][0] - points[i][0], 2) +
+            Math.pow(points[i+1][1] - points[i][1], 2)
+        );
+        segments.push({
+            start: points[i],
+            end: points[i+1],
+            len: d,
+            cumLen: totalLen
+        });
+        totalLen += d;
+    }
+    if (totalLen === 0) return;
+
+    const NUM_DOTS = 6;
+    let offsets = Array.from({length: NUM_DOTS}, (_, i) => i / NUM_DOTS);
+    let progress = 0;
+
+    // Création des marqueurs circulaires
+    for (let i = 0; i < NUM_DOTS; i++) {
+        let dot = L.circleMarker(points[0], {
+            radius: 4,
+            color: 'transparent',
+            fillColor: '#ffffff',
+            fillOpacity: 0,
+            weight: 0
+        }).addTo(map);
+        animatedDots.push(dot);
+    }
+
+    // Animation
+    dotAnimationInterval = setInterval(() => {
+        progress = (progress + 0.003) % 1;
+        for (let i = 0; i < NUM_DOTS; i++) {
+            let t = (progress + offsets[i]) % 1;
+            let targetLen = t * totalLen;
+            let seg = segments[segments.length - 1];
+            for (let s of segments) {
+                if (s.cumLen + s.len >= targetLen) { seg = s; break; }
+            }
+            let segT = seg.len > 0 ? (targetLen - seg.cumLen) / seg.len : 0;
+            let lat = seg.start[0] + (seg.end[0] - seg.start[0]) * segT;
+            let lon = seg.start[1] + (seg.end[1] - seg.start[1]) * segT;
+            let opacity = 0.3 + 0.7 * ((i + 1) / NUM_DOTS);
+            animatedDots[i].setLatLng([lat, lon]);
+            animatedDots[i].setStyle({ fillOpacity: opacity, radius: 3 + i * 0.8 });
+        }
+    }, 50);
+}
+
+// ==================== TRACKING PRO ====================
+let isTracking = false;
+let lastHeading = 0;
+let trackingPolyline = null;
+let watchId = null;
+let trackingPoints = [];
+let myLocationMarker = null;
+
+function toggleTracking() {
+    if (isTracking) stopTrackingPro();
+    else startTrackingPro();
+}
+
+function startTrackingPro() {
+    if (isFileProtocol()) {
+        alert("Suivi impossible en file://\nOuvrez via serveur HTTP (Live Server).");
+        return;
+    }
+    if (!navigator.geolocation) {
+        alert("GPS non supporté par ce navigateur.");
+        return;
+    }
+    isTracking = true;
+    trackingPoints = [];
+    if (trackingPolyline) map.removeLayer(trackingPolyline);
+    soundStart();
+
+    let btn = document.getElementById('trackBtn');
+    btn.innerHTML = '⏹️ Stop Tracking';
+    btn.classList.add('tracking');
+    document.getElementById('trackingInfo').style.display = 'block';
+
+    watchId = navigator.geolocation.watchPosition(
+        onTrackingUpdate,
+        err => {
+            soundWarn();
+            let msg = {
+                1: "❌ Permission GPS refusée.\nAutorisez la localisation dans votre navigateur.",
+                2: "⚠️ Position GPS indisponible.\nVérifiez que le GPS est activé sur votre appareil.",
+                3: "⏱️ Timeout GPS.\nEssayez de vous déplacer ou rechargez."
+            }[err.code] || "❌ Erreur GPS inconnue.";
+            alert(msg);
+            stopTrackingPro();
+        },
+        { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }
+    );
+}
+
+function stopTrackingPro() {
+    if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+    }
+    isTracking = false;
+    soundStop();
+
+    // Remet la carte au nord (bearing 0) à l'arrêt
+    if (map.setBearing) {
+        map.setBearing(0, { animate: true, duration: 0.8 });
+    }
+
+    // Arrêt de l'animation des points
+    if (dotAnimationInterval) clearInterval(dotAnimationInterval);
+    animatedDots.forEach(dot => map.removeLayer(dot));
+    animatedDots = [];
+
+    let btn = document.getElementById('trackBtn');
+    btn.innerHTML = '📡 Start Tracking';
+    btn.classList.remove('tracking');
+    document.getElementById('trackingInfo').style.display = 'none';
+}
+
+// Mise à jour GPS avec auto-rotation + offset polyline + points animés
+function onTrackingUpdate(pos) {
+    let lat = pos.coords.latitude;
+    let lon = pos.coords.longitude;
+    let speed = pos.coords.speed;
+    let heading = pos.coords.heading;
+    let accuracy = pos.coords.accuracy;
+
+    soundTick();
+
+    trackingPoints.push([lat, lon]);
+
+    // Trace offset (3 mètres à droite)
+    if (trackingPolyline) map.removeLayer(trackingPolyline);
+    let offsetPoints = offsetLatLngs(trackingPoints, 3);
+    trackingPolyline = L.polyline(offsetPoints, {
+        color: '#00f5ff',
+        weight: 5,
+        opacity: 0.9
+    }).addTo(map);
+
+    // Animation des points sur le tracé offset
+    animateDotsOnRoute(offsetPoints);
+
+    // Marqueur avec flèche orientée
+    if (myLocationMarker) {
+        myLocationMarker.setLatLng([lat, lon]);
+        if (heading != null && !isNaN(heading)) {
+            let newIcon = L.divIcon({
+                html: `<div style="
+                    width:28px; height:28px;
+                    background: radial-gradient(circle, #00f5ff, #0055ff);
+                    border-radius:50%;
+                    border:3px solid white;
+                    box-shadow:0 0 18px rgba(0,245,255,0.9);
+                    position:relative;
+                ">
+                    <div style="
+                        position:absolute; top:-10px; left:50%;
+                        transform:translateX(-50%) rotate(${heading}deg);
+                        width:0; height:0;
+                        border-left:6px solid transparent;
+                        border-right:6px solid transparent;
+                        border-bottom:12px solid #00f5ff;
+                    "></div>
+                </div>`,
+                iconSize: [28, 28],
+                iconAnchor: [14, 14]
+            });
+            myLocationMarker.setIcon(newIcon);
+        }
+    } else {
+        let iconHtml = `<div style="width:28px; height:28px; background: radial-gradient(circle, #00f5ff, #0055ff); border-radius:50%; border:3px solid white; box-shadow:0 0 18px rgba(0,245,255,0.9); position:relative;">
+            <div style="position:absolute; top:-10px; left:50%; transform:translateX(-50%) rotate(${heading || 0}deg); width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:12px solid #00f5ff;"></div>
+        </div>`;
+        myLocationMarker = L.marker([lat, lon], {
+            icon: L.divIcon({ html: iconHtml, iconSize: [28,28], iconAnchor: [14,14] })
+        }).addTo(map);
+    }
+
+    // Auto‑rotation pour que le cap pointe vers le haut
+    if (heading != null && !isNaN(heading) && heading !== 0) {
+        lastHeading = heading;
+        if (map.setBearing) {
+            map.setBearing(-heading, { animate: true, duration: 0.5 });
+        }
+    }
+
+    // Centrage fluide
+    map.flyTo([lat, lon], map.getZoom(), { animate: true, duration: 0.8 });
+
+    // Mise à jour du panneau d'info
+    document.getElementById('ti_lat').textContent = lat.toFixed(6) + '°';
+    document.getElementById('ti_lon').textContent = lon.toFixed(6) + '°';
+    document.getElementById('ti_speed').textContent = speed != null ? (speed * 3.6).toFixed(1) + ' km/h' : '0 km/h';
+    document.getElementById('ti_acc').textContent = accuracy != null ? Math.round(accuracy) + ' m' : '-- m';
+
+    updateDirectionDisplay(lastHeading);
+}
+
+function updateDirectionDisplay(heading) {
+    let arrowSpan = document.getElementById('directionArrow');
+    if (arrowSpan) arrowSpan.style.transform = `rotate(${heading}deg)`;
+
+    let dirs  = ['N','NE','E','SE','S','SO','O','NO'];
+    let names = {
+        'N':'⬆️ Nord','NE':'↗️ Nord-Est','E':'➡️ Est','SE':'↘️ Sud-Est',
+        'S':'⬇️ Sud','SO':'↙️ Sud-Ouest','O':'⬅️ Ouest','NO':'↖️ Nord-Ouest'
+    };
+    let idx = Math.round(heading / 45) % 8;
+    document.getElementById('ti_dir').innerHTML = names[dirs[idx]] || `${Math.round(heading)}°`;
+
+    let needle = document.getElementById('compassNeedle');
+    if (needle) needle.setAttribute('transform', `rotate(${heading}, 40, 40)`);
+    
+    let compassLabel = document.getElementById('compassLabel');
+    if (compassLabel) compassLabel.textContent = `${Math.round(heading)}°`;
+}
+
+// ==================== CARTE & ROTATION ====================
 let map, currentTileLayer, routeLayer, routeMarkers = [];
 let tspCancelRequested = false;
-let selectedCities = [], nextCityId = 1, selectionMarkers = [];
-let isTracking = false, lastHeading = 0;
-let trackingPolyline = null, watchId = null, trackingPoints = [], myLocationMarker = null;
-let pickMode = false;
-let dotAnimationInterval = null, animatedDots = [];
-let reminders = [], nextReminderId = 1, reminderInterval = null;
-let cronInterval = null, cronSeconds = parseInt(sessionStorage.getItem('tsp_cron_sec') || '0');
-let pendingUser = null;
-let selectedRole = 'client';
+
+const tileLayers = {
+    osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
+    googleSat: L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { attribution: '© Google Satellite', maxZoom: 20 })
+};
+
+function setMapLayer(layerId) {
+    if (currentTileLayer) map.removeLayer(currentTileLayer);
+    currentTileLayer = tileLayers[layerId];
+    currentTileLayer.addTo(map);
+    localStorage.setItem('tsp_map_layer', layerId);
+}
+function toggleMapLayer() {
+    let newLayer = (localStorage.getItem('tsp_map_layer') || 'osm') === 'osm' ? 'googleSat' : 'osm';
+    setMapLayer(newLayer);
+}
+
+function updateCompass() {
+    let bearing = map.getBearing ? map.getBearing() : 0;
+    let needle = document.getElementById('compassNeedle');
+    if (needle) needle.setAttribute('transform', `rotate(${-bearing}, 40, 40)`);
+    document.getElementById('compassLabel').innerHTML = bearing === 0 ? '↺ Nord' : `${Math.round(-bearing)}°`;
+}
+function resetNorth() {
+    if (map.setBearing) map.setBearing(0);
+    updateCompass();
+}
+window.resetNorth = resetNorth;
 
 // ==================== FONCTIONS UTILES ====================
-function escapeHtml(s) { return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
 function isFileProtocol() { return window.location.protocol === 'file:'; }
-function hashPassword(pwd) { const encoder = new TextEncoder(); const data = encoder.encode(pwd); return crypto.subtle.digest('SHA-256', data).then(hashBuffer => Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2,'0')).join('')); }
+if (isFileProtocol()) document.getElementById('gpsWarningBanner').style.display = 'block';
+
+function requestGeolocationWithHelp(cbSuccess, cbError) {
+    if (isFileProtocol()) {
+        alert("GPS bloqué: ouvrez via serveur HTTP.");
+        if (cbError) cbError({ message: "file://" });
+        return;
+    }
+    if (!navigator.geolocation) { alert("Navigateur non supporté."); return; }
+    navigator.geolocation.getCurrentPosition(cbSuccess, cbError);
+}
+
+function showMyLocation() {
+    requestGeolocationWithHelp(pos => {
+        let lat = pos.coords.latitude, lon = pos.coords.longitude;
+        map.setView([lat, lon], 14);
+        if (myLocationMarker) myLocationMarker.setLatLng([lat, lon]);
+        else {
+            myLocationMarker = L.marker([lat, lon], {
+                icon: L.divIcon({ html: '<div style="background:#00aaff;width:20px;height:20px;border-radius:50%;border:2px solid white;"></div>', iconSize: [20,20] })
+            }).addTo(map).bindPopup('Votre position').openPopup();
+        }
+        if (confirm("Ajouter cette position à votre liste de villes ?"))
+            addCityToList({ name: "Ma position", lat, lon, country: "Local", desc: "GPS", custom: true });
+    }, err => alert("Erreur GPS"));
+}
+
+// Rappels
+let reminders = [], nextReminderId = 1, reminderInterval = null;
+function loadReminders() {
+    try {
+        let saved = localStorage.getItem('tsp_reminders');
+        if (saved) { reminders = JSON.parse(saved); nextReminderId = Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); }
+    } catch(e) {}
+    startReminderWatcher();
+}
+function saveReminders() { localStorage.setItem('tsp_reminders', JSON.stringify(reminders)); }
+function renderReminderList() {
+    let container = document.getElementById('reminderList');
+    if (!reminders.length) { container.innerHTML = '<div style="color:var(--muted); padding:8px;">Aucun rappel programmé.</div>'; return; }
+    container.innerHTML = reminders.map(r => `<div class="reminder-item"><span class="reminder-time">⏰ ${r.timeStr}</span><span class="reminder-msg">${escapeHtml(r.message)}</span><button class="reminder-del" onclick="deleteReminder(${r.id})">✖</button></div>`).join('');
+}
+function startReminderWatcher() {
+    if (reminderInterval) clearInterval(reminderInterval);
+    reminderInterval = setInterval(() => {
+        const now = new Date();
+        const nowStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
+        for (let i=reminders.length-1; i>=0; i--) {
+            if (reminders[i].timeStr === nowStr) {
+                showToastAlarm(reminders[i].message);
+                if (Notification.permission === "granted") new Notification("⏰ Rappel TSP WORLD PRO", { body: reminders[i].message, icon: NOTIF_ICON });
+                reminders.splice(i,1);
+                saveReminders();
+                renderReminderList();
+            }
+        }
+    }, 1000);
+}
+function scheduleAlarm() {
+    let timeInput = document.getElementById('reminderTime').value;
+    let message = document.getElementById('reminderMessage').value.trim();
+    if (!timeInput) { alert("Veuillez choisir une heure."); return; }
+    if (!message) message = "Rappel !";
+    if (Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission();
+    let newId = nextReminderId++;
+    reminders.push({ id: newId, timeStr: timeInput, message: message });
+    saveReminders();
+    renderReminderList();
+    document.getElementById('reminderTime').value = '';
+    document.getElementById('reminderMessage').value = '';
+    document.getElementById('notifStatus').innerHTML = `✅ Rappel ajouté pour ${timeInput}`;
+    setTimeout(() => { if(document.getElementById('notifStatus')) document.getElementById('notifStatus').innerHTML = "💡 Cliquez sur Ajouter."; }, 3000);
+}
+function deleteReminder(id) { reminders = reminders.filter(r => r.id !== id); saveReminders(); renderReminderList(); }
+function showToastAlarm(message) {
+    let toast = document.createElement('div'); toast.className = 'toast-alarm';
+    toast.innerHTML = `<div class="toast-close" onclick="this.parentElement.remove()">✖</div><div class="toast-title">⏰ ALARME</div><div>${escapeHtml(message)}</div>`;
+    document.body.appendChild(toast);
+    setTimeout(() => { if(toast && toast.remove) toast.remove(); }, 8000);
+}
+const NOTIF_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E";
+
+// Horloge / chrono
+let cronInterval = null, cronSeconds = parseInt(sessionStorage.getItem('tsp_cron_sec') || '0');
+function updateLiveClock() { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('fr-FR'); }
+setInterval(updateLiveClock, 1000); updateLiveClock();
+function updateCronDisplay() { let h=Math.floor(cronSeconds/3600), m=Math.floor((cronSeconds%3600)/60), s=cronSeconds%60; document.getElementById('cronDisplay').innerText=`${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; }
+function startCron() { if(cronInterval) return; cronInterval=setInterval(()=>{cronSeconds++; updateCronDisplay(); sessionStorage.setItem('tsp_cron_sec',cronSeconds);},1000); }
+function pauseCron() { if(cronInterval) {clearInterval(cronInterval); cronInterval=null;} }
+function resetCron() { pauseCron(); cronSeconds=0; updateCronDisplay(); sessionStorage.setItem('tsp_cron_sec',0); }
+updateCronDisplay();
+
+// Authentification
+async function hashPassword(pwd) { const encoder = new TextEncoder(); const data = encoder.encode(pwd); const hashBuffer = await crypto.subtle.digest('SHA-256', data); return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2,'0')).join(''); }
 function getUsers() { return JSON.parse(localStorage.getItem('tsp_users') || '{}'); }
 function saveUsers(u) { localStorage.setItem('tsp_users', JSON.stringify(u)); }
+let pendingUser = null;
+async function doLogin() { let u = document.getElementById('loginUsername').value.trim(), p = document.getElementById('loginPassword').value; let users = getUsers(); if (!users[u]) { document.getElementById('loginErr').textContent = 'Identifiants incorrects'; return; } let hash = await hashPassword(p); if (users[u].hash !== hash) { document.getElementById('loginErr').textContent = 'Identifiants incorrects'; return; } showConfirm({ username: u, firstName: users[u].firstName, lastName: users[u].lastName }); }
+async function doRegister() { let u = document.getElementById('regUsername').value.trim(), f = document.getElementById('regFirstName').value.trim(), l = document.getElementById('regLastName').value.trim(), p = document.getElementById('regPassword').value, c = document.getElementById('regConfirm').value; if (!u||!f||!l||!p) { document.getElementById('regErr').textContent = 'Tous les champs requis'; return; } if (p!==c) { document.getElementById('regErr').textContent = 'Mots de passe différents'; return; } if (p.length<4) { document.getElementById('regErr').textContent = 'Min 4 caractères'; return; } let users = getUsers(); if (users[u]) { document.getElementById('regErr').textContent = 'Pseudo déjà pris'; return; } let hash = await hashPassword(p); users[u] = { firstName: f, lastName: l, hash: hash }; saveUsers(users); showConfirm({ username: u, firstName: f, lastName: l }); }
+function showConfirm(u) { pendingUser = u; document.getElementById('cf_username').textContent = u.username; document.getElementById('cf_first').textContent = u.firstName; document.getElementById('cf_last').textContent = u.lastName; document.getElementById('confirmOverlay').classList.remove('hidden'); }
+function finalizeLogin() { localStorage.setItem('tsp_session', JSON.stringify(pendingUser)); document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('confirmOverlay').classList.add('hidden'); startApp(pendingUser); }
+function logout() { localStorage.removeItem('tsp_session'); location.reload(); }
+function startApp(user) {
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`;
+    map = L.map('map', { zoomControl: false, rotate: true, touchRotate: true, rotateControl: false, bearing: 0 }).setView([20,10], 2);
+    // Rotation sur PC avec Shift
+    map.dragging.rotateModifierKey = 'Shift';
+    let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm';
+    setMapLayer(savedLayer);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+    map.on('rotate', updateCompass);
+    map.on('move', updateCompass);
+    updateCompass();
+    map.on('click', e => { if(pickMode) { document.getElementById('newLat').value=e.latlng.lat.toFixed(6); document.getElementById('newLon').value=e.latlng.lng.toFixed(6); document.getElementById('pickMsg').textContent='✅ Coordonnées récupérées'; pickMode=false; map.getContainer().style.cursor=''; } });
+    loadSelected();
+    loadReminders();
+    handleUrlLocation();
+}
+let pickMode = false;
+function addCustomCity() { let name=document.getElementById('newName').value.trim(), country=document.getElementById('newCountry').value.trim(), lat=parseFloat(document.getElementById('newLat').value), lon=parseFloat(document.getElementById('newLon').value), desc=document.getElementById('newDesc').value.trim(); if(!name||!country||isNaN(lat)||isNaN(lon)) { alert('Champs requis'); return; } addCityToList({ name, lat, lon, country, desc, custom:true }); document.getElementById('newName').value=''; document.getElementById('newCountry').value=''; document.getElementById('newLat').value=''; document.getElementById('newLon').value=''; document.getElementById('newDesc').value=''; document.getElementById('pickMsg').textContent=`✅ ${escapeHtml(name)} ajoutée`; }
+function startMapPick() { pickMode=true; map.getContainer().style.cursor='crosshair'; document.getElementById('pickMsg').innerHTML='🔘 Cliquez sur la carte <span class="cancel-pick" onclick="cancelPick()">Annuler</span>'; }
+function cancelPick() { pickMode=false; map.getContainer().style.cursor=''; document.getElementById('pickMsg').innerHTML=''; }
+function useGeoloc() { requestGeolocationWithHelp(pos => { document.getElementById('newLat').value=pos.coords.latitude.toFixed(6); document.getElementById('newLon').value=pos.coords.longitude.toFixed(6); document.getElementById('pickMsg').textContent='📍 GPS récupéré'; }, err=>alert("GPS refusé")); }
+function exportGeoJSON() { let features = []; selectedCities.forEach(city => { features.push({ type:"Feature", geometry:{ type:"Point", coordinates:[city.lon,city.lat] }, properties:{ name:city.name, country:city.country } }); }); if(routeLayer && routeLayer.getLatLngs && routeLayer.getLatLngs().length) { let coords = routeLayer.getLatLngs().map(c => [c.lng, c.lat]); features.push({ type:"Feature", geometry:{ type:"LineString", coordinates:coords }, properties:{ name:"Itinéraire TSP" } }); } let geojson = { type:"FeatureCollection", features }; let blob = new Blob([JSON.stringify(geojson,null,2)], {type:"application/json"}); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "tsp.geojson"; a.click(); URL.revokeObjectURL(url); }
+function escapeHtml(s) { return String(s).replace(/[&<>]/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m];}); }
 
-// ==================== AUTHENTIFICATION (LOCAL + FIREBASE) ====================
+// ==================== TSP & OSRM ====================
+function haversine(lat1,lon1,lat2,lon2) { const R=6371, r=Math.PI/180; const dLat=(lat2-lat1)*r, dLon=(lon2-lon1)*r; return R*2*Math.asin(Math.sqrt(Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2)); }
+function totalDistance(tour) { let d=0; for(let i=0;i<tour.length-1;i++) d+=haversine(tour[i].lat,tour[i].lon,tour[i+1].lat,tour[i+1].lon); return d; }
+function twoOpt(tour) { let improved=true, bestDist=totalDistance(tour); while(improved && !tspCancelRequested){ improved=false; for(let i=1;i<tour.length-2;i++){ for(let j=i+1;j<tour.length-1;j++){ if(tspCancelRequested) return tour; let newTour = [...tour.slice(0,i), ...tour.slice(i,j+1).reverse(), ...tour.slice(j+1)]; let newDist=totalDistance(newTour); if(newDist<bestDist-0.001){ bestDist=newDist; tour=newTour; improved=true; } } } } return tour; }
+function tspNN(cities,startIdx) { if(cities.length<2) return [[],0]; let unvisited=[...cities]; let start=unvisited.splice(startIdx,1)[0]; let tour=[start], current=start, total=0; while(unvisited.length){ let bestIdx=0, bestDist=haversine(current.lat,current.lon,unvisited[0].lat,unvisited[0].lon); for(let i=1;i<unvisited.length;i++){ let d=haversine(current.lat,current.lon,unvisited[i].lat,unvisited[i].lon); if(d<bestDist){bestDist=d;bestIdx=i;}} total+=bestDist; current=unvisited[bestIdx]; tour.push(current); unvisited.splice(bestIdx,1); } total+=haversine(current.lat,current.lon,start.lat,start.lon); tour.push(start); return [tour,total]; }
+async function fetchOsrmRoute(lat1, lon1, lat2, lon2, mode) { let profile = mode === 'foot' ? 'foot' : 'driving'; let url = `https://router.project-osrm.org/route/v1/${profile}/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`; try { let resp = await fetch(url); if (!resp.ok) return null; let data = await resp.json(); if (!data.routes || data.routes.length === 0) return null; let route = data.routes[0]; let distanceKm = route.distance / 1000; let durationSec = route.duration; let coords = route.geometry.coordinates.map(c => [c[1], c[0]]); return { routeCoords: coords, distanceKm, durationSec }; } catch(e) { return null; } }
+async function buildRouteGeometry(tour, mode) { if (tour.length < 2) return { routeLatLng: [], totalDistanceKm: 0, totalDurationSec: 0 }; let allLatLng = []; let totalDistanceKm = 0; let totalDurationSec = 0; for (let i = 0; i < tour.length - 1; i++) { if (tspCancelRequested) return { routeLatLng: [], totalDistanceKm: 0, totalDurationSec: 0 }; let c1 = tour[i], c2 = tour[i+1]; if (mode === 'plane') { let dist = haversine(c1.lat, c1.lon, c2.lat, c2.lon); totalDistanceKm += dist; totalDurationSec += (dist / 800) * 3600; if (allLatLng.length === 0 || allLatLng[allLatLng.length-1][0] !== c1.lat || allLatLng[allLatLng.length-1][1] !== c1.lon) allLatLng.push([c1.lat, c1.lon]); allLatLng.push([c2.lat, c2.lon]); } else { let result = await fetchOsrmRoute(c1.lat, c1.lon, c2.lat, c2.lon, mode); if (result && result.routeCoords && result.routeCoords.length > 0) { let segmentCoords = result.routeCoords; if (allLatLng.length > 0 && segmentCoords.length > 0) { let last = allLatLng[allLatLng.length-1]; let first = segmentCoords[0]; if (Math.abs(last[0]-first[0])<1e-7 && Math.abs(last[1]-first[1])<1e-7) segmentCoords.shift(); } allLatLng.push(...segmentCoords); totalDistanceKm += result.distanceKm; totalDurationSec += result.durationSec; } else { let dist = haversine(c1.lat, c1.lon, c2.lat, c2.lon); totalDistanceKm += dist; let speedKmh = (mode === 'foot') ? 5 : 80; totalDurationSec += (dist / speedKmh) * 3600; if (allLatLng.length === 0 || allLatLng[allLatLng.length-1][0] !== c1.lat || allLatLng[allLatLng.length-1][1] !== c1.lon) allLatLng.push([c1.lat, c1.lon]); allLatLng.push([c2.lat, c2.lon]); } await new Promise(r => setTimeout(r, 200)); } } return { routeLatLng: allLatLng, totalDistanceKm, totalDurationSec }; }
+function clearMapRoute() { if(routeLayer) map.removeLayer(routeLayer); routeMarkers.forEach(m=>map.removeLayer(m)); routeMarkers=[]; }
+async function computeTSP() { tspCancelRequested = false; document.getElementById('cancelTSPBtn').style.display = 'inline-block'; let max = parseInt(document.getElementById('maxCities').value) || 8; let cities = [...selectedCities]; if (cities.length < 2) { document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Sélectionnez au moins 2 villes</div>'; document.getElementById('cancelTSPBtn').style.display = 'none'; return; } if (cities.length > max) cities = cities.slice(0, max); let startIdx = parseInt(document.getElementById('startCitySelect').value) || 0; let [tour, straightDist] = tspNN(cities, startIdx); if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } let algo = document.getElementById('algoSelect').value; if (algo === '2opt') tour = twoOpt(tour); if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } let orderedCities = tour.slice(0, -1); selectedCities = orderedCities; saveSelected(); updateSelUI(); updateMarkersOnMap(); clearMapRoute(); let loadEl = document.getElementById('routeLoading'); let mode = document.getElementById('transportMode').value; loadEl.style.display = 'block'; let { routeLatLng, totalDistanceKm, totalDurationSec } = await buildRouteGeometry(tour, mode); loadEl.style.display = 'none'; if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } if (routeLatLng.length < 2) { document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Erreur tracé route</div>'; document.getElementById('cancelTSPBtn').style.display = 'none'; return; } routeLayer = L.polyline(routeLatLng, { color: '#00f5ff', weight: 4, opacity: 0.85 }).addTo(map); tour.slice(0, -1).forEach((city, idx) => { let isStart = (idx === 0); let color = isStart ? '#ff4466' : (city.custom ? '#00ffaa' : '#00ccff'); let marker = L.marker([city.lat, city.lon], { icon: L.divIcon({ html: `<div style="background:${color};width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:${isStart ? '#fff' : '#000'};border:2px solid white;font-size:12px;">${isStart ? '🏁' : idx+1}</div>`, iconSize: [30,30] }) }).addTo(map).bindPopup(`<b>${idx+1}. ${escapeHtml(city.name)}</b><br>${escapeHtml(city.country)}`); routeMarkers.push(marker); }); let lats = cities.map(c => c.lat), lons = cities.map(c => c.lon); map.fitBounds([[Math.min(...lats), Math.min(...lons)], [Math.max(...lats), Math.max(...lons)]], { padding: [60,60] }); let stepsHtml = tour.slice(0, -1).map((c,i) => `<div><b>${i+1}. ${escapeHtml(c.name)}</b> (${escapeHtml(c.country)})</div>`).join(''); let modeLabel = { car:'🚗 Voiture', foot:'🚶 Piéton', plane:'✈️ Avion' }[mode]; let durationHours = totalDurationSec / 3600; let durationStr = `${Math.floor(durationHours)}h ${Math.floor((durationHours % 1) * 60)}min`; let distanceKm = totalDistanceKm.toFixed(0); document.getElementById('resultsPanel').innerHTML = `<div><strong>📊 Résultat (${algo === '2opt' ? '2-opt optimisé' : 'Plus proche voisin'})</strong></div><div class="stats-grid"><div class="stat-card"><div class="val">${cities.length}</div>villes</div><div class="stat-card"><div class="val">${distanceKm}</div>km</div><div class="stat-card"><div class="val">${durationStr}</div>durée</div><div class="stat-card"><div class="val">${modeLabel}</div></div></div><div class="route-steps">${stepsHtml}</div>`; document.getElementById('cancelTSPBtn').style.display = 'none'; }
+function cancelTSP() { tspCancelRequested = true; }
+
+// Export Java
+function generateJavaCode() { if (!selectedCities.length) { document.getElementById('javaCodeArea').value = "// Aucune ville sélectionnée."; return; } let coordsArray = selectedCities.map(c => `    {${c.lat}, ${c.lon}}`).join(",\n"); let javaCode = `public class TSPCoords {\n    public static double[][] getCoordinates() {\n        return new double[][] {\n${coordsArray}\n        };\n    }\n}`; document.getElementById('javaCodeArea').value = javaCode; }
+function copyJavaCode() { let textarea = document.getElementById('javaCodeArea'); textarea.select(); document.execCommand('copy'); alert("Code Java copié !"); }
+
+// Switch tabs
 function switchTab(t) {
     document.getElementById('loginForm').style.display = t === 'login' ? 'block' : 'none';
     document.getElementById('registerForm').style.display = t === 'register' ? 'block' : 'none';
@@ -493,485 +1016,53 @@ function switchTab(t) {
     document.getElementById('tabReg').classList.toggle('active', t === 'register');
 }
 
-function selectRole(role) {
-    selectedRole = role;
-    ['client','livreur','responsable'].forEach(r => {
-        let btn = document.getElementById('role' + r.charAt(0).toUpperCase() + r.slice(1));
-        if (btn) btn.classList.toggle('active', r === role);
-    });
-    let codeField = document.getElementById('codeEntrepriseField');
-    if (codeField) codeField.style.display = role === 'livreur' ? 'block' : 'none';
-}
+// Exports globaux
+window.switchTab = switchTab;
+window.doLogin = doLogin;
+window.doRegister = doRegister;
+window.finalizeLogin = finalizeLogin;
+window.logout = logout;
+window.toggleMapLayer = toggleMapLayer;
+window.shareCurrentLocation = shareCurrentLocation;
+window.showMyLocation = showMyLocation;
+window.exportGeoJSON = exportGeoJSON;
+window.clearSelection = clearSelection;
+window.computeTSP = computeTSP;
+window.cancelTSP = cancelTSP;
+window.generateJavaCode = generateJavaCode;
+window.copyJavaCode = copyJavaCode;
+window.scheduleAlarm = scheduleAlarm;
+window.startCron = startCron;
+window.pauseCron = pauseCron;
+window.resetCron = resetCron;
+window.addCustomCity = addCustomCity;
+window.startMapPick = startMapPick;
+window.useGeoloc = useGeoloc;
+window.zoomToCity = zoomToCity;
+window.showPlaceDetails = showPlaceDetails;
+window.zoomToCityById = zoomToCityById;
+window.selectSearchResult = selectSearchResult;
+window.toggleTracking = toggleTracking;
+window.startTracking = startTrackingPro;
+window.stopTracking = stopTrackingPro;
 
-async function doLogin() {
-    let u = document.getElementById('loginUsername').value.trim();
-    let p = document.getElementById('loginPassword').value;
-    let users = getUsers();
-    if (!users[u]) { document.getElementById('loginErr').textContent = 'Identifiants incorrects'; return; }
-    let hash = await hashPassword(p);
-    if (users[u].hash !== hash) { document.getElementById('loginErr').textContent = 'Identifiants incorrects'; return; }
-    showConfirm({ username: u, firstName: users[u].firstName, lastName: users[u].lastName, role: users[u].role, codeEntreprise: users[u].codeEntreprise, uid: users[u].uid });
-}
-
-async function doRegister() {
-    let u = document.getElementById('regUsername').value.trim();
-    let f = document.getElementById('regFirstName').value.trim();
-    let l = document.getElementById('regLastName').value.trim();
-    let p = document.getElementById('regPassword').value;
-    let c = document.getElementById('regConfirm').value;
-    let phone = document.getElementById('regPhone').value.trim();
-    let codeEntreprise = document.getElementById('regCodeEntreprise')?.value.trim();
-    
-    if (!u || !f || !l || !p || !phone) { document.getElementById('regErr').textContent = 'Tous les champs requis'; return; }
-    if (p !== c) { document.getElementById('regErr').textContent = 'Mots de passe différents'; return; }
-    if (p.length < 6) { document.getElementById('regErr').textContent = 'Min 6 caractères'; return; }
-    if (selectedRole === 'livreur' && !codeEntreprise) { document.getElementById('regErr').textContent = 'Code entreprise requis pour livreur'; return; }
-    
-    try {
-        let email = u + '@tsp-app.local';
-        let userCred = null;
-        if (window.auth) {
-            try { userCred = await window.createUserWithEmailAndPassword(window.auth, email, p); } catch(e) { console.warn("Firebase auth non configuré", e); }
-        }
-        let uid = userCred?.user?.uid || ('local_' + Date.now());
-        let entrepriseCode = null;
-        if (selectedRole === 'responsable') entrepriseCode = 'ENT-' + Math.random().toString(36).substr(2,6).toUpperCase();
-        let userData = { username: u, firstName: f, lastName: l, telephone: phone, role: selectedRole, codeEntreprise: selectedRole === 'livreur' ? codeEntreprise : (selectedRole === 'responsable' ? entrepriseCode : null), uid: uid, createdAt: new Date().toISOString() };
-        if (window.db) {
-            await window.fsSetDoc(window.fsDoc(window.db, 'users', uid), userData);
-            if (selectedRole === 'responsable') {
-                await window.fsSetDoc(window.fsDoc(window.db, 'entreprises', entrepriseCode), { nom: f + ' ' + l, responsableId: uid, code: entrepriseCode, livreurs: [] });
-            }
-        }
-        let users = getUsers();
-        let hash = await hashPassword(p);
-        users[u] = { ...userData, hash };
-        saveUsers(users);
-        showConfirm({ username: u, firstName: f, lastName: l, role: selectedRole, entrepriseCode });
-    } catch(err) { document.getElementById('regErr').textContent = 'Erreur: ' + err.message; }
-}
-
-function showConfirm(u) {
-    pendingUser = u;
-    document.getElementById('cf_username').textContent = u.username;
-    document.getElementById('cf_first').textContent = u.firstName;
-    document.getElementById('cf_last').textContent = u.lastName;
-    document.getElementById('confirmOverlay').classList.remove('hidden');
-}
-
-function finalizeLogin() {
-    localStorage.setItem('tsp_session', JSON.stringify(pendingUser));
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('confirmOverlay').classList.add('hidden');
-    startApp(pendingUser);
-}
-function logout() { localStorage.removeItem('tsp_session'); location.reload(); }
-
-// ==================== CARTE & ROTATION ====================
-const tileLayers = {
-    osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
-    googleSat: L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { attribution: '© Google Satellite', maxZoom: 20 })
-};
-function setMapLayer(layerId) { if(currentTileLayer) map.removeLayer(currentTileLayer); currentTileLayer = tileLayers[layerId]; currentTileLayer.addTo(map); localStorage.setItem('tsp_map_layer', layerId); }
-function toggleMapLayer() { let newLayer = (localStorage.getItem('tsp_map_layer') || 'osm') === 'osm' ? 'googleSat' : 'osm'; setMapLayer(newLayer); }
-function updateCompass() { let bearing = map.getBearing ? map.getBearing() : 0; document.getElementById('compassNeedle').setAttribute('transform', `rotate(${-bearing},40,40)`); document.getElementById('compassLabel').innerHTML = bearing === 0 ? '↺ Nord' : `${Math.round(-bearing)}°`; }
-function resetNorth() { if(map.setBearing) map.setBearing(0); updateCompass(); }
-
-// ==================== GESTION DES VILLES SÉLECTIONNÉES ====================
-function loadSelected() { let saved = localStorage.getItem('tsp_selected_cities'); if(saved) { try { selectedCities = JSON.parse(saved); if(selectedCities.length) nextCityId = Math.max(...selectedCities.map(c=>c.id),0)+1; } catch(e){} } updateSelUI(); updateMarkersOnMap(); }
-function saveSelected() { localStorage.setItem('tsp_selected_cities', JSON.stringify(selectedCities)); }
-function updateMarkersOnMap() { if(!map) return; selectionMarkers.forEach(m=>map.removeLayer(m)); selectionMarkers=[]; selectedCities.forEach(city => { let popup = `<div><b>${escapeHtml(city.name)}</b><br><i>${escapeHtml(city.country)}</i><br>📌 ${city.lat.toFixed(5)},${city.lon.toFixed(5)}<br><button onclick="window.zoomToCityById(${city.id})">🎯 Centrer</button></div>`; let m = L.marker([city.lat,city.lon],{title:city.name}).bindPopup(popup).addTo(map); m.on('click',()=>showPlaceDetails(city.name,city.lat,city.lon,city.country,city.desc)); selectionMarkers.push(m); }); }
-window.zoomToCityById = function(id) { let city = selectedCities.find(c=>c.id===id); if(city) map.flyTo([city.lat,city.lon],13); };
-function updateSelUI() { let c=document.getElementById('selectedList'); document.getElementById('selCount').innerText=selectedCities.length; if(!selectedCities.length){ c.innerHTML='<div>Aucune ville sélectionnée</div>'; document.getElementById('startCitySelect').innerHTML='<option>Aucune</option>'; return; } c.innerHTML=selectedCities.map((city,i)=>`<div class="sel-item" onclick="showPlaceDetails('${escapeHtml(city.name)}',${city.lat},${city.lon},'${escapeHtml(city.country)}','${escapeHtml(city.desc||'')}'); zoomToCity(${i});"><span>${i+1}. ${escapeHtml(city.name)} (${escapeHtml(city.country)})</span><button class="rm" onclick="event.stopPropagation();removeCity(${i})">✖</button></div>`).join(''); let sel=document.getElementById('startCitySelect'); sel.innerHTML=selectedCities.map((c,i)=>`<option value="${i}">${escapeHtml(c.name)}</option>`).join(''); }
-function removeCity(idx) { selectedCities.splice(idx,1); saveSelected(); updateSelUI(); updateMarkersOnMap(); clearMapRoute(); if(selectedCities.length===0) document.getElementById('placeDetails').innerHTML='<span style="color:var(--muted);">Aucun lieu sélectionné</span>'; }
-function clearSelection() { selectedCities=[]; saveSelected(); updateSelUI(); updateMarkersOnMap(); clearMapRoute(); document.getElementById('placeDetails').innerHTML='<span style="color:var(--muted);">Aucun lieu sélectionné</span>'; }
-function addCityToList(city) { if(!selectedCities.some(c=>c.name===city.name && Math.abs(c.lat-city.lat)<0.001)){ let newId=nextCityId++; let newCity={...city,id:newId,desc:city.desc||''}; selectedCities.push(newCity); saveSelected(); updateSelUI(); updateMarkersOnMap(); showPlaceDetails(newCity.name,newCity.lat,newCity.lon,newCity.country,newCity.desc); return true; } else { let existing=selectedCities.find(c=>c.name===city.name); if(existing) showPlaceDetails(existing.name,existing.lat,existing.lon,existing.country,existing.desc); return false; } }
-function zoomToCity(idx) { let city=selectedCities[idx]; if(city){ map.flyTo([city.lat,city.lon],12); let marker=selectionMarkers.find(m=>m.getLatLng().lat===city.lat && m.getLatLng().lng===city.lon); if(marker) marker.openPopup(); } }
-function showPlaceDetails(name,lat,lon,country,desc) { document.getElementById('placeDetails').innerHTML=`<h4>📍 ${escapeHtml(name)}</h4><p><strong>Pays :</strong> ${escapeHtml(country)}</p><p><strong>Coordonnées :</strong> ${lat.toFixed(6)}°, ${lon.toFixed(6)}°</p>${desc?`<p><strong>Description :</strong> ${escapeHtml(desc)}</p>`:''}<button class="btn-secondary" onclick="map.flyTo([${lat},${lon}],14);">🎯 Centrer la carte</button>`; }
-
-// ==================== RECHERCHE DYNAMIQUE ====================
-let searchTimeout=null;
-async function performSearch(q) { if(!q||q.length<3){ document.getElementById('searchResults').style.display='none'; document.getElementById('searchFeedback').innerHTML='Tapez au moins 3 caractères...'; return; } document.getElementById('searchResults').style.display='block'; document.getElementById('searchFeedback').innerHTML='⏳ Recherche...'; try{ let resp=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=8&addressdetails=1`); let data=await resp.json(); if(!data.length){ document.getElementById('searchResults').innerHTML='<div class="city-card">Aucun résultat</div>'; document.getElementById('searchFeedback').innerHTML='❌ Aucun lieu trouvé'; return; } let html=''; for(let place of data){ let name=place.display_name.split(',')[0]; let country=place.address?.country||'Monde'; html+=`<div class="city-card" onclick="selectSearchResult('${escapeHtml(name)}',${place.lat},${place.lon},'${escapeHtml(country)}','')"><span><strong>${escapeHtml(name)}</strong> (${escapeHtml(country)})</span><span>➕</span></div>`; } document.getElementById('searchResults').innerHTML=html; document.getElementById('searchFeedback').innerHTML=`✅ ${data.length} résultat(s) trouvé(s)`; } catch(e){ document.getElementById('searchResults').innerHTML='<div class="city-card">Erreur réseau</div>'; document.getElementById('searchFeedback').innerHTML='❌ Erreur de connexion'; } }
-function selectSearchResult(name,lat,lon,country,desc){ let added=addCityToList({name,lat:parseFloat(lat),lon:parseFloat(lon),country,desc}); if(added){ document.getElementById('searchFeedback').innerHTML=`✅ ${escapeHtml(name)} ajouté !`; map.flyTo([lat,lon],12); } else { document.getElementById('searchFeedback').innerHTML=`⚠️ ${escapeHtml(name)} déjà sélectionné.`; } document.getElementById('dynamicSearch').value=''; document.getElementById('searchResults').style.display='none'; }
-document.getElementById('dynamicSearch').addEventListener('input',function(e){ let val=e.target.value.trim(); if(searchTimeout) clearTimeout(searchTimeout); searchTimeout=setTimeout(()=>performSearch(val),500); });
-
-// ==================== PARTAGE DE POSITION ====================
-function shareCurrentLocation(){ requestGeolocationWithHelp(pos=>{ let lat=pos.coords.latitude, lon=pos.coords.longitude; let url=`${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}`; navigator.clipboard.writeText(url); alert("Lien copié !"); },err=>alert("Impossible d'obtenir votre position")); }
-function handleUrlLocation(){ let params=new URLSearchParams(window.location.search); let lat=parseFloat(params.get('lat')); let lon=parseFloat(params.get('lon')); if(!isNaN(lat)&&!isNaN(lon)){ let name=prompt("Nommez cette position partagée :","Position partagée"); if(name&&name.trim()) addCityToList({name:name.trim(),lat,lon,country:"Partagé",desc:`Lié reçu le ${new Date().toLocaleString()}`}); window.history.replaceState({},document.title,window.location.pathname); } }
-
-// ==================== SONS ====================
-const AudioCtx = window.AudioContext||window.webkitAudioContext; let audioCtx=null;
-function getAudioCtx(){ if(!audioCtx) audioCtx=new AudioCtx(); return audioCtx; }
-function playBeep(freq=880,dur=0.15,type='sine',vol=0.3){ try{ let ctx=getAudioCtx(), osc=ctx.createOscillator(), gain=ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.type=type; osc.frequency.setValueAtTime(freq,ctx.currentTime); gain.gain.setValueAtTime(vol,ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur); osc.start(ctx.currentTime); osc.stop(ctx.currentTime+dur); } catch(e){} }
-function soundStart(){ playBeep(600,0.08,'sine',0.25); setTimeout(()=>playBeep(900,0.08),90); setTimeout(()=>playBeep(1200,0.15),180); }
-function soundStop(){ playBeep(800,0.08); setTimeout(()=>playBeep(500,0.08),90); setTimeout(()=>playBeep(300,0.15),180); }
-function soundTick(){ playBeep(1000,0.04,'sine',0.08); }
-function soundWarn(){ playBeep(400,0.2,'square',0.15); setTimeout(()=>playBeep(300,0.3,'square',0.15),250); }
-
-// ==================== OFFSET POLYLINE ====================
-function offsetLatLngs(points, offsetMeters) {
-    if(points.length<2) return points;
-    let res=[];
-    for(let i=0;i<points.length;i++){
-        let p=points[i], prev=points[Math.max(0,i-1)], next=points[Math.min(points.length-1,i+1)];
-        let dx=next[1]-prev[1], dy=next[0]-prev[0], len=Math.hypot(dx,dy);
-        if(len===0){ res.push(p); continue; }
-        let nx=-dy/len, ny=dx/len;
-        let dLat=nx*offsetMeters/111320;
-        let dLon=ny*offsetMeters/(111320*Math.cos(p[0]*Math.PI/180));
-        res.push([p[0]+dLat, p[1]+dLon]);
-    }
-    return res;
-}
-
-// ==================== ANIMATION 30 POINTS ====================
-function animateDotsOnRoute(points) {
-    animatedDots.forEach(d=>map.removeLayer(d)); animatedDots=[];
-    if(dotAnimationInterval) clearInterval(dotAnimationInterval);
-    if(points.length<2) return;
-    let totalLen=0, segments=[];
-    for(let i=0;i<points.length-1;i++){
-        let d=Math.hypot(points[i+1][0]-points[i][0], points[i+1][1]-points[i][1]);
-        segments.push({start:points[i], end:points[i+1], len:d, cumLen:totalLen});
-        totalLen+=d;
-    }
-    if(totalLen===0) return;
-    const NUM=30;
-    let offsets=Array.from({length:NUM},(_,i)=>i/NUM);
-    let progress=0;
-    for(let i=0;i<NUM;i++){
-        let dot=L.circleMarker(points[0],{radius:2.5,color:'transparent',fillColor:'#ffffff',fillOpacity:0.8,weight:0}).addTo(map);
-        animatedDots.push(dot);
-    }
-    dotAnimationInterval=setInterval(()=>{
-        progress=(progress+0.0035)%1;
-        for(let i=0;i<NUM;i++){
-            let t=(progress+offsets[i])%1;
-            let targetLen=t*totalLen;
-            let seg=segments[segments.length-1];
-            for(let s of segments) if(s.cumLen+s.len>=targetLen){ seg=s; break; }
-            let segT=seg.len>0?(targetLen-seg.cumLen)/seg.len:0;
-            let lat=seg.start[0]+(seg.end[0]-seg.start[0])*segT;
-            let lon=seg.start[1]+(seg.end[1]-seg.start[1])*segT;
-            let intensity=0.3+0.7*(i/NUM);
-            let radius=2+intensity*2.5;
-            animatedDots[i].setLatLng([lat,lon]);
-            animatedDots[i].setStyle({fillOpacity:intensity, radius});
-        }
-    },40);
-}
-
-// ==================== TRACKING PRO ====================
-function toggleTracking() { if(isTracking) stopTrackingPro(); else startTrackingPro(); }
-function startTrackingPro() {
-    if(isFileProtocol()){ alert("Suivi impossible en file://\nOuvrez via serveur HTTP (Live Server)."); return; }
-    if(!navigator.geolocation){ alert("GPS non supporté."); return; }
-    isTracking=true; trackingPoints=[]; if(trackingPolyline) map.removeLayer(trackingPolyline); soundStart();
-    document.getElementById('trackBtn').innerHTML='⏹️ Stop Tracking'; document.getElementById('trackBtn').classList.add('tracking');
-    document.getElementById('trackingInfo').style.display='block';
-    watchId=navigator.geolocation.watchPosition(onTrackingUpdate, err=>{ soundWarn(); alert("Erreur GPS"); stopTrackingPro(); }, {enableHighAccuracy:true, maximumAge:1000, timeout:15000});
-}
-function stopTrackingPro() {
-    if(watchId) navigator.geolocation.clearWatch(watchId);
-    isTracking=false; soundStop();
-    if(map.setBearing) map.setBearing(0,{animate:true,duration:0.8});
-    if(dotAnimationInterval) clearInterval(dotAnimationInterval);
-    animatedDots.forEach(d=>map.removeLayer(d)); animatedDots=[];
-    document.getElementById('trackBtn').innerHTML='📡 Start Tracking'; document.getElementById('trackBtn').classList.remove('tracking');
-    document.getElementById('trackingInfo').style.display='none';
-}
-function onTrackingUpdate(pos) {
-    let lat=pos.coords.latitude, lon=pos.coords.longitude, speed=pos.coords.speed, heading=pos.coords.heading, acc=pos.coords.accuracy;
-    soundTick();
-    trackingPoints.push([lat,lon]);
-    let offsetPoints=offsetLatLngs(trackingPoints,3);
-    if(trackingPolyline) map.removeLayer(trackingPolyline);
-    trackingPolyline=L.polyline(offsetPoints,{color:'#00f5ff',weight:5,opacity:0.85}).addTo(map);
-    animateDotsOnRoute(offsetPoints);
-    // Marqueur avec flèche
-    let html=`<div style="width:28px;height:28px;background:radial-gradient(circle,#00f5ff,#0055ff);border-radius:50%;border:3px solid white;box-shadow:0 0 18px rgba(0,245,255,0.9);position:relative;"><div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%) rotate(${heading||0}deg);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:12px solid #00f5ff;"></div></div>`;
-    if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]).setIcon(L.divIcon({html,iconSize:[28,28],iconAnchor:[14,14]}));
-    else myLocationMarker=L.marker([lat,lon],{icon:L.divIcon({html,iconSize:[28,28],iconAnchor:[14,14]})}).addTo(map);
-    if(heading!=null&&!isNaN(heading)&&heading!==0) { lastHeading=heading; if(map.setBearing) map.setBearing(-heading,{animate:true,duration:0.5}); }
-    map.flyTo([lat,lon],map.getZoom(),{animate:true,duration:0.8});
-    document.getElementById('ti_lat').innerHTML=lat.toFixed(6)+'°'; document.getElementById('ti_lon').innerHTML=lon.toFixed(6)+'°';
-    document.getElementById('ti_speed').innerHTML=speed!=null?(speed*3.6).toFixed(1)+' km/h':'0 km/h';
-    document.getElementById('ti_acc').innerHTML=acc!=null?Math.round(acc)+' m':'-- m';
-    updateDirectionDisplay(lastHeading);
-    // Sauvegarde position dans Firebase (pour livreur)
-    let sess=JSON.parse(localStorage.getItem('tsp_session')||'{}');
-    if(sess.role==='livreur'&&window.db){
-        window.fsSetDoc(window.fsDoc(window.db,'positions',sess.uid||sess.username),{lat,lon,speed:speed||0,heading:heading||0,accuracy:acc||0,nom:sess.firstName+' '+sess.lastName,statut:'actif',timestamp:new Date().toISOString()},{merge:true});
-    }
-    let positions=JSON.parse(localStorage.getItem('tsp_positions')||'[]');
-    let idx=positions.findIndex(p=>p.id===(sess.uid||sess.username));
-    let posData={id:sess.uid||sess.username,lat,lon,speed,heading,nom:sess.firstName+' '+sess.lastName,statut:'actif'};
-    if(idx!==-1) positions[idx]=posData; else positions.push(posData);
-    localStorage.setItem('tsp_positions',JSON.stringify(positions));
-}
-function updateDirectionDisplay(h){ let arrow=document.getElementById('directionArrow'); if(arrow) arrow.style.transform=`rotate(${h}deg)`; let dirs=['N','NE','E','SE','S','SO','O','NO']; let names={'N':'⬆️ Nord','NE':'↗️ Nord-Est','E':'➡️ Est','SE':'↘️ Sud-Est','S':'⬇️ Sud','SO':'↙️ Sud-Ouest','O':'⬅️ Ouest','NO':'↖️ Nord-Ouest'}; let idx=Math.round(h/45)%8; document.getElementById('ti_dir').innerHTML=names[dirs[idx]]||`${Math.round(h)}°`; let needle=document.getElementById('compassNeedle'); if(needle) needle.setAttribute('transform',`rotate(${h},40,40)`); document.getElementById('compassLabel').innerHTML=`${Math.round(h)}°`; }
-
-// ==================== RAPPELS ====================
-function loadReminders(){ let saved=localStorage.getItem('tsp_reminders'); if(saved){ reminders=JSON.parse(saved); nextReminderId=Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); } startReminderWatcher(); }
-function saveReminders(){ localStorage.setItem('tsp_reminders',JSON.stringify(reminders)); }
-function renderReminderList(){ let c=document.getElementById('reminderList'); if(!reminders.length){ c.innerHTML='<div style="color:var(--muted);padding:8px;">Aucun rappel.</div>'; return; } c.innerHTML=reminders.map(r=>`<div class="reminder-item"><span class="reminder-time">⏰ ${r.timeStr}</span><span class="reminder-msg">${escapeHtml(r.message)}</span><button class="reminder-del" onclick="deleteReminder(${r.id})">✖</button></div>`).join(''); }
-function startReminderWatcher(){ if(reminderInterval) clearInterval(reminderInterval); reminderInterval=setInterval(()=>{ let now=new Date(); let nowStr=`${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`; for(let i=reminders.length-1;i>=0;i--){ if(reminders[i].timeStr===nowStr){ showToastAlarm(reminders[i].message); if(Notification.permission==="granted") new Notification("⏰ Rappel TSP",{body:reminders[i].message}); reminders.splice(i,1); saveReminders(); renderReminderList(); } } },1000); }
-function scheduleAlarm(){ let t=document.getElementById('reminderTime').value; let m=document.getElementById('reminderMessage').value.trim(); if(!t){ alert("Choisissez une heure"); return; } if(!m) m="Rappel !"; if(Notification.permission!=="granted"&&Notification.permission!=="denied") Notification.requestPermission(); let id=nextReminderId++; reminders.push({id:id,timeStr:t,message:m}); saveReminders(); renderReminderList(); document.getElementById('reminderTime').value=''; document.getElementById('reminderMessage').value=''; document.getElementById('notifStatus').innerHTML=`✅ Rappel ajouté pour ${t}`; setTimeout(()=>{ if(document.getElementById('notifStatus')) document.getElementById('notifStatus').innerHTML="💡 Cliquez sur Ajouter."; },3000); }
-function deleteReminder(id){ reminders=reminders.filter(r=>r.id!==id); saveReminders(); renderReminderList(); }
-function showToastAlarm(msg){ let toast=document.createElement('div'); toast.className='toast-alarm'; toast.innerHTML=`<div class="toast-close" onclick="this.parentElement.remove()">✖</div><div class="toast-title">⏰ ALARME</div><div>${escapeHtml(msg)}</div>`; document.body.appendChild(toast); setTimeout(()=>{ if(toast&&toast.remove) toast.remove(); },8000); }
-const NOTIF_ICON="data:image/svg+xml,%3Csvg...%3E";
-
-// ==================== HORLOGE / CHRONO ====================
-function updateLiveClock(){ document.getElementById('liveClock').innerText=new Date().toLocaleTimeString('fr-FR'); }
-setInterval(updateLiveClock,1000); updateLiveClock();
-function updateCronDisplay(){ let h=Math.floor(cronSeconds/3600), m=Math.floor((cronSeconds%3600)/60), s=cronSeconds%60; document.getElementById('cronDisplay').innerText=`${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; }
-function startCron(){ if(cronInterval) return; cronInterval=setInterval(()=>{ cronSeconds++; updateCronDisplay(); sessionStorage.setItem('tsp_cron_sec',cronSeconds); },1000); }
-function pauseCron(){ if(cronInterval){ clearInterval(cronInterval); cronInterval=null; } }
-function resetCron(){ pauseCron(); cronSeconds=0; updateCronDisplay(); sessionStorage.setItem('tsp_cron_sec',0); }
-updateCronDisplay();
-
-// ==================== GPS GÉNÉRIQUE ====================
-function requestGeolocationWithHelp(cbSuccess,cbError){ if(isFileProtocol()){ alert("GPS bloqué: ouvrez via serveur HTTP"); if(cbError) cbError({message:"file://"}); return; } if(!navigator.geolocation){ alert("Navigateur non supporté."); return; } navigator.geolocation.getCurrentPosition(cbSuccess,cbError); }
-function showMyLocation(){ requestGeolocationWithHelp(pos=>{ let lat=pos.coords.latitude, lon=pos.coords.longitude; map.setView([lat,lon],14); if(myLocationMarker) myLocationMarker.setLatLng([lat,lon]); else myLocationMarker=L.marker([lat,lon],{icon:L.divIcon({html:'<div style="background:#00aaff;width:20px;height:20px;border-radius:50%;border:2px solid white;"></div>',iconSize:[20,20]})}).addTo(map).bindPopup('Votre position').openPopup(); if(confirm("Ajouter cette position à la sélection ?")) addCityToList({name:"Ma position",lat,lon,country:"Local",desc:"GPS",custom:true}); }, err=>alert("Erreur GPS")); }
-function addCustomCity(){ let name=document.getElementById('newName').value.trim(); let country=document.getElementById('newCountry').value.trim(); let lat=parseFloat(document.getElementById('newLat').value); let lon=parseFloat(document.getElementById('newLon').value); let desc=document.getElementById('newDesc').value.trim(); if(!name||!country||isNaN(lat)||isNaN(lon)){ alert("Champs requis"); return; } addCityToList({name,lat,lon,country,desc,custom:true}); document.getElementById('newName').value=''; document.getElementById('newCountry').value=''; document.getElementById('newLat').value=''; document.getElementById('newLon').value=''; document.getElementById('newDesc').value=''; document.getElementById('pickMsg').textContent=`✅ ${escapeHtml(name)} ajoutée`; }
-function startMapPick(){ pickMode=true; map.getContainer().style.cursor='crosshair'; document.getElementById('pickMsg').innerHTML='🔘 Cliquez sur la carte <span class="cancel-pick" onclick="cancelPick()">Annuler</span>'; }
-function cancelPick(){ pickMode=false; map.getContainer().style.cursor=''; document.getElementById('pickMsg').innerHTML=''; }
-function useGeoloc(){ requestGeolocationWithHelp(pos=>{ document.getElementById('newLat').value=pos.coords.latitude.toFixed(6); document.getElementById('newLon').value=pos.coords.longitude.toFixed(6); document.getElementById('pickMsg').textContent='📍 GPS récupéré'; }, err=>alert("GPS refusé")); }
-function exportGeoJSON(){ let features=[]; selectedCities.forEach(c=>features.push({type:"Feature",geometry:{type:"Point",coordinates:[c.lon,c.lat]},properties:{name:c.name,country:c.country}})); if(routeLayer&&routeLayer.getLatLngs&&routeLayer.getLatLngs().length){ let coords=routeLayer.getLatLngs().map(c=>[c.lng,c.lat]); features.push({type:"Feature",geometry:{type:"LineString",coordinates:coords},properties:{name:"Itinéraire TSP"}}); } let blob=new Blob([JSON.stringify({type:"FeatureCollection",features},null,2)],{type:"application/json"}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="tsp.geojson"; a.click(); URL.revokeObjectURL(blob); }
-
-// ==================== TSP & OSRM ====================
-function haversine(lat1,lon1,lat2,lon2){ const R=6371,r=Math.PI/180, dLat=(lat2-lat1)*r,dLon=(lon2-lon1)*r; return R*2*Math.asin(Math.sqrt(Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2)); }
-function totalDistance(tour){ let d=0; for(let i=0;i<tour.length-1;i++) d+=haversine(tour[i].lat,tour[i].lon,tour[i+1].lat,tour[i+1].lon); return d; }
-function twoOpt(tour){ let improved=true, bestDist=totalDistance(tour); while(improved&&!tspCancelRequested){ improved=false; for(let i=1;i<tour.length-2;i++){ for(let j=i+1;j<tour.length-1;j++){ if(tspCancelRequested) return tour; let newTour=[...tour.slice(0,i), ...tour.slice(i,j+1).reverse(), ...tour.slice(j+1)]; let newDist=totalDistance(newTour); if(newDist<bestDist-0.001){ bestDist=newDist; tour=newTour; improved=true; } } } } return tour; }
-function tspNN(cities,startIdx){ if(cities.length<2) return [[],0]; let unvisited=[...cities]; let start=unvisited.splice(startIdx,1)[0]; let tour=[start], current=start, total=0; while(unvisited.length){ let bestIdx=0, bestDist=haversine(current.lat,current.lon,unvisited[0].lat,unvisited[0].lon); for(let i=1;i<unvisited.length;i++){ let d=haversine(current.lat,current.lon,unvisited[i].lat,unvisited[i].lon); if(d<bestDist){ bestDist=d; bestIdx=i; } } total+=bestDist; current=unvisited[bestIdx]; tour.push(current); unvisited.splice(bestIdx,1); } total+=haversine(current.lat,current.lon,start.lat,start.lon); tour.push(start); return [tour,total]; }
-async function fetchOsrmRoute(lat1,lon1,lat2,lon2,mode){ let profile=mode==='foot'?'foot':'driving'; let url=`https://router.project-osrm.org/route/v1/${profile}/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`; try{ let resp=await fetch(url); if(!resp.ok)return null; let data=await resp.json(); if(!data.routes||!data.routes.length)return null; let r=data.routes[0]; let distanceKm=r.distance/1000; let durationSec=r.duration; let coords=r.geometry.coordinates.map(c=>[c[1],c[0]]); return {routeCoords:coords,distanceKm,durationSec}; } catch(e){return null;} }
-async function buildRouteGeometry(tour,mode){ if(tour.length<2) return {routeLatLng:[],totalDistanceKm:0,totalDurationSec:0}; let all=[], totalKm=0, totalSec=0; for(let i=0;i<tour.length-1;i++){ if(tspCancelRequested) return {routeLatLng:[],totalDistanceKm:0,totalDurationSec:0}; let c1=tour[i],c2=tour[i+1]; if(mode==='plane'){ let dist=haversine(c1.lat,c1.lon,c2.lat,c2.lon); totalKm+=dist; totalSec+=(dist/800)*3600; if(all.length===0||all[all.length-1][0]!==c1.lat||all[all.length-1][1]!==c1.lon) all.push([c1.lat,c1.lon]); all.push([c2.lat,c2.lon]); } else { let result=await fetchOsrmRoute(c1.lat,c1.lon,c2.lat,c2.lon,mode); if(result&&result.routeCoords&&result.routeCoords.length>0){ let seg=result.routeCoords; if(all.length>0&&seg.length>0){ let last=all[all.length-1]; let first=seg[0]; if(Math.abs(last[0]-first[0])<1e-7&&Math.abs(last[1]-first[1])<1e-7) seg.shift(); } all.push(...seg); totalKm+=result.distanceKm; totalSec+=result.durationSec; } else { let dist=haversine(c1.lat,c1.lon,c2.lat,c2.lon); totalKm+=dist; let speedKmh=(mode==='foot')?5:80; totalSec+=(dist/speedKmh)*3600; if(all.length===0||all[all.length-1][0]!==c1.lat||all[all.length-1][1]!==c1.lon) all.push([c1.lat,c1.lon]); all.push([c2.lat,c2.lon]); } await new Promise(r=>setTimeout(r,200)); } } return {routeLatLng:all,totalDistanceKm:totalKm,totalDurationSec:totalSec}; }
-function clearMapRoute(){ if(routeLayer) map.removeLayer(routeLayer); routeMarkers.forEach(m=>map.removeLayer(m)); routeMarkers=[]; }
-async function computeTSP(){ tspCancelRequested=false; document.getElementById('cancelTSPBtn').style.display='inline-block'; let max=parseInt(document.getElementById('maxCities').value)||8; let cities=[...selectedCities]; if(cities.length<2){ document.getElementById('resultsPanel').innerHTML='<div style="color:var(--error)">Sélectionnez au moins 2 villes</div>'; document.getElementById('cancelTSPBtn').style.display='none'; return; } if(cities.length>max) cities=cities.slice(0,max); let startIdx=parseInt(document.getElementById('startCitySelect').value)||0; let [tour,straightDist]=tspNN(cities,startIdx); if(tspCancelRequested){ document.getElementById('cancelTSPBtn').style.display='none'; return; } let algo=document.getElementById('algoSelect').value; if(algo==='2opt') tour=twoOpt(tour); if(tspCancelRequested){ document.getElementById('cancelTSPBtn').style.display='none'; return; } let orderedCities=tour.slice(0,-1); selectedCities=orderedCities; saveSelected(); updateSelUI(); updateMarkersOnMap(); clearMapRoute(); let loadEl=document.getElementById('routeLoading'); let mode=document.getElementById('transportMode').value; loadEl.style.display='block'; let {routeLatLng,totalDistanceKm,totalDurationSec}=await buildRouteGeometry(tour,mode); loadEl.style.display='none'; if(tspCancelRequested){ document.getElementById('cancelTSPBtn').style.display='none'; return; } if(routeLatLng.length<2){ document.getElementById('resultsPanel').innerHTML='<div style="color:var(--error)">Erreur tracé route</div>'; document.getElementById('cancelTSPBtn').style.display='none'; return; } routeLayer=L.polyline(routeLatLng,{color:'#00f5ff',weight:4,opacity:0.85}).addTo(map); tour.slice(0,-1).forEach((city,idx)=>{ let isStart=(idx===0); let color=isStart?'#ff4466':(city.custom?'#00ffaa':'#00ccff'); let marker=L.marker([city.lat,city.lon],{icon:L.divIcon({html:`<div style="background:${color};width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:${isStart?'#fff':'#000'};border:2px solid white;font-size:12px;">${isStart?'🏁':idx+1}</div>`,iconSize:[30,30]})}).addTo(map).bindPopup(`<b>${idx+1}. ${escapeHtml(city.name)}</b><br>${escapeHtml(city.country)}`); routeMarkers.push(marker); }); let lats=cities.map(c=>c.lat), lons=cities.map(c=>c.lon); map.fitBounds([[Math.min(...lats),Math.min(...lons)],[Math.max(...lats),Math.max(...lons)]],{padding:[60,60]}); let stepsHtml=tour.slice(0,-1).map((c,i)=>`<div><b>${i+1}. ${escapeHtml(c.name)}</b> (${escapeHtml(c.country)})</div>`).join(''); let modeLabel={car:'🚗 Voiture',foot:'🚶 Piéton',plane:'✈️ Avion'}[mode]; let hours=totalDurationSec/3600; let durationStr=`${Math.floor(hours)}h ${Math.floor((hours%1)*60)}min`; let distKm=totalDistanceKm.toFixed(0); document.getElementById('resultsPanel').innerHTML=`<div><strong>📊 Résultat (${algo==='2opt'?'2-opt optimisé':'Plus proche voisin'})</strong></div><div class="stats-grid"><div class="stat-card"><div>${cities.length}</div>villes</div><div class="stat-card"><div>${distKm}</div>km</div><div class="stat-card"><div>${durationStr}</div>durée</div><div class="stat-card"><div>${modeLabel}</div></div></div><div class="route-steps">${stepsHtml}</div>`; document.getElementById('cancelTSPBtn').style.display='none'; }
-function cancelTSP(){ tspCancelRequested=true; }
-function generateJavaCode(){ if(!selectedCities.length){ document.getElementById('javaCodeArea').value="// Aucune ville sélectionnée."; return; } let coords=selectedCities.map(c=>`    {${c.lat}, ${c.lon}}`).join(",\n"); document.getElementById('javaCodeArea').value=`public class TSPCoords {\n    public static double[][] getCoordinates() {\n        return new double[][] {\n${coords}\n        };\n    }\n}`; }
-function copyJavaCode(){ let ta=document.getElementById('javaCodeArea'); ta.select(); document.execCommand('copy'); alert("Code Java copié !"); }
-
-// ==================== RÔLES : CLIENT, LIVREUR, RESPONSABLE ====================
-let livreurMarkers={};
-function showRolePanel(role,user){
-    let panels=document.querySelectorAll('.role-panel');
-    panels.forEach(p=>p.remove());
-    if(role==='client') injectClientPanel(user);
-    else if(role==='livreur') injectLivreurPanel(user);
-    else if(role==='responsable') injectResponsablePanel(user);
-}
-function injectClientPanel(user){
-    let dash=document.getElementById('dashboard');
-    let panel=document.createElement('div'); panel.className='section role-panel active'; panel.id='clientPanel';
-    panel.innerHTML=`<div class="section-title">📦 Demander une livraison</div>
-        <div class="add-form"><input id="liv_adresse" placeholder="📍 Adresse de livraison"><input id="liv_description" placeholder="📝 Description du colis"><input id="liv_phone" placeholder="📞 Téléphone" value="${escapeHtml(user.telephone||'')}"><div class="btn-row"><button class="btn btn-secondary" onclick="pickLivraisonAddress()">🗺️ Choisir sur carte</button><button class="btn btn-primary" onclick="demanderLivraison()">📦 Envoyer</button></div></div>
-        <div class="section-title" style="margin-top:16px;">📋 Mes livraisons</div><div id="mesLivraisons"></div>`;
-    dash.querySelector('.welcome-pill').insertAdjacentElement('afterend',panel);
-    loadMesLivraisons(user.uid||user.username);
-}
-async function demanderLivraison(){
-    let adresse=document.getElementById('liv_adresse').value.trim();
-    let desc=document.getElementById('liv_description').value.trim();
-    let phone=document.getElementById('liv_phone').value.trim();
-    let sess=JSON.parse(localStorage.getItem('tsp_session'));
-    if(!adresse||!desc){ alert("Remplissez les champs"); return; }
-    let liv={clientId:sess.uid||sess.username, clientNom:sess.firstName+' '+sess.lastName, adresse, description:desc, telephone:phone, statut:'en_attente', livreurId:null, timestamp:new Date().toISOString(),lat:null,lon:null, id:'liv_'+Date.now()};
-    if(window.db) await window.fsAddDoc(window.fsCollection(window.db,'livraisons'),liv);
-    let livs=JSON.parse(localStorage.getItem('tsp_livraisons')||'[]');
-    livs.push(liv);
-    localStorage.setItem('tsp_livraisons',JSON.stringify(livs));
-    alert('✅ Demande envoyée !');
-    document.getElementById('liv_adresse').value=''; document.getElementById('liv_description').value='';
-    loadMesLivraisons(sess.uid||sess.username);
-}
-function loadMesLivraisons(clientId){
-    let container=document.getElementById('mesLivraisons'); if(!container) return;
-    let livs=JSON.parse(localStorage.getItem('tsp_livraisons')||'[]');
-    let mes=livs.filter(l=>l.clientId===clientId);
-    if(!mes.length){ container.innerHTML='<div style="color:var(--muted);">Aucune livraison.</div>'; return; }
-    let statuts={'en_attente':'🟡 En attente','en_cours':'🔵 En cours','livre':'✅ Livré'};
-    container.innerHTML=mes.reverse().map(l=>`<div class="livraison-card ${l.statut}"><div><strong>${escapeHtml(l.description)}</strong> <span>${statuts[l.statut]||l.statut}</span></div><div>📍 ${escapeHtml(l.adresse)}</div>${l.livreurNom?`<div>🚴 ${escapeHtml(l.livreurNom)}</div>`:''}</div>`).join('');
-}
-function pickLivraisonAddress(){ pickMode=true; map.getContainer().style.cursor='crosshair'; map.once('click',e=>{ document.getElementById('liv_adresse').value=e.latlng.lat.toFixed(5)+', '+e.latlng.lng.toFixed(5); map.getContainer().style.cursor=''; }); }
-
-function injectLivreurPanel(user){
-    let dash=document.getElementById('dashboard');
-    let panel=document.createElement('div'); panel.className='section role-panel active'; panel.id='livreurPanel';
-    panel.innerHTML=`<div class="section-title">🚴 Mode Livreur <span id="livreurStatusBadge" style="font-size:0.7rem;padding:2px 10px;border-radius:20px;background:rgba(255,80,80,0.2);color:#ff8888;">Hors ligne</span></div>
-        <div class="btn-row"><button class="btn btn-primary" id="trackBtn" onclick="toggleTracking()">📡 Start Tracking</button><button class="btn btn-secondary" onclick="toggleLivreurStatus()">🟢 Me connecter</button></div>
-        <div class="section-title">📋 Mes livraisons assignées</div><div id="livraisonsAssignees"></div>
-        <div class="section-title">💬 Messages</div><div class="chat-box" id="livreurChat"></div>
-        <div style="display:flex;gap:8px;"><input type="text" id="livreurMsgInput" placeholder="Écrire un message..." style="flex:1;padding:8px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:50px;"><button class="btn btn-primary" onclick="sendLivreurMessage()">➤</button></div>`;
-    dash.querySelector('.welcome-pill').insertAdjacentElement('afterend',panel);
-    loadLivraisonsAssignees(user);
-    loadLivreurMessages(user);
-    if(window.db){
-        let q=window.fsQuery(window.fsCollection(window.db,'livraisons'), window.fsWhere('livreurId','==',user.uid||user.username));
-        window.fsOnSnapshot(q,snap=>{ let livs=snap.docs.map(d=>({id:d.id,...d.data()})); renderLivraisonsAssignees(livs); });
-    }
-}
-function loadLivraisonsAssignees(user){
-    let livs=JSON.parse(localStorage.getItem('tsp_livraisons')||'[]');
-    let assigned=livs.filter(l=>l.livreurId===(user.uid||user.username));
-    renderLivraisonsAssignees(assigned);
-}
-function renderLivraisonsAssignees(livs){
-    let c=document.getElementById('livraisonsAssignees'); if(!c) return;
-    if(!livs.length){ c.innerHTML='<div style="color:var(--muted);">Aucune livraison assignée.</div>'; return; }
-    c.innerHTML=livs.map(l=>`<div class="livraison-card ${l.statut}"><div><strong>${escapeHtml(l.description)}</strong> <select onchange="updateStatutLivraison('${l.id}',this.value)"><option value="en_attente" ${l.statut==='en_attente'?'selected':''}>🟡 En attente</option><option value="en_cours" ${l.statut==='en_cours'?'selected':''}>🔵 En cours</option><option value="livre" ${l.statut==='livre'?'selected':''}>✅ Livré</option></select></div><div>📍 ${escapeHtml(l.adresse)} | 📞 ${escapeHtml(l.telephone)}</div><div>👤 ${escapeHtml(l.clientNom)}</div></div>`).join('');
-}
-async function updateStatutLivraison(id,statut){
-    let livs=JSON.parse(localStorage.getItem('tsp_livraisons')||'[]');
-    let idx=livs.findIndex(l=>l.id===id);
-    if(idx!==-1){ livs[idx].statut=statut; localStorage.setItem('tsp_livraisons',JSON.stringify(livs)); }
-    if(window.db) await window.fsSetDoc(window.fsDoc(window.db,'livraisons',id),{statut},{merge:true});
-}
-function toggleLivreurStatus(){
-    let sess=JSON.parse(localStorage.getItem('tsp_session'));
-    let badge=document.getElementById('livreurStatusBadge');
-    let isActif=badge.textContent.includes('connecté');
-    if(!isActif){
-        badge.textContent='🟢 En ligne'; badge.style.background='rgba(0,255,170,0.2)'; badge.style.color='#00ffaa';
-        if(window.db) window.fsSetDoc(window.fsDoc(window.db,'positions',sess.uid||sess.username),{statut:'actif',nom:sess.firstName+' '+sess.lastName,timestamp:new Date().toISOString()},{merge:true});
-    } else {
-        badge.textContent='🔴 Hors ligne'; badge.style.background='rgba(255,80,80,0.2)'; badge.style.color='#ff8888';
-        if(window.db) window.fsSetDoc(window.fsDoc(window.db,'positions',sess.uid||sess.username),{statut:'inactif'},{merge:true});
-    }
-}
-function loadLivreurMessages(user){
-    let msgs=JSON.parse(localStorage.getItem('tsp_messages')||'[]');
-    let myMsgs=msgs.filter(m=>m.vers===(user.uid||user.username)||m.de===(user.uid||user.username));
-    renderChat('livreurChat',myMsgs,user.uid||user.username);
-}
-function renderChat(containerId,msgs,myId){
-    let c=document.getElementById(containerId); if(!c) return;
-    if(!msgs.length){ c.innerHTML='<div style="color:var(--muted);">Aucun message.</div>'; return; }
-    c.innerHTML=msgs.map(m=>`<div style="display:flex;flex-direction:column;align-items:${m.de===myId?'flex-end':'flex-start'};"><div class="msg-bubble ${m.de===myId?'sent':'received'}">${escapeHtml(m.texte)}<div class="msg-time">${new Date(m.timestamp).toLocaleTimeString()}</div></div></div>`).join('');
-    c.scrollTop=c.scrollHeight;
-}
-async function sendLivreurMessage(){
-    let input=document.getElementById('livreurMsgInput');
-    let texte=input.value.trim(); if(!texte) return;
-    let sess=JSON.parse(localStorage.getItem('tsp_session'));
-    let msg={de:sess.uid||sess.username, deNom:sess.firstName, vers:'responsable', texte, timestamp:new Date().toISOString(), lu:false};
-    let msgs=JSON.parse(localStorage.getItem('tsp_messages')||'[]'); msgs.push(msg); localStorage.setItem('tsp_messages',JSON.stringify(msgs));
-    if(window.db) await window.fsAddDoc(window.fsCollection(window.db,'messages'),msg);
-    input.value=''; loadLivreurMessages(sess);
-}
-
-function injectResponsablePanel(user){
-    let dash=document.getElementById('dashboard');
-    let panel=document.createElement('div'); panel.className='section role-panel active'; panel.id='responsablePanel';
-    panel.innerHTML=`<div class="section-title">👔 Dashboard Responsable <span style="font-size:0.7rem;background:rgba(255,170,0,0.2);padding:2px 10px;border-radius:20px;">Code: <strong>${escapeHtml(user.codeEntreprise||'N/A')}</strong></span></div>
-        <div class="stats-grid"><div class="stat-card"><div id="statLivTotal">0</div>Livraisons</div><div class="stat-card"><div id="statLivActif">0</div>En cours</div><div class="stat-card"><div id="statLivreurs">0</div>Livreurs</div></div>
-        <div class="section-title">🚴 Mes livreurs en temps réel</div><div id="livreursListe"></div>
-        <div class="section-title">📦 Toutes les livraisons <button class="btn-primary" style="padding:4px 10px;" onclick="loadToutesLivraisons()">🔄 Actualiser</button></div><div id="toutesLivraisons"></div>
-        <div class="section-title">💬 Messages des livreurs</div><div class="chat-box" id="respChat"></div>
-        <div style="display:flex;gap:8px;"><select id="respMsgDest" style="background:#111;color:var(--text);border-radius:50px;padding:6px;"><option value="all">📢 Tous les livreurs</option></select><input id="respMsgInput" placeholder="Message..." style="flex:1;padding:8px;"><button class="btn-primary" onclick="sendRespMessage()">➤</button></div>`;
-    dash.querySelector('.welcome-pill').insertAdjacentElement('afterend',panel);
-    loadLivreursSurCarte(user);
-    loadToutesLivraisons();
-    loadRespMessages(user);
-    if(window.db){
-        window.fsOnSnapshot(window.fsCollection(window.db,'positions'),snap=>{ let pos=snap.docs.map(d=>({id:d.id,...d.data()})); renderLivreursSurCarte(pos); });
-        window.fsOnSnapshot(window.fsCollection(window.db,'messages'),snap=>{ let msgs=snap.docs.map(d=>({id:d.id,...d.data()})); renderChat('respChat',msgs,user.uid||user.username); });
-    }
-}
-function loadLivreursSurCarte(user){
-    let positions=JSON.parse(localStorage.getItem('tsp_positions')||'[]');
-    renderLivreursSurCarte(positions);
-}
-function renderLivreursSurCarte(positions){
-    let c=document.getElementById('livreursListe'); if(!c) return;
-    document.getElementById('statLivreurs').innerText=positions.length;
-    if(!positions.length){ c.innerHTML='<div style="color:var(--muted);">Aucun livreur connecté.</div>'; return; }
-    c.innerHTML=positions.map(p=>`<div class="livreur-card" onclick="zoomToLivreur('${p.id}',${p.lat||0},${p.lon||0})"><div class="status-dot ${p.statut==='actif'?'actif':'inactif'}"></div><div style="flex:1;"><div style="font-weight:700;">${escapeHtml(p.nom||p.id)}</div><div style="font-size:0.72rem;">${p.speed?`⚡ ${(p.speed*3.6).toFixed(1)} km/h`:''} ${p.lat?`📍 ${p.lat.toFixed(4)}` :''}</div></div><button class="btn-secondary" onclick="event.stopPropagation();openChatAvec('${p.id}','${escapeHtml(p.nom||p.id)}')">💬</button></div>`).join('');
-    // update markers
-    Object.values(livreurMarkers).forEach(m=>map.removeLayer(m)); livreurMarkers={};
-    positions.forEach(p=>{ if(p.lat&&p.lon&&map){ let m=L.marker([p.lat,p.lon],{icon:L.divIcon({html:`<div style="background:#ffaa33;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid white;">🚴</div>`,iconSize:[32,32],iconAnchor:[16,16]})}).addTo(map).bindPopup(`<b>${escapeHtml(p.nom||p.id)}</b><br>Livreur`); livreurMarkers[p.id]=m; } });
-    let livs=JSON.parse(localStorage.getItem('tsp_livraisons')||'[]');
-    document.getElementById('statLivTotal').innerText=livs.length;
-    document.getElementById('statLivActif').innerText=livs.filter(l=>l.statut==='en_cours').length;
-}
-function zoomToLivreur(id,lat,lon){ if(map&&lat&&lon){ map.flyTo([lat,lon],15); if(livreurMarkers[id]) livreurMarkers[id].openPopup(); } }
-function loadToutesLivraisons(){
-    let c=document.getElementById('toutesLivraisons'); if(!c) return;
-    let livs=JSON.parse(localStorage.getItem('tsp_livraisons')||'[]');
-    let users=getUsers();
-    let livreurs=Object.values(users).filter(u=>u.role==='livreur');
-    if(!livs.length){ c.innerHTML='<div style="color:var(--muted);">Aucune livraison.</div>'; return; }
-    let statuts={'en_attente':'🟡 En attente','en_cours':'🔵 En cours','livre':'✅ Livré'};
-    c.innerHTML=livs.reverse().map(l=>`<div class="livraison-card ${l.statut}"><div><strong>${escapeHtml(l.description)}</strong> <span>${statuts[l.statut]||l.statut}</span></div><div>👤 ${escapeHtml(l.clientNom)} | 📞 ${escapeHtml(l.telephone)}</div><div>📍 ${escapeHtml(l.adresse)}</div><div style="margin-top:8px;"><span style="font-size:0.72rem;">Assigner :</span> <select onchange="assignerLivreur('${l.id}',this.value)"><option value="">-- Choisir --</option>${livreurs.map(lv=>`<option value="${lv.username}" ${l.livreurId===lv.username?'selected':''}>${escapeHtml(lv.firstName+' '+lv.lastName)}</option>`).join('')}</select></div></div>`).join('');
-}
-async function assignerLivreur(livId,livreurUsername){
-    if(!livreurUsername) return;
-    let users=getUsers();
-    let livreur=users[livreurUsername];
-    let livs=JSON.parse(localStorage.getItem('tsp_livraisons')||'[]');
-    let idx=livs.findIndex(l=>l.id===livId);
-    if(idx!==-1){ livs[idx].livreurId=livreurUsername; livs[idx].livreurNom=livreur?livreur.firstName+' '+livreur.lastName:livreurUsername; livs[idx].statut='en_cours'; localStorage.setItem('tsp_livraisons',JSON.stringify(livs)); }
-    if(window.db) await window.fsSetDoc(window.fsDoc(window.db,'livraisons',livId),{livreurId:livreurUsername,statut:'en_cours'},{merge:true});
-    loadToutesLivraisons();
-    alert('✅ Livreur assigné');
-}
-function loadRespMessages(user){
-    let msgs=JSON.parse(localStorage.getItem('tsp_messages')||'[]');
-    renderChat('respChat',msgs,user.uid||user.username);
-}
-async function sendRespMessage(){
-    let input=document.getElementById('respMsgInput');
-    let dest=document.getElementById('respMsgDest').value;
-    let texte=input.value.trim(); if(!texte) return;
-    let sess=JSON.parse(localStorage.getItem('tsp_session'));
-    let msg={de:sess.uid||sess.username, deNom:'Responsable', vers:dest, texte, timestamp:new Date().toISOString(), lu:false};
-    let msgs=JSON.parse(localStorage.getItem('tsp_messages')||'[]'); msgs.push(msg); localStorage.setItem('tsp_messages',JSON.stringify(msgs));
-    if(window.db) await window.fsAddDoc(window.fsCollection(window.db,'messages'),msg);
-    input.value=''; loadRespMessages(sess);
-}
-function openChatAvec(livreurId,livreurNom){
-    let dest=document.getElementById('respMsgDest');
-    if(![...dest.options].some(o=>o.value===livreurId)){ let opt=document.createElement('option'); opt.value=livreurId; opt.textContent='🚴 '+livreurNom; dest.appendChild(opt); }
-    dest.value=livreurId;
-    document.getElementById('respMsgInput').focus();
-}
-
-// ==================== DÉMARRAGE ====================
-function startApp(user){
-    document.getElementById('dashboard').style.display='block';
-    let roleBadge={'client':'<span class="role-badge role-client">👤 Client</span>','livreur':'<span class="role-badge role-livreur">🚴 Livreur</span>','responsable':'<span class="role-badge role-responsable">👔 Responsable</span>'}[user.role]||'';
-    document.getElementById('welcomeName').innerHTML=`${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)} ${roleBadge}`;
-    map=L.map('map',{zoomControl:false,rotate:true,touchRotate:true,rotateControl:false,bearing:0}).setView([20,10],2);
-    map.dragging.rotateModifierKey='Shift';
-    let savedLayer=localStorage.getItem('tsp_map_layer')||'osm';
-    setMapLayer(savedLayer);
-    L.control.zoom({position:'bottomright'}).addTo(map);
-    map.on('rotate',updateCompass); map.on('move',updateCompass); updateCompass();
-    map.on('click',e=>{ if(pickMode){ document.getElementById('newLat').value=e.latlng.lat.toFixed(6); document.getElementById('newLon').value=e.latlng.lng.toFixed(6); document.getElementById('pickMsg').textContent='✅ Coordonnées récupérées'; pickMode=false; map.getContainer().style.cursor=''; } });
-    loadSelected(); loadReminders(); handleUrlLocation();
-    showRolePanel(user.role,user);
-}
-document.addEventListener('DOMContentLoaded',()=>{
-    const splash=document.getElementById('splashScreen');
-    setTimeout(()=>{
+// Démarrage
+document.addEventListener('DOMContentLoaded', () => {
+    const splash = document.getElementById('splashScreen');
+    setTimeout(() => {
         splash.classList.add('hidden');
-        let sess=localStorage.getItem('tsp_session');
-        if(sess){ try{ sess=JSON.parse(sess); document.getElementById('loginOverlay').style.display='none'; startApp(sess); } catch(e){} }
-        else document.getElementById('loginOverlay').classList.remove('hidden');
-    },5000);
+        let sess = localStorage.getItem('tsp_session');
+        if (sess) {
+            try {
+                sess = JSON.parse(sess);
+                document.getElementById('loginOverlay').style.display = 'none';
+                startApp(sess);
+            } catch(e) {}
+        } else {
+            document.getElementById('loginOverlay').classList.remove('hidden');
+        }
+    }, 5000);
 });
-
-// Exposer les fonctions globales
-window.switchTab=switchTab; window.selectRole=selectRole; window.doLogin=doLogin; window.doRegister=doRegister; window.finalizeLogin=finalizeLogin; window.logout=logout;
-window.toggleMapLayer=toggleMapLayer; window.shareCurrentLocation=shareCurrentLocation; window.showMyLocation=showMyLocation; window.exportGeoJSON=exportGeoJSON; window.clearSelection=clearSelection;
-window.computeTSP=computeTSP; window.cancelTSP=cancelTSP; window.generateJavaCode=generateJavaCode; window.copyJavaCode=copyJavaCode;
-window.scheduleAlarm=scheduleAlarm; window.startCron=startCron; window.pauseCron=pauseCron; window.resetCron=resetCron;
-window.addCustomCity=addCustomCity; window.startMapPick=startMapPick; window.useGeoloc=useGeoloc; window.zoomToCity=zoomToCity;
-window.showPlaceDetails=showPlaceDetails; window.zoomToCityById=zoomToCityById; window.selectSearchResult=selectSearchResult;
-window.toggleTracking=toggleTracking; window.startTracking=startTrackingPro; window.stopTracking=stopTrackingPro;
-window.demanderLivraison=demanderLivraison; window.updateStatutLivraison=updateStatutLivraison; window.toggleLivreurStatus=toggleLivreurStatus;
-window.sendLivreurMessage=sendLivreurMessage; window.sendRespMessage=sendRespMessage; window.assignerLivreur=assignerLivreur;
-window.loadToutesLivraisons=loadToutesLivraisons; window.zoomToLivreur=zoomToLivreur; window.openChatAvec=openChatAvec; window.pickLivraisonAddress=pickLivraisonAddress;
 </script>
 </body>
 </html>
