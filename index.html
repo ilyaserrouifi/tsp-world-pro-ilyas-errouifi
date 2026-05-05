@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>✈️ TSP WORLD PRO - Tracking pro & boussole</title>
+    <title>✈️ TSP WORLD PRO - Navigation GPS auto‑rotation</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -337,7 +337,7 @@
     </div>
     <div class="section"><div class="section-title">➕ Ajouter une ville personnalisée</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
-    <div class="footer">🌐 Routage réel OSRM · TSP · Export Java · Rappels · Tracking pro avec son & boussole · Rotation PC: Shift+glisser</div>
+    <div class="footer">🌐 Routage OSRM · TSP · Export Java · Rappels · Tracking pro avec auto‑rotation (cap vers le haut) · Rotation PC: Shift+glisser</div>
 </div>
 
 <script>
@@ -629,12 +629,18 @@ function stopTrackingPro() {
     isTracking = false;
     soundStop();
 
+    // Remet la carte au nord (bearing 0) à l'arrêt
+    if (map.setBearing) {
+        map.setBearing(0, { animate: true, duration: 0.8 });
+    }
+
     let btn = document.getElementById('trackBtn');
     btn.innerHTML = '📡 Start Tracking';
     btn.classList.remove('tracking');
     document.getElementById('trackingInfo').style.display = 'none';
 }
 
+// Mise à jour GPS avec auto-rotation (le cap reste vers le haut)
 function onTrackingUpdate(pos) {
     let lat = pos.coords.latitude;
     let lon = pos.coords.longitude;
@@ -646,28 +652,68 @@ function onTrackingUpdate(pos) {
 
     trackingPoints.push([lat, lon]);
     if (trackingPolyline) map.removeLayer(trackingPolyline);
-    trackingPolyline = L.polyline(trackingPoints, { color: '#ffaa33', weight: 4, opacity: 0.85 }).addTo(map);
+    trackingPolyline = L.polyline(trackingPoints, {
+        color: '#ffaa33', weight: 4, opacity: 0.85
+    }).addTo(map);
 
+    // Marqueur avec une petite flèche orientée vers le cap
     if (myLocationMarker) {
         myLocationMarker.setLatLng([lat, lon]);
+        // Rotation du marqueur via l'icône ? On recrée pour mettre à jour la flèche
+        if (heading != null && !isNaN(heading)) {
+            let newIcon = L.divIcon({
+                html: `<div style="
+                    width:28px; height:28px;
+                    background: radial-gradient(circle, #00f5ff, #0055ff);
+                    border-radius:50%;
+                    border:3px solid white;
+                    box-shadow:0 0 18px rgba(0,245,255,0.9);
+                    position:relative;
+                ">
+                    <div style="
+                        position:absolute; top:-10px; left:50%;
+                        transform:translateX(-50%) rotate(${heading}deg);
+                        width:0; height:0;
+                        border-left:6px solid transparent;
+                        border-right:6px solid transparent;
+                        border-bottom:12px solid #00f5ff;
+                    "></div>
+                </div>`,
+                iconSize: [28, 28],
+                iconAnchor: [14, 14]
+            });
+            myLocationMarker.setIcon(newIcon);
+        }
     } else {
+        let iconHtml = `<div style="width:28px; height:28px; background: radial-gradient(circle, #00f5ff, #0055ff); border-radius:50%; border:3px solid white; box-shadow:0 0 18px rgba(0,245,255,0.9); position:relative;">
+            <div style="position:absolute; top:-10px; left:50%; transform:translateX(-50%) rotate(${heading || 0}deg); width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:12px solid #00f5ff;"></div>
+        </div>`;
         myLocationMarker = L.marker([lat, lon], {
-            icon: L.divIcon({
-                html: `<div style="width:22px;height:22px;background:radial-gradient(circle,#00f5ff,#0055ff);border-radius:50%;border:3px solid white;box-shadow:0 0 15px rgba(0,245,255,0.8);"></div>`,
-                iconSize: [22,22],
-                iconAnchor: [11,11]
-            })
+            icon: L.divIcon({ html: iconHtml, iconSize: [28,28], iconAnchor: [14,14] })
         }).addTo(map);
     }
 
-    map.flyTo([lat, lon], map.getZoom(), { animate: true, duration: 1.0 });
+    // Rotation de la carte pour que le cap soit vers le haut (si heading valide)
+    if (heading != null && !isNaN(heading) && heading !== 0) {
+        lastHeading = heading;
+        if (map.setBearing) {
+            // On applique une rotation inverse pour que le nord de la carte s'aligne avec le cap GPS
+            map.setBearing(-heading, { animate: true, duration: 0.5 });
+        }
+    }
 
+    // Centrage fluide sur la position
+    map.flyTo([lat, lon], map.getZoom(), {
+        animate: true,
+        duration: 0.8
+    });
+
+    // Mise à jour des infos affichées
     document.getElementById('ti_lat').textContent = lat.toFixed(6) + '°';
     document.getElementById('ti_lon').textContent = lon.toFixed(6) + '°';
     document.getElementById('ti_speed').textContent = speed != null ? (speed * 3.6).toFixed(1) + ' km/h' : '0 km/h';
     document.getElementById('ti_acc').textContent = accuracy != null ? Math.round(accuracy) + ' m' : '-- m';
 
-    if (heading != null && !isNaN(heading)) lastHeading = heading;
     updateDirectionDisplay(lastHeading);
 }
 
@@ -675,7 +721,7 @@ function updateDirectionDisplay(heading) {
     let arrowSpan = document.getElementById('directionArrow');
     if (arrowSpan) arrowSpan.style.transform = `rotate(${heading}deg)`;
 
-    let dirs = ['N','NE','E','SE','S','SO','O','NO'];
+    let dirs  = ['N','NE','E','SE','S','SO','O','NO'];
     let names = {
         'N':'⬆️ Nord','NE':'↗️ Nord-Est','E':'➡️ Est','SE':'↘️ Sud-Est',
         'S':'⬇️ Sud','SO':'↙️ Sud-Ouest','O':'⬅️ Ouest','NO':'↖️ Nord-Ouest'
@@ -683,8 +729,13 @@ function updateDirectionDisplay(heading) {
     let idx = Math.round(heading / 45) % 8;
     document.getElementById('ti_dir').innerHTML = names[dirs[idx]] || `${Math.round(heading)}°`;
 
+    // Aiguille de la boussole fixe : elle doit toujours indiquer le nord vrai
+    // La carte a tourné, donc l'aiguille doit tourner du même angle pour pointer vers le nord réel
     let needle = document.getElementById('compassNeedle');
-    if (needle) needle.setAttribute('transform', `rotate(${-heading},40,40)`);
+    if (needle) needle.setAttribute('transform', `rotate(${heading}, 40, 40)`);
+    
+    let compassLabel = document.getElementById('compassLabel');
+    if (compassLabel) compassLabel.textContent = `${Math.round(heading)}°`;
 }
 
 // ==================== CARTE & ROTATION ====================
@@ -708,10 +759,11 @@ function toggleMapLayer() {
 }
 
 function updateCompass() {
+    // Pour la boussole statique, on affiche le bearing courant de la carte
     let bearing = map.getBearing ? map.getBearing() : 0;
     let needle = document.getElementById('compassNeedle');
-    if (needle) needle.setAttribute('transform', `rotate(${-bearing},40,40)`);
-    document.getElementById('compassLabel').innerHTML = bearing === 0 ? '↺ Nord' : `${Math.round(bearing)}°`;
+    if (needle) needle.setAttribute('transform', `rotate(${-bearing}, 40, 40)`);
+    document.getElementById('compassLabel').innerHTML = bearing === 0 ? '↺ Nord' : `${Math.round(-bearing)}°`;
 }
 function resetNorth() {
     if (map.setBearing) map.setBearing(0);
@@ -827,7 +879,7 @@ function startApp(user) {
     document.getElementById('dashboard').style.display = 'block';
     document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`;
     map = L.map('map', { zoomControl: false, rotate: true, touchRotate: true, rotateControl: false, bearing: 0 }).setView([20,10], 2);
-    // Fix rotation sur PC : utiliser la touche Shift (au lieu de Ctrl)
+    // Rotation sur PC avec Shift
     map.dragging.rotateModifierKey = 'Shift';
     let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm';
     setMapLayer(savedLayer);
