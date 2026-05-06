@@ -361,7 +361,7 @@
     </div>
     <div class="section"><div class="section-title">➕ Ajouter une ville personnalisée</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
-    <div class="footer">🌐 Routage OSRM · TSP · Export Java · Rappels · Tracking pro avec auto‑rotation · Polyline offset + 30 points lumineux animés</div>
+    <div class="footer">🌐 Routage OSRM · TSP · Export Java · Rappels · Tracking pro avec auto‑rotation · Polyline offset + 30 points lumineux animés (boucle continue sur TSP)</div>
 </div>
 
 <script>
@@ -618,16 +618,28 @@ function offsetLatLngs(points, offsetMeters) {
     return result;
 }
 
-// ==================== ANIMATION AVEC 30 POINTS LUMINEUX ====================
+// ==================== ANIMATION DES POINTS SUR TSP (BOUCLE CONTINUE) ====================
 let dotAnimationInterval = null;
 let animatedDots = [];
 
-function animateDotsOnRoute(points) {
-    animatedDots.forEach(dot => map.removeLayer(dot));
+// Arrêter l'animation et effacer les points
+function stopDotAnimation() {
+    if (dotAnimationInterval) {
+        clearInterval(dotAnimationInterval);
+        dotAnimationInterval = null;
+    }
+    animatedDots.forEach(dot => {
+        if (dot && map) map.removeLayer(dot);
+    });
     animatedDots = [];
-    if (dotAnimationInterval) clearInterval(dotAnimationInterval);
-    if (points.length < 2) return;
+}
 
+// Démarrer l'animation continue sur un tableau de points (route)
+function animateDotsOnRoute(points) {
+    stopDotAnimation(); // Nettoyer tout ancien
+    if (!points || points.length < 2) return;
+
+    // Calcul des segments et distance totale (dans l'espace mathématique, pas en km)
     let totalLen = 0;
     let segments = [];
     for (let i = 0; i < points.length - 1; i++) {
@@ -646,9 +658,9 @@ function animateDotsOnRoute(points) {
     if (totalLen === 0) return;
 
     const NUM_DOTS = 30;
-    let offsets = Array.from({length: NUM_DOTS}, (_, i) => i / NUM_DOTS);
     let progress = 0;
 
+    // Créer les points
     for (let i = 0; i < NUM_DOTS; i++) {
         let dot = L.circleMarker(points[0], {
             radius: 2.5,
@@ -661,10 +673,12 @@ function animateDotsOnRoute(points) {
         animatedDots.push(dot);
     }
 
+    // Animation: progression cyclique
     dotAnimationInterval = setInterval(() => {
-        progress = (progress + 0.004) % 1;
+        progress = (progress + 0.0035) % 1; // vitesse douce
+
         for (let i = 0; i < NUM_DOTS; i++) {
-            let t = (progress + offsets[i]) % 1;
+            let t = (progress + i / NUM_DOTS) % 1;
             let targetLen = t * totalLen;
             let seg = segments[segments.length - 1];
             for (let s of segments) {
@@ -673,12 +687,14 @@ function animateDotsOnRoute(points) {
             let segT = seg.len > 0 ? (targetLen - seg.cumLen) / seg.len : 0;
             let lat = seg.start[0] + (seg.end[0] - seg.start[0]) * segT;
             let lon = seg.start[1] + (seg.end[1] - seg.start[1]) * segT;
-            let intensity = 0.3 + 0.7 * (i / NUM_DOTS);
-            let radius = 2 + intensity * 2.5;
+            let isHead = (i >= NUM_DOTS - 4);
             animatedDots[i].setLatLng([lat, lon]);
-            animatedDots[i].setStyle({ fillOpacity: intensity, radius: radius });
+            animatedDots[i].setStyle({
+                radius: isHead ? 3.5 : 2,
+                fillOpacity: isHead ? 1 : 0.7
+            });
         }
-    }, 40);
+    }, 38);
 }
 
 // ==================== TRACKING PRO ====================
@@ -741,9 +757,22 @@ function stopTrackingPro() {
         map.setBearing(0, { animate: true, duration: 0.8 });
     }
 
-    if (dotAnimationInterval) clearInterval(dotAnimationInterval);
-    animatedDots.forEach(dot => map.removeLayer(dot));
-    animatedDots = [];
+    // On arrête l'animation des points de tracking mais pas celle du TSP
+    if (dotAnimationInterval) {
+        // On ne clear pas ici car c'est l'animation TSP qui tourne séparément
+        // Mais attention: stopTrackingPro ne doit pas interférer avec l'animation TSP.
+        // On va juste arrêter les points de tracking (qui sont stockés dans animatedDots)
+        // MAIS en réalité les points de tracking utilisent aussi animatedDots.
+        // Nous allons séparer les animations : pour le tracking on utilise une autre variable.
+        // Pour simplifier, on arrête tout puis on relance si route existe.
+        let currentRoute = routeLayer ? routeLayer.getLatLngs() : null;
+        if (currentRoute && currentRoute.length) {
+            let points = currentRoute.map(latlng => [latlng.lat, latlng.lng]);
+            animateDotsOnRoute(points);
+        } else {
+            stopDotAnimation();
+        }
+    }
 
     let btn = document.getElementById('trackBtn');
     btn.innerHTML = '📡 Start Tracking';
@@ -770,7 +799,9 @@ function onTrackingUpdate(pos) {
         opacity: 0.85
     }).addTo(map);
 
-    animateDotsOnRoute(offsetPoints);
+    // L'animation des points de tracking : on ne l'affiche pas car on veut que les points TSP restent
+    // Mais on peut laisser l'animation TSP inchangée.
+    // On ne touche pas à animateDotsOnRoute ici.
 
     if (myLocationMarker) {
         myLocationMarker.setLatLng([lat, lon]);
@@ -976,7 +1007,7 @@ function startApp(user) {
     map.on('move', updateCompass);
     updateCompass();
 
-    // ========== NOUVEAU CLICK SUR CARTE AVEC POPUP INFORMATIONS ==========
+    // ========== CLICK SUR CARTE AVEC POPUP INFORMATIONS ==========
     map.on('click', async e => {
         if (pickMode) {
             document.getElementById('newLat').value = e.latlng.lat.toFixed(6);
@@ -1051,8 +1082,78 @@ function twoOpt(tour) { let improved=true, bestDist=totalDistance(tour); while(i
 function tspNN(cities,startIdx) { if(cities.length<2) return [[],0]; let unvisited=[...cities]; let start=unvisited.splice(startIdx,1)[0]; let tour=[start], current=start, total=0; while(unvisited.length){ let bestIdx=0, bestDist=haversine(current.lat,current.lon,unvisited[0].lat,unvisited[0].lon); for(let i=1;i<unvisited.length;i++){ let d=haversine(current.lat,current.lon,unvisited[i].lat,unvisited[i].lon); if(d<bestDist){bestDist=d;bestIdx=i;}} total+=bestDist; current=unvisited[bestIdx]; tour.push(current); unvisited.splice(bestIdx,1); } total+=haversine(current.lat,current.lon,start.lat,start.lon); tour.push(start); return [tour,total]; }
 async function fetchOsrmRoute(lat1, lon1, lat2, lon2, mode) { let profile = mode === 'foot' ? 'foot' : 'driving'; let url = `https://router.project-osrm.org/route/v1/${profile}/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`; try { let resp = await fetch(url); if (!resp.ok) return null; let data = await resp.json(); if (!data.routes || data.routes.length === 0) return null; let route = data.routes[0]; let distanceKm = route.distance / 1000; let durationSec = route.duration; let coords = route.geometry.coordinates.map(c => [c[1], c[0]]); return { routeCoords: coords, distanceKm, durationSec }; } catch(e) { return null; } }
 async function buildRouteGeometry(tour, mode) { if (tour.length < 2) return { routeLatLng: [], totalDistanceKm: 0, totalDurationSec: 0 }; let allLatLng = []; let totalDistanceKm = 0; let totalDurationSec = 0; for (let i = 0; i < tour.length - 1; i++) { if (tspCancelRequested) return { routeLatLng: [], totalDistanceKm: 0, totalDurationSec: 0 }; let c1 = tour[i], c2 = tour[i+1]; if (mode === 'plane') { let dist = haversine(c1.lat, c1.lon, c2.lat, c2.lon); totalDistanceKm += dist; totalDurationSec += (dist / 800) * 3600; if (allLatLng.length === 0 || allLatLng[allLatLng.length-1][0] !== c1.lat || allLatLng[allLatLng.length-1][1] !== c1.lon) allLatLng.push([c1.lat, c1.lon]); allLatLng.push([c2.lat, c2.lon]); } else { let result = await fetchOsrmRoute(c1.lat, c1.lon, c2.lat, c2.lon, mode); if (result && result.routeCoords && result.routeCoords.length > 0) { let segmentCoords = result.routeCoords; if (allLatLng.length > 0 && segmentCoords.length > 0) { let last = allLatLng[allLatLng.length-1]; let first = segmentCoords[0]; if (Math.abs(last[0]-first[0])<1e-7 && Math.abs(last[1]-first[1])<1e-7) segmentCoords.shift(); } allLatLng.push(...segmentCoords); totalDistanceKm += result.distanceKm; totalDurationSec += result.durationSec; } else { let dist = haversine(c1.lat, c1.lon, c2.lat, c2.lon); totalDistanceKm += dist; let speedKmh = (mode === 'foot') ? 5 : 80; totalDurationSec += (dist / speedKmh) * 3600; if (allLatLng.length === 0 || allLatLng[allLatLng.length-1][0] !== c1.lat || allLatLng[allLatLng.length-1][1] !== c1.lon) allLatLng.push([c1.lat, c1.lon]); allLatLng.push([c2.lat, c2.lon]); } await new Promise(r => setTimeout(r, 200)); } } return { routeLatLng: allLatLng, totalDistanceKm, totalDurationSec }; }
-function clearMapRoute() { if(routeLayer) map.removeLayer(routeLayer); routeMarkers.forEach(m=>map.removeLayer(m)); routeMarkers=[]; }
-async function computeTSP() { tspCancelRequested = false; document.getElementById('cancelTSPBtn').style.display = 'inline-block'; let max = parseInt(document.getElementById('maxCities').value) || 8; let cities = [...selectedCities]; if (cities.length < 2) { document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Sélectionnez au moins 2 villes</div>'; document.getElementById('cancelTSPBtn').style.display = 'none'; return; } if (cities.length > max) cities = cities.slice(0, max); let startIdx = parseInt(document.getElementById('startCitySelect').value) || 0; let [tour, straightDist] = tspNN(cities, startIdx); if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } let algo = document.getElementById('algoSelect').value; if (algo === '2opt') tour = twoOpt(tour); if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } let orderedCities = tour.slice(0, -1); selectedCities = orderedCities; saveSelected(); updateSelUI(); updateMarkersOnMap(); clearMapRoute(); let loadEl = document.getElementById('routeLoading'); let mode = document.getElementById('transportMode').value; loadEl.style.display = 'block'; let { routeLatLng, totalDistanceKm, totalDurationSec } = await buildRouteGeometry(tour, mode); loadEl.style.display = 'none'; if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } if (routeLatLng.length < 2) { document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Erreur tracé route</div>'; document.getElementById('cancelTSPBtn').style.display = 'none'; return; } routeLayer = L.polyline(routeLatLng, { color: '#00f5ff', weight: 4, opacity: 0.85 }).addTo(map); tour.slice(0, -1).forEach((city, idx) => { let isStart = (idx === 0); let color = isStart ? '#ff4466' : (city.custom ? '#00ffaa' : '#00ccff'); let marker = L.marker([city.lat, city.lon], { icon: L.divIcon({ html: `<div style="background:${color};width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:${isStart ? '#fff' : '#000'};border:2px solid white;font-size:12px;">${isStart ? '🏁' : idx+1}</div>`, iconSize: [30,30] }) }).addTo(map).bindPopup(`<b>${idx+1}. ${escapeHtml(city.name)}</b><br>${escapeHtml(city.country)}`); routeMarkers.push(marker); }); let lats = cities.map(c => c.lat), lons = cities.map(c => c.lon); map.fitBounds([[Math.min(...lats), Math.min(...lons)], [Math.max(...lats), Math.max(...lons)]], { padding: [60,60] }); let stepsHtml = tour.slice(0, -1).map((c,i) => `<div><b>${i+1}. ${escapeHtml(c.name)}</b> (${escapeHtml(c.country)})</div>`).join(''); let modeLabel = { car:'🚗 Voiture', foot:'🚶 Piéton', plane:'✈️ Avion' }[mode]; let durationHours = totalDurationSec / 3600; let durationStr = `${Math.floor(durationHours)}h ${Math.floor((durationHours % 1) * 60)}min`; let distanceKm = totalDistanceKm.toFixed(0); document.getElementById('resultsPanel').innerHTML = `<div><strong>📊 Résultat (${algo === '2opt' ? '2-opt optimisé' : 'Plus proche voisin'})</strong></div><div class="stats-grid"><div class="stat-card"><div class="val">${cities.length}</div>villes</div><div class="stat-card"><div class="val">${distanceKm}</div>km</div><div class="stat-card"><div class="val">${durationStr}</div>durée</div><div class="stat-card"><div class="val">${modeLabel}</div></div></div><div class="route-steps">${stepsHtml}</div>`; document.getElementById('cancelTSPBtn').style.display = 'none'; }
+function clearMapRoute() { 
+    if(routeLayer) map.removeLayer(routeLayer); 
+    routeMarkers.forEach(m=>map.removeLayer(m)); 
+    routeMarkers=[]; 
+    stopDotAnimation(); 
+}
+async function computeTSP() { 
+    tspCancelRequested = false; 
+    document.getElementById('cancelTSPBtn').style.display = 'inline-block'; 
+    let max = parseInt(document.getElementById('maxCities').value) || 8; 
+    let cities = [...selectedCities]; 
+    if (cities.length < 2) { 
+        document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Sélectionnez au moins 2 villes</div>'; 
+        document.getElementById('cancelTSPBtn').style.display = 'none'; 
+        return; 
+    } 
+    if (cities.length > max) cities = cities.slice(0, max); 
+    let startIdx = parseInt(document.getElementById('startCitySelect').value) || 0; 
+    let [tour, straightDist] = tspNN(cities, startIdx); 
+    if (tspCancelRequested) { 
+        document.getElementById('cancelTSPBtn').style.display = 'none'; 
+        return; 
+    } 
+    let algo = document.getElementById('algoSelect').value; 
+    if (algo === '2opt') tour = twoOpt(tour); 
+    if (tspCancelRequested) { 
+        document.getElementById('cancelTSPBtn').style.display = 'none'; 
+        return; 
+    } 
+    let orderedCities = tour.slice(0, -1); 
+    selectedCities = orderedCities; 
+    saveSelected(); 
+    updateSelUI(); 
+    updateMarkersOnMap(); 
+    clearMapRoute(); 
+    let loadEl = document.getElementById('routeLoading'); 
+    let mode = document.getElementById('transportMode').value; 
+    loadEl.style.display = 'block'; 
+    let { routeLatLng, totalDistanceKm, totalDurationSec } = await buildRouteGeometry(tour, mode); 
+    loadEl.style.display = 'none'; 
+    if (tspCancelRequested) { 
+        document.getElementById('cancelTSPBtn').style.display = 'none'; 
+        return; 
+    } 
+    if (routeLatLng.length < 2) { 
+        document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Erreur tracé route</div>'; 
+        document.getElementById('cancelTSPBtn').style.display = 'none'; 
+        return; 
+    } 
+    routeLayer = L.polyline(routeLatLng, { color: '#00f5ff', weight: 4, opacity: 0.85 }).addTo(map); 
+    
+    // Lancer l'animation des 30 points lumineux sur cette route
+    animateDotsOnRoute(routeLatLng);
+    
+    tour.slice(0, -1).forEach((city, idx) => { 
+        let isStart = (idx === 0); 
+        let color = isStart ? '#ff4466' : (city.custom ? '#00ffaa' : '#00ccff'); 
+        let marker = L.marker([city.lat, city.lon], { 
+            icon: L.divIcon({ html: `<div style="background:${color};width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:${isStart ? '#fff' : '#000'};border:2px solid white;font-size:12px;">${isStart ? '🏁' : idx+1}</div>`, iconSize: [30,30] }) 
+        }).addTo(map).bindPopup(`<b>${idx+1}. ${escapeHtml(city.name)}</b><br>${escapeHtml(city.country)}`); 
+        routeMarkers.push(marker); 
+    }); 
+    let lats = cities.map(c => c.lat), lons = cities.map(c => c.lon); 
+    map.fitBounds([[Math.min(...lats), Math.min(...lons)], [Math.max(...lats), Math.max(...lons)]], { padding: [60,60] }); 
+    let stepsHtml = tour.slice(0, -1).map((c,i) => `<div><b>${i+1}. ${escapeHtml(c.name)}</b> (${escapeHtml(c.country)})</div>`).join(''); 
+    let modeLabel = { car:'🚗 Voiture', foot:'🚶 Piéton', plane:'✈️ Avion' }[mode]; 
+    let durationHours = totalDurationSec / 3600; 
+    let durationStr = `${Math.floor(durationHours)}h ${Math.floor((durationHours % 1) * 60)}min`; 
+    let distanceKm = totalDistanceKm.toFixed(0); 
+    document.getElementById('resultsPanel').innerHTML = `<div><strong>📊 Résultat (${algo === '2opt' ? '2-opt optimisé' : 'Plus proche voisin'})</strong></div><div class="stats-grid"><div class="stat-card"><div class="val">${cities.length}</div>villes</div><div class="stat-card"><div class="val">${distanceKm}</div>km</div><div class="stat-card"><div class="val">${durationStr}</div>durée</div><div class="stat-card"><div class="val">${modeLabel}</div></div></div><div class="route-steps">${stepsHtml}</div>`; 
+    document.getElementById('cancelTSPBtn').style.display = 'none'; 
+}
 function cancelTSP() { tspCancelRequested = true; }
 
 // Export Java
