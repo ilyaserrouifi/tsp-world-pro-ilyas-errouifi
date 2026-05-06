@@ -40,9 +40,14 @@
             z-index:1; 
             transition: transform 0.4s ease;
             transform-origin: center bottom;
+            image-rendering: -webkit-optimize-contrast;
+            -webkit-font-smoothing: antialiased;
         }
         #map.tilted {
             transform: perspective(800px) rotateX(35deg) scale(1.15);
+        }
+        canvas {
+            image-rendering: -webkit-optimize-contrast;
         }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -644,6 +649,10 @@ function selectSearchResult(name, lat, lon, country, description) {
     }
     document.getElementById('dynamicSearch').value = '';
     document.getElementById('searchResults').style.display = 'none';
+    // ===== ZIEDA: sur mobile, cacher le dashboard après sélection =====
+    if (window.innerWidth <= 768) {
+        document.getElementById('dashboard').classList.add('collapsed');
+    }
 }
 document.getElementById('dynamicSearch').addEventListener('input', function(e) {
     let val = e.target.value.trim();
@@ -690,7 +699,6 @@ let lastQrUrl = null;
 let scannerStream = null;
 let scannerAnimFrame = null;
 
-// Logo SVG inline TSP + Association Errouifi
 const TSP_LOGO_SVG = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <rect width="100" height="100" rx="18" fill="#070714"/>
@@ -1073,8 +1081,16 @@ let map, currentTileLayer, routeLayer, routeMarkers = [];
 let tspCancelRequested = false;
 
 const tileLayers = {
-    osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
-    googleSat: L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { attribution: '© Google Hybrid', maxZoom: 20 })
+    osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+        attribution: '© OpenStreetMap',
+        maxZoom: 20,
+        detectRetina: true
+    }),
+    googleSat: L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { 
+        attribution: '© Google Hybrid', 
+        maxZoom: 20,
+        detectRetina: true
+    })
 };
 
 function setMapLayer(layerId) {
@@ -1191,6 +1207,11 @@ function startApp(user) {
     document.getElementById('dashboard').style.display = 'block';
     document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`;
     map = L.map('map', { zoomControl: false, rotate: true, touchRotate: true, rotateControl: false, bearing: 0 }).setView([20,10], 2);
+    // Haute résolution mobile
+    if (window.devicePixelRatio > 1) {
+        map.options.zoomSnap = 0.5;
+        map.options.zoomDelta = 0.5;
+    }
     map.dragging.rotateModifierKey = 'Shift';
     let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm';
     setMapLayer(savedLayer);
