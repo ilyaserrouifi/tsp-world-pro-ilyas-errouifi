@@ -213,6 +213,77 @@
             margin:6px 0 2px; display:block;
             transition: transform 0.5s ease;
         }
+
+        /* ===== MOBILE BOTTOM SHEET ===== */
+        @media (max-width: 768px) {
+            .dashboard {
+                top: auto !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                max-height: 70vh;
+                border-radius: 22px 22px 0 0 !important;
+                border-bottom: none;
+                transform: translateY(0) !important;
+                transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+                padding-top: 28px;
+            }
+            .dashboard::before {
+                content: '';
+                position: absolute;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 40px;
+                height: 4px;
+                background: rgba(0,245,255,0.4);
+                border-radius: 10px;
+            }
+            .dashboard.collapsed {
+                transform: translateY(100%) !important;
+            }
+            .toggle-dash {
+                bottom: auto;
+                top: 16px;
+                right: 16px;
+                font-size: 0.8rem;
+                padding: 7px 14px;
+            }
+            #compass {
+                width: 56px;
+                height: 56px;
+                bottom: 16px;
+                right: 16px;
+            }
+            .map-switch {
+                bottom: 16px;
+                left: 16px;
+                font-size: 0.75rem;
+                padding: 6px 10px;
+            }
+            #trackingInfo {
+                top: 60px;
+                right: 8px;
+                min-width: 150px;
+                padding: 10px 12px;
+                font-size: 0.75rem;
+                border-radius: 14px;
+            }
+            .field input,
+            .search-input,
+            .add-form input,
+            .add-form textarea {
+                padding: 13px 16px;
+                font-size: 0.95rem;
+            }
+            .city-card,
+            .sel-item {
+                padding: 11px 14px;
+                min-height: 44px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -268,25 +339,45 @@
 <div class="map-switch" onclick="toggleMapLayer()">🗺️ Changer fond</div>
 <button id="tiltBtn" onclick="toggleTilt()">🏔️ Tilt 3D</button>
 
-<!-- QR Modal -->
-<div id="qrModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:#0a0a1e; border:2px solid #00f5ff; border-radius:24px; padding:32px; text-align:center; max-width:340px; width:90%; box-shadow:0 0 60px rgba(0,245,255,0.3);">
-        <div style="font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800; color:#00f5ff; margin-bottom:6px;">📡 QR Position</div>
-        <div id="qrSubtitle" style="font-size:0.75rem; color:rgba(200,210,255,0.6); margin-bottom:16px;">Scannez pour rejoindre cette position</div>
-        <div style="margin-bottom:14px;">
-            <label for="qrLogoInput" style="display:inline-block; padding:7px 16px; background:rgba(0,245,255,0.1); border:1px dashed #00f5ff; border-radius:50px; cursor:pointer; font-size:0.78rem; color:#00f5ff;">
-                🖼️ Choisir logo (PNG/JPG)
-            </label>
-            <input type="file" id="qrLogoInput" accept="image/*" style="display:none;" onchange="onLogoSelected(event)">
-            <div id="logoName" style="font-size:0.7rem; color:rgba(200,210,255,0.5); margin-top:4px;"></div>
+<!-- QR Modal PRO -->
+<div id="qrModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(8px);">
+    <div style="background:linear-gradient(145deg,#0a0a1e,#0d0d2b); border:2px solid #00f5ff; border-radius:28px; padding:28px 24px; text-align:center; max-width:360px; width:92%; box-shadow:0 0 80px rgba(0,245,255,0.25), inset 0 0 40px rgba(0,245,255,0.03);">
+        
+        <div style="font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800; background:linear-gradient(135deg,#00f5ff,#00ffaa); -webkit-background-clip:text; background-clip:text; color:transparent; margin-bottom:4px;">📡 QR Position</div>
+        <div id="qrSubtitle" style="font-size:0.72rem; color:rgba(200,210,255,0.5); margin-bottom:18px; letter-spacing:0.05em;">ASSOCIATION ERROUIFI · TSP WORLD PRO</div>
+
+        <div style="position:relative; display:inline-block; margin-bottom:14px;">
+            <canvas id="qrCanvas" style="border-radius:16px; display:block; box-shadow:0 0 30px rgba(0,245,255,0.2);"></canvas>
         </div>
-        <canvas id="qrCanvas" style="border-radius:12px; display:block; margin:0 auto 16px;"></canvas>
         <div id="qrcode" style="display:none;"></div>
-        <div id="qrCoords" style="font-family:monospace; font-size:0.72rem; color:#00ffaa; margin-bottom:16px;"></div>
-        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-            <button onclick="downloadQR()" style="padding:8px 18px; background:linear-gradient(135deg,#00f5ff,#0088ff); border:none; border-radius:50px; font-weight:700; cursor:pointer; font-size:0.82rem;">⬇️ Télécharger</button>
-            <button onclick="document.getElementById('qrModal').style.display='none'" style="padding:8px 18px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:50px; cursor:pointer; font-size:0.82rem;">✖ Fermer</button>
+
+        <div id="qrCoords" style="font-family:monospace; font-size:0.75rem; color:#00ffaa; margin-bottom:18px; background:rgba(0,255,170,0.06); padding:6px 14px; border-radius:20px; display:inline-block;"></div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+            <button id="copyQrBtn" onclick="copyQRImage()" style="padding:12px; background:linear-gradient(135deg,#00f5ff,#0088ff); border:none; border-radius:50px; font-weight:700; cursor:pointer; font-size:0.88rem; color:#000; display:flex; align-items:center; justify-content:center; gap:8px;">
+                📋 Copier l'image QR
+            </button>
+            <button onclick="openQRScanner()" style="padding:12px; background:rgba(0,245,255,0.1); border:1px solid rgba(0,245,255,0.4); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.88rem; color:#00f5ff; display:flex; align-items:center; justify-content:center; gap:8px;">
+                📷 Scanner avec caméra
+            </button>
+            <label style="padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.88rem; color:var(--text); display:flex; align-items:center; justify-content:center; gap:8px;">
+                📂 Charger depuis fichier
+                <input type="file" accept="image/*" style="display:none;" onchange="scanQRFromFile(event)">
+            </label>
         </div>
+
+        <div style="display:flex; gap:8px; justify-content:center;">
+            <button onclick="downloadQR()" style="padding:9px 20px; background:rgba(0,255,170,0.12); border:1px solid rgba(0,255,170,0.4); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.82rem; color:#00ffaa;">⬇️ Télécharger</button>
+            <button onclick="document.getElementById('qrModal').style.display='none'; stopQRScanner();" style="padding:9px 20px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:white; border-radius:50px; cursor:pointer; font-size:0.82rem;">✖ Fermer</button>
+        </div>
+
+        <div id="scannerZone" style="display:none; margin-top:16px;">
+            <video id="scannerVideo" style="width:100%; border-radius:16px; border:2px solid #00f5ff;" autoplay playsinline></video>
+            <div style="font-size:0.72rem; color:rgba(200,210,255,0.5); margin-top:6px;">Pointez vers un QR code...</div>
+            <button onclick="stopQRScanner()" style="margin-top:8px; padding:6px 16px; background:rgba(255,80,80,0.15); border:1px solid #ff6b8a; color:#ff6b8a; border-radius:50px; cursor:pointer; font-size:0.78rem;">⏹ Arrêter</button>
+            <div id="scanResult" style="font-size:0.8rem; color:#00ffaa; margin-top:6px;"></div>
+        </div>
+
     </div>
 </div>
 
@@ -393,7 +484,7 @@
     </div>
     <div class="section"><div class="section-title">➕ Ajouter une ville personnalisée</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
-    <div class="footer">🌐 Routage OSRM · TSP · Export Java · Rappels · Tracking pro avec auto‑rotation · Polyline offset + 30 points lumineux animés · QR position avec logo personnalisable</div>
+    <div class="footer">🌐 Routage OSRM · TSP · Export Java · Rappels · Tracking pro avec auto‑rotation · Polyline offset + 30 points lumineux animés · QR position avec logo fixe + scanner + copie d'image</div>
 </div>
 
 <script>
@@ -594,20 +685,22 @@ function handleUrlLocation() {
     }
 }
 
-// ==================== QR CODE AVEC LOGO ====================
-let qrLogoDataUrl = null;
+// ==================== QR CODE PRO (logo fixe, 3 façons) ====================
 let lastQrUrl = null;
+let scannerStream = null;
+let scannerAnimFrame = null;
 
-function onLogoSelected(event) {
-    let file = event.target.files[0];
-    if (!file) return;
-    document.getElementById('logoName').textContent = '✅ ' + file.name;
-    let reader = new FileReader();
-    reader.onload = e => {
-        qrLogoDataUrl = e.target.result;
-        if (lastQrUrl) drawQRWithLogo(lastQrUrl);
-    };
-    reader.readAsDataURL(file);
+// Logo SVG inline TSP + Association Errouifi
+const TSP_LOGO_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="18" fill="#070714"/>
+  <text x="50" y="42" text-anchor="middle" font-size="34" font-family="sans-serif">✈️</text>
+  <text x="50" y="62" text-anchor="middle" font-size="9" font-weight="bold" fill="#00f5ff" font-family="sans-serif">TSP WORLD</text>
+  <text x="50" y="74" text-anchor="middle" font-size="7.5" fill="#00ffaa" font-family="sans-serif">ERROUIFI</text>
+</svg>`;
+
+function svgToDataUrl(svg) {
+    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
 }
 
 function generatePositionQR() {
@@ -616,10 +709,13 @@ function generatePositionQR() {
         let lon = pos.coords.longitude;
         lastQrUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}`;
         document.getElementById('qrCoords').textContent = `📍 ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-        document.getElementById('qrModal').style.display = 'flex';
-        document.getElementById('qrModal').onclick = e => {
-            if (e.target === document.getElementById('qrModal'))
-                document.getElementById('qrModal').style.display = 'none';
+        let modal = document.getElementById('qrModal');
+        modal.style.display = 'flex';
+        modal.onclick = e => { 
+            if (e.target === modal) { 
+                modal.style.display = 'none'; 
+                stopQRScanner(); 
+            } 
         };
         drawQRWithLogo(lastQrUrl);
     }, err => alert("❌ GPS refusé ou indisponible"));
@@ -630,8 +726,8 @@ function drawQRWithLogo(url) {
     tempDiv.innerHTML = '';
     new QRCode(tempDiv, {
         text: url,
-        width: 256,
-        height: 256,
+        width: 280,
+        height: 280,
         colorDark: '#000000',
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.H
@@ -640,34 +736,132 @@ function drawQRWithLogo(url) {
         let qrCanvas = tempDiv.querySelector('canvas');
         if (!qrCanvas) return;
         let finalCanvas = document.getElementById('qrCanvas');
-        finalCanvas.width = 256;
-        finalCanvas.height = 256;
+        finalCanvas.width = 280;
+        finalCanvas.height = 280;
         let ctx = finalCanvas.getContext('2d');
-        ctx.drawImage(qrCanvas, 0, 0, 256, 256);
-        if (qrLogoDataUrl) {
-            let logo = new Image();
-            logo.onload = () => {
-                let size = 56;
-                let x = (256 - size) / 2;
-                let y = (256 - size) / 2;
-                ctx.fillStyle = '#ffffff';
-                ctx.beginPath();
-                ctx.roundRect(x - 4, y - 4, size + 8, size + 8, 10);
-                ctx.fill();
-                ctx.drawImage(logo, x, y, size, size);
-            };
-            logo.src = qrLogoDataUrl;
-        }
-    }, 50);
+        ctx.drawImage(qrCanvas, 0, 0, 280, 280);
+        let logo = new Image();
+        logo.onload = () => {
+            let size = 62;
+            let x = (280 - size) / 2;
+            let y = (280 - size) / 2;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.roundRect(x - 5, y - 5, size + 10, size + 10, 12);
+            ctx.fill();
+            ctx.drawImage(logo, x, y, size, size);
+        };
+        logo.src = svgToDataUrl(TSP_LOGO_SVG);
+    }, 60);
+}
+
+async function copyQRImage() {
+    let canvas = document.getElementById('qrCanvas');
+    if (!canvas) return;
+    try {
+        canvas.toBlob(async blob => {
+            await navigator.clipboard.write([
+                new ClipboardItem({ 'image/png': blob })
+            ]);
+            let btn = document.getElementById('copyQrBtn');
+            btn.textContent = '✅ Copié !';
+            setTimeout(() => { btn.textContent = '📋 Copier l\'image QR'; }, 2000);
+        });
+    } catch(e) {
+        downloadQR();
+        alert("Clipboard non supporté — image téléchargée à la place.");
+    }
 }
 
 function downloadQR() {
     let canvas = document.getElementById('qrCanvas');
-    if (!canvas) { alert("QR pas encore généré"); return; }
+    if (!canvas) return;
     let link = document.createElement('a');
-    link.download = 'qr-position-tsp.png';
+    link.download = 'qr-tsp-errouifi.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
+}
+
+async function openQRScanner() {
+    document.getElementById('scannerZone').style.display = 'block';
+    document.getElementById('scanResult').textContent = '';
+    try {
+        scannerStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'environment' } 
+        });
+        let video = document.getElementById('scannerVideo');
+        video.srcObject = scannerStream;
+        video.play();
+        scanQRFromVideo(video);
+    } catch(e) {
+        alert("❌ Caméra non accessible.\n" + e.message);
+        document.getElementById('scannerZone').style.display = 'none';
+    }
+}
+
+function scanQRFromVideo(video) {
+    if (!window.BarcodeDetector) {
+        document.getElementById('scanResult').textContent = '⚠️ BarcodeDetector non supporté sur ce navigateur.';
+        return;
+    }
+    let detector = new BarcodeDetector({ formats: ['qr_code'] });
+    function detect() {
+        if (!scannerStream) return;
+        detector.detect(video).then(barcodes => {
+            if (barcodes.length > 0) {
+                let result = barcodes[0].rawValue;
+                document.getElementById('scanResult').innerHTML = `✅ <a href="${result}" style="color:#00ffaa;">${result}</a>`;
+                stopQRScanner();
+                if (result.includes('lat=') && result.includes('lon=')) {
+                    setTimeout(() => { window.location.href = result; }, 1000);
+                }
+            } else {
+                scannerAnimFrame = requestAnimationFrame(detect);
+            }
+        }).catch(() => {
+            scannerAnimFrame = requestAnimationFrame(detect);
+        });
+    }
+    detect();
+}
+
+function stopQRScanner() {
+    if (scannerStream) {
+        scannerStream.getTracks().forEach(t => t.stop());
+        scannerStream = null;
+    }
+    if (scannerAnimFrame) {
+        cancelAnimationFrame(scannerAnimFrame);
+        scannerAnimFrame = null;
+    }
+    document.getElementById('scannerZone').style.display = 'none';
+}
+
+async function scanQRFromFile(event) {
+    let file = event.target.files[0];
+    if (!file) return;
+    if (!window.BarcodeDetector) {
+        alert("⚠️ BarcodeDetector non supporté sur ce navigateur (Chrome/Edge recommandé).");
+        return;
+    }
+    let img = new Image();
+    img.onload = async () => {
+        try {
+            let detector = new BarcodeDetector({ formats: ['qr_code'] });
+            let barcodes = await detector.detect(img);
+            if (barcodes.length > 0) {
+                let result = barcodes[0].rawValue;
+                document.getElementById('scanResult').innerHTML = `✅ Lu : <a href="${result}" style="color:#00ffaa;">${result}</a>`;
+                document.getElementById('scannerZone').style.display = 'block';
+                if (result.includes('lat=') && result.includes('lon=')) {
+                    setTimeout(() => { window.location.href = result; }, 1200);
+                }
+            } else {
+                alert("❌ Aucun QR code détecté dans cette image.");
+            }
+        } catch(e) { alert("Erreur lecture: " + e.message); }
+    };
+    img.src = URL.createObjectURL(file);
 }
 
 // ==================== SONS (Web Audio) ====================
@@ -1190,8 +1384,11 @@ window.toggleTracking = toggleTracking;
 window.startTracking = startTrackingPro;
 window.stopTracking = stopTrackingPro;
 window.generatePositionQR = generatePositionQR;
-window.onLogoSelected = onLogoSelected;
+window.copyQRImage = copyQRImage;
 window.downloadQR = downloadQR;
+window.openQRScanner = openQRScanner;
+window.stopQRScanner = stopQRScanner;
+window.scanQRFromFile = scanQRFromFile;
 
 // Démarrage
 document.addEventListener('DOMContentLoaded', () => {
