@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-60BN38BEQ0"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -42,13 +43,16 @@
             image-rendering: -webkit-optimize-contrast;
             -webkit-font-smoothing: antialiased;
         }
-        #map.tilted { transform: perspective(800px) rotateX(35deg) scale(1.15); }
-        canvas { image-rendering: -webkit-optimize-contrast; }
+        #map.tilted {
+            transform: perspective(800px) rotateX(35deg) scale(1.15);
+        }
+        canvas {
+            image-rendering: -webkit-optimize-contrast;
+        }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 10px; }
         
-        /* ----- SPLASH SCREEN REFONDU ----- */
         .splash {
             position: fixed;
             inset: 0;
@@ -61,53 +65,13 @@
             font-family: 'Syne', sans-serif;
         }
         .splash.hidden { opacity: 0; pointer-events: none; }
-        .splash-content { text-align: center; animation: fadeInScale 0.6s cubic-bezier(0.16,1,0.3,1); max-width: 90vw; }
+        .splash-content { text-align: center; animation: fadeInScale 0.6s cubic-bezier(0.16,1,0.3,1); }
         @keyframes fadeInScale { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+        .splash-asso-top { font-size: 2.4rem; font-weight:800; margin-bottom:1rem; background:linear-gradient(135deg,#00ffaa,var(--cyan)); -webkit-background-clip:text; background-clip:text; color:transparent; border-bottom:2px solid rgba(0,245,255,0.4); display:inline-block; padding-bottom:0.8rem; }
+        .splash-logo { font-size:5rem; background:linear-gradient(135deg,var(--cyan),var(--cyan2),#00ffaa); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .splash-title { font-size:2rem; font-weight:800; background:linear-gradient(135deg,var(--cyan),var(--cyan2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .splash-sub { font-size:0.9rem; color:var(--muted); margin-top:0.5rem; }
         
-        /* Photo de profil ronde, centrée, assez grande */
-        .avatar-center {
-            margin: 0 auto 20px auto;
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #0f0f2a, #050510);
-            box-shadow: 0 0 0 4px rgba(0,245,255,0.6), 0 0 0 8px rgba(0,0,0,0.3);
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .avatar-center img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        /* Petit nom sous la photo */
-        .owner-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #ffffff, var(--cyan));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-        }
-        .asso-name {
-            font-size: 1rem;
-            font-weight: 500;
-            color: rgba(0,245,255,0.8);
-            margin-bottom: 12px;
-            border-bottom: 1px dashed rgba(0,245,255,0.4);
-            display: inline-block;
-            padding-bottom: 4px;
-        }
-        .splash-logo { font-size:4rem; background:linear-gradient(135deg,var(--cyan),var(--cyan2),#00ffaa); -webkit-background-clip:text; background-clip:text; color:transparent; margin-top: 10px; }
-        .splash-title { font-size:1.6rem; font-weight:800; background:linear-gradient(135deg,var(--cyan),var(--cyan2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
-        .splash-sub { font-size:0.8rem; color:var(--muted); margin-top:6px; }
-        
-        /* ---- reste du style identique à l'original ---- */
         .overlay { position: fixed; inset: 0; background: rgba(4,4,18,0.96); backdrop-filter: blur(20px); z-index: 10000; display: flex; align-items: center; justify-content: center; transition: opacity 0.4s ease; }
         .overlay.hidden { opacity:0; pointer-events:none; }
         .auth-card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 28px; padding: 36px 32px; width: 460px; max-width: 92vw; box-shadow: 0 0 80px rgba(0,245,255,0.1); animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1); }
@@ -171,54 +135,173 @@
         .reminder-msg { flex: 1; font-size: 0.8rem; }
         .reminder-del { cursor: pointer; background: none; border: none; color: #ff8888; font-size: 1rem; }
         .map-switch { position: fixed; bottom: 20px; left: 20px; z-index: 1001; background: var(--surface); border: 1px solid var(--cyan); border-radius: 40px; padding: 6px 12px; cursor: pointer; font-size: 0.8rem; backdrop-filter: blur(8px); color: var(--cyan); }
-        #tiltBtn { position: fixed; bottom: 60px; left: 20px; z-index: 1001; background: var(--surface); border: 1px solid var(--cyan); border-radius: 40px; padding: 6px 14px; cursor: pointer; font-size: 0.8rem; backdrop-filter: blur(8px); color: var(--cyan); transition: all 0.2s; }
-        #tiltBtn.active { background: var(--cyan); color: #000; font-weight: 700; }
+        #tiltBtn {
+            position: fixed;
+            bottom: 60px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--surface);
+            border: 1px solid var(--cyan);
+            border-radius: 40px;
+            padding: 6px 14px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            backdrop-filter: blur(8px);
+            color: var(--cyan);
+            transition: all 0.2s;
+        }
+        #tiltBtn.active {
+            background: var(--cyan);
+            color: #000;
+            font-weight: 700;
+        }
         @media (max-width: 700px) { .dashboard { width: 380px; } }
         .gps-warning { background: rgba(255,170,0,0.2); border-left: 3px solid var(--warning); padding: 6px 12px; border-radius: 12px; margin-bottom: 12px; font-size: 0.7rem; }
-        #compass { position: fixed; bottom: 80px; right: 20px; width: 80px; height: 80px; z-index: 1002; cursor: pointer; user-select: none; filter: drop-shadow(0 0 12px rgba(0,245,255,0.5)); }
+        #compass {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            z-index: 1002;
+            cursor: pointer;
+            user-select: none;
+            filter: drop-shadow(0 0 12px rgba(0,245,255,0.5));
+        }
         #compass:hover { filter: drop-shadow(0 0 22px rgba(0,245,255,0.9)); }
         #compassLabel { text-align: center; font-size: 0.65rem; color: #00f5ff; margin-top: 2px; }
         #trackBtn { transition: all 0.3s ease; }
-        #trackBtn.tracking { background: linear-gradient(135deg, #ff4466, #ff0033) !important; box-shadow: 0 0 20px rgba(255,50,80,0.6); animation: trackPulse 1.2s infinite; color: white; }
-        @keyframes trackPulse { 0%,100% { box-shadow: 0 0 20px rgba(255,50,80,0.5); } 50% { box-shadow: 0 0 40px rgba(255,50,80,1); } }
-        #trackingInfo { position: fixed; top: 16px; right: 16px; z-index: 1003; background: rgba(7,7,20,0.92); border: 1px solid rgba(0,245,255,0.5); border-radius: 20px; padding: 14px 18px; min-width: 200px; backdrop-filter: blur(16px); display: none; animation: slideInRight 0.4s cubic-bezier(0.16,1,0.3,1); }
-        @keyframes slideInRight { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:translateX(0); } }
-        #trackingInfo .ti-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; font-size:0.82rem; border-bottom:1px solid rgba(255,255,255,0.05); }
+        #trackBtn.tracking {
+            background: linear-gradient(135deg, #ff4466, #ff0033) !important;
+            box-shadow: 0 0 20px rgba(255,50,80,0.6);
+            animation: trackPulse 1.2s infinite;
+            color: white;
+        }
+        @keyframes trackPulse {
+            0%,100% { box-shadow: 0 0 20px rgba(255,50,80,0.5); }
+            50%      { box-shadow: 0 0 40px rgba(255,50,80,1); }
+        }
+        #trackingInfo {
+            position: fixed;
+            top: 16px; right: 16px;
+            z-index: 1003;
+            background: rgba(7,7,20,0.92);
+            border: 1px solid rgba(0,245,255,0.5);
+            border-radius: 20px;
+            padding: 14px 18px;
+            min-width: 200px;
+            backdrop-filter: blur(16px);
+            display: none;
+            animation: slideInRight 0.4s cubic-bezier(0.16,1,0.3,1);
+        }
+        @keyframes slideInRight {
+            from { opacity:0; transform:translateX(30px); }
+            to   { opacity:1; transform:translateX(0); }
+        }
+        #trackingInfo .ti-row {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:4px 0; font-size:0.82rem;
+            border-bottom:1px solid rgba(255,255,255,0.05);
+        }
         #trackingInfo .ti-val { font-family:monospace; font-weight:700; color:#00f5ff; }
-        #trackingInfo .ti-title { font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:800; color:#00f5ff; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
-        .tracking-dot { width:10px; height:10px; background:#ff4466; border-radius:50%; animation:trackPulse 1s infinite; }
-        #directionArrow { font-size:1.8rem; text-align:center; margin:6px 0 2px; display:block; transition: transform 0.5s ease; }
+        #trackingInfo .ti-title {
+            font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:800;
+            color:#00f5ff; margin-bottom:8px;
+            display:flex; align-items:center; gap:8px;
+        }
+        .tracking-dot {
+            width:10px; height:10px; background:#ff4466;
+            border-radius:50%; animation:trackPulse 1s infinite;
+        }
+        #directionArrow {
+            font-size:1.8rem; text-align:center;
+            margin:6px 0 2px; display:block;
+            transition: transform 0.5s ease;
+        }
+
+        /* ===== MOBILE BOTTOM SHEET ===== */
         @media (max-width: 768px) {
-            .dashboard { top: auto !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; max-width: 100% !important; max-height: 70vh; border-radius: 22px 22px 0 0 !important; border-bottom: none; transform: translateY(0) !important; transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); padding-top: 28px; }
-            .dashboard::before { content: ''; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; background: rgba(0,245,255,0.4); border-radius: 10px; }
-            .dashboard.collapsed { transform: translateY(100%) !important; }
-            .toggle-dash { bottom: auto; top: 16px; right: 16px; font-size: 0.8rem; padding: 7px 14px; }
-            #compass { width: 56px; height: 56px; bottom: 16px; right: 16px; }
-            .map-switch { bottom: 16px; left: 16px; font-size: 0.75rem; padding: 6px 10px; }
-            #trackingInfo { top: 60px; right: 8px; min-width: 150px; padding: 10px 12px; font-size: 0.75rem; border-radius: 14px; }
-            .field input, .search-input, .add-form input, .add-form textarea { padding: 13px 16px; font-size: 0.95rem; }
-            .city-card, .sel-item { padding: 11px 14px; min-height: 44px; }
+            .dashboard {
+                top: auto !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                max-height: 70vh;
+                border-radius: 22px 22px 0 0 !important;
+                border-bottom: none;
+                transform: translateY(0) !important;
+                transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+                padding-top: 28px;
+            }
+            .dashboard::before {
+                content: '';
+                position: absolute;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 40px;
+                height: 4px;
+                background: rgba(0,245,255,0.4);
+                border-radius: 10px;
+            }
+            .dashboard.collapsed {
+                transform: translateY(100%) !important;
+            }
+            .toggle-dash {
+                bottom: auto;
+                top: 16px;
+                right: 16px;
+                font-size: 0.8rem;
+                padding: 7px 14px;
+            }
+            #compass {
+                width: 56px;
+                height: 56px;
+                bottom: 16px;
+                right: 16px;
+            }
+            .map-switch {
+                bottom: 16px;
+                left: 16px;
+                font-size: 0.75rem;
+                padding: 6px 10px;
+            }
+            #trackingInfo {
+                top: 60px;
+                right: 8px;
+                min-width: 150px;
+                padding: 10px 12px;
+                font-size: 0.75rem;
+                border-radius: 14px;
+            }
+            .field input,
+            .search-input,
+            .add-form input,
+            .add-form textarea {
+                padding: 13px 16px;
+                font-size: 0.95rem;
+            }
+            .city-card,
+            .sel-item {
+                padding: 11px 14px;
+                min-height: 44px;
+            }
         }
     </style>
 </head>
 <body>
 
-<!-- SPLASH SCREEN AVEC LA PHOTO AU CENTRE, TON NOM DESSOUS -->
 <div id="splashScreen" class="splash">
     <div class="splash-content">
-        <!-- Photo de profil ronde (remplace "ma-photo.jpg" par le nom de ton fichier image) -->
-        <div class="avatar-center">
-            <img src="errouifi.jpg" alt="ilyas errouifi Fondateur de l’entreprise Errouifi">
-        </div>
-        <div class="owner-name">Ilyas Errouifi</div>
-        <div class="asso-name">🏛️ Association Errouifi</div>
+        <div class="splash-asso-top">🏛️ Association Errouifi</div>
         <div class="splash-logo">✈️</div>
         <div class="splash-title">TSP WORLD PRO</div>
         <div class="splash-sub">Planification optimisée des tournées</div>
     </div>
 </div>
 
-<!-- Le reste du code (login, carte, fonctionnalités) est strictement identique à l'original -->
 <div id="loginOverlay" class="overlay hidden">
     <div class="auth-card">
         <div class="auth-logo">✈️ TSP WORLD PRO</div>
@@ -264,26 +347,42 @@
 <!-- QR Modal PRO -->
 <div id="qrModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(8px);">
     <div style="background:linear-gradient(145deg,#0a0a1e,#0d0d2b); border:2px solid #00f5ff; border-radius:28px; padding:28px 24px; text-align:center; max-width:360px; width:92%; box-shadow:0 0 80px rgba(0,245,255,0.25), inset 0 0 40px rgba(0,245,255,0.03);">
+        
         <div style="font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800; background:linear-gradient(135deg,#00f5ff,#00ffaa); -webkit-background-clip:text; background-clip:text; color:transparent; margin-bottom:4px;">📡 QR Position</div>
         <div id="qrSubtitle" style="font-size:0.72rem; color:rgba(200,210,255,0.5); margin-bottom:18px; letter-spacing:0.05em;">ASSOCIATION ERROUIFI · TSP WORLD PRO</div>
-        <div style="position:relative; display:inline-block; margin-bottom:14px;"><canvas id="qrCanvas" style="border-radius:16px; display:block; box-shadow:0 0 30px rgba(0,245,255,0.2);"></canvas></div>
-        <div id="qrcode" style="display:none;"></div>
-        <div id="qrCoords" style="font-family:monospace; font-size:0.75rem; color:#00ffaa; margin-bottom:18px; background:rgba(0,255,170,0.06); padding:6px 14px; border-radius:20px; display:inline-block;"></div>
-        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
-            <button id="copyQrBtn" onclick="copyQRImage()" style="padding:12px; background:linear-gradient(135deg,#00f5ff,#0088ff); border:none; border-radius:50px; font-weight:700; cursor:pointer; font-size:0.88rem; color:#000; display:flex; align-items:center; justify-content:center; gap:8px;">📋 Copier l'image QR</button>
-            <button onclick="openQRScanner()" style="padding:12px; background:rgba(0,245,255,0.1); border:1px solid rgba(0,245,255,0.4); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.88rem; color:#00f5ff; display:flex; align-items:center; justify-content:center; gap:8px;">📷 Scanner avec caméra</button>
-            <label style="padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.88rem; color:var(--text); display:flex; align-items:center; justify-content:center; gap:8px;">📂 Charger depuis fichier<input type="file" accept="image/*" style="display:none;" onchange="scanQRFromFile(event)"></label>
+
+        <div style="position:relative; display:inline-block; margin-bottom:14px;">
+            <canvas id="qrCanvas" style="border-radius:16px; display:block; box-shadow:0 0 30px rgba(0,245,255,0.2);"></canvas>
         </div>
+        <div id="qrcode" style="display:none;"></div>
+
+        <div id="qrCoords" style="font-family:monospace; font-size:0.75rem; color:#00ffaa; margin-bottom:18px; background:rgba(0,255,170,0.06); padding:6px 14px; border-radius:20px; display:inline-block;"></div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+            <button id="copyQrBtn" onclick="copyQRImage()" style="padding:12px; background:linear-gradient(135deg,#00f5ff,#0088ff); border:none; border-radius:50px; font-weight:700; cursor:pointer; font-size:0.88rem; color:#000; display:flex; align-items:center; justify-content:center; gap:8px;">
+                📋 Copier l'image QR
+            </button>
+            <button onclick="openQRScanner()" style="padding:12px; background:rgba(0,245,255,0.1); border:1px solid rgba(0,245,255,0.4); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.88rem; color:#00f5ff; display:flex; align-items:center; justify-content:center; gap:8px;">
+                📷 Scanner avec caméra
+            </button>
+            <label style="padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.88rem; color:var(--text); display:flex; align-items:center; justify-content:center; gap:8px;">
+                📂 Charger depuis fichier
+                <input type="file" accept="image/*" style="display:none;" onchange="scanQRFromFile(event)">
+            </label>
+        </div>
+
         <div style="display:flex; gap:8px; justify-content:center;">
             <button onclick="downloadQR()" style="padding:9px 20px; background:rgba(0,255,170,0.12); border:1px solid rgba(0,255,170,0.4); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.82rem; color:#00ffaa;">⬇️ Télécharger</button>
             <button onclick="document.getElementById('qrModal').style.display='none'; stopQRScanner();" style="padding:9px 20px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:white; border-radius:50px; cursor:pointer; font-size:0.82rem;">✖ Fermer</button>
         </div>
+
         <div id="scannerZone" style="display:none; margin-top:16px;">
             <video id="scannerVideo" style="width:100%; border-radius:16px; border:2px solid #00f5ff;" autoplay playsinline></video>
             <div style="font-size:0.72rem; color:rgba(200,210,255,0.5); margin-top:6px;">Pointez vers un QR code...</div>
             <button onclick="stopQRScanner()" style="margin-top:8px; padding:6px 16px; background:rgba(255,80,80,0.15); border:1px solid #ff6b8a; color:#ff6b8a; border-radius:50px; cursor:pointer; font-size:0.78rem;">⏹ Arrêter</button>
             <div id="scanResult" style="font-size:0.8rem; color:#00ffaa; margin-top:6px;"></div>
         </div>
+
     </div>
 </div>
 
@@ -306,7 +405,10 @@
 
 <!-- Tracking info card -->
 <div id="trackingInfo">
-    <div class="ti-title"><div class="tracking-dot"></div>Suivi en direct</div>
+    <div class="ti-title">
+        <div class="tracking-dot"></div>
+        Suivi en direct
+    </div>
     <span id="directionArrow">⬆️</span>
     <div class="ti-row"><span>📍 Lat</span><span class="ti-val" id="ti_lat">--</span></div>
     <div class="ti-row"><span>📍 Lon</span><span class="ti-val" id="ti_lon">--</span></div>
@@ -316,25 +418,82 @@
 </div>
 
 <div class="dashboard" id="dashboard" style="display:none;">
-    <!-- Le contenu du dashboard est ici (identique à l'original) -->
     <div class="dash-header"><div class="dash-title">✈️ TSP WORLD PRO</div></div>
     <div class="welcome-pill"><span>👋 Bonjour, <strong id="welcomeName"></strong></span><button class="logout-btn" onclick="logout()">🚪 Déconnexion</button></div>
     <div id="gpsWarningBanner" style="display:none;" class="gps-warning">⚠️ Géolocalisation bloquée – ouvrez via serveur HTTP (ex: Live Server).</div>
-    <div class="time-panel"><div class="current-time" id="liveClock">--:--:--</div><div><span class="chrono" id="cronDisplay">00:00:00</span> <button class="btn btn-secondary" onclick="startCron()">▶</button><button class="btn btn-secondary" onclick="pauseCron()">⏸</button><button class="btn btn-secondary" onclick="resetCron()">🔄</button></div></div>
-    <div class="section"><div class="section-title">⏰ Planifier un rappel (alarme)</div><div class="notif-row" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;"><input type="time" id="reminderTime" step="1"><input type="text" id="reminderMessage" placeholder="Message personnalisé" style="flex:1;"><button class="btn btn-primary" onclick="scheduleAlarm()">📌 Ajouter</button></div><div id="reminderList" class="reminder-list"></div><div class="notif-info" id="notifStatus">💡 Cliquez sur Ajouter. Une notification apparaîtra + un message à l'écran.</div></div>
-    <div class="section"><div class="section-title">🌍 Rechercher un lieu (tapez 3+ lettres)</div><input type="text" id="dynamicSearch" class="search-input" placeholder="Ex: Casablanca, Tour Eiffel, New York..."><div id="searchResults" class="city-grid" style="display:none;"></div><div id="searchFeedback" class="info-note" style="font-size:0.7rem; margin-top:5px;"></div></div>
-    <div class="section"><div class="section-title">📍 Détails du lieu sélectionné</div><div id="placeDetails" class="place-detail-card"><span style="color:var(--muted);">Aucun lieu sélectionné</span></div></div>
-    <div class="section"><div class="section-title">✅ Ma sélection — <span id="selCount">0</span> ville(s)</div><div class="selected-list" id="selectedList"></div><div class="btn-row"><button class="btn btn-danger" onclick="clearSelection()">🗑️ Vider</button><button class="btn btn-secondary" onclick="showMyLocation()">📍 Me localiser</button><button class="btn btn-primary" id="trackBtn" onclick="toggleTracking()">📡 Start Tracking</button><button class="btn btn-secondary" onclick="exportGeoJSON()">📤 Exporter GeoJSON</button><button class="btn btn-secondary" onclick="shareCurrentLocation()">🔗 Partager ma position</button><button class="btn btn-secondary" onclick="generatePositionQR()">📱 QR Position</button></div></div>
-    <div class="section"><div class="section-title">☕ Export Java (coordonnées)</div><div class="java-export"><button class="btn btn-primary" onclick="generateJavaCode()" style="width:100%; margin-bottom:8px;">🔁 Générer le tableau Java</button><textarea id="javaCodeArea" rows="6" readonly placeholder="Cliquez sur 'Générer' pour obtenir un tableau double[][] utilisable dans votre code Java."></textarea><button class="btn btn-secondary" onclick="copyJavaCode()" style="margin-top:6px;">📋 Copier</button></div></div>
-    <div class="section"><div class="section-title">🎯 Paramètres TSP</div><div class="tsp-params"><span>Max villes :</span><input type="number" id="maxCities" value="8" min="2" max="35"><span>Départ :</span><select id="startCitySelect"></select><span>Transport :</span><select id="transportMode"><option value="car">🚗 Voiture</option><option value="foot">🚶 Piéton</option><option value="plane">✈️ Avion</option></select><span>Algorithme :</span><select id="algoSelect"><option value="nn">Plus proche voisin</option><option value="2opt">2-opt</option></select></div><div class="btn-row"><button class="btn btn-primary" onclick="computeTSP()">🚀 Lancer le TSP</button><button class="btn btn-secondary" id="cancelTSPBtn" onclick="cancelTSP()" style="display:none;">❌ Annuler</button></div><div class="route-loading" id="routeLoading" style="display:none;">⏳ Calcul...</div></div>
+    <div class="time-panel">
+        <div class="current-time" id="liveClock">--:--:--</div>
+        <div><span class="chrono" id="cronDisplay">00:00:00</span> 
+            <button class="btn btn-secondary" onclick="startCron()">▶</button>
+            <button class="btn btn-secondary" onclick="pauseCron()">⏸</button>
+            <button class="btn btn-secondary" onclick="resetCron()">🔄</button>
+        </div>
+    </div>
+    <div class="section">
+        <div class="section-title">⏰ Planifier un rappel (alarme)</div>
+        <div class="notif-row" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+            <input type="time" id="reminderTime" step="1">
+            <input type="text" id="reminderMessage" placeholder="Message personnalisé" style="flex:1;">
+            <button class="btn btn-primary" onclick="scheduleAlarm()">📌 Ajouter</button>
+        </div>
+        <div id="reminderList" class="reminder-list"></div>
+        <div class="notif-info" id="notifStatus">💡 Cliquez sur Ajouter. Une notification apparaîtra + un message à l'écran.</div>
+    </div>
+
+    <!-- RECHERCHE DYNAMIQUE -->
+    <div class="section">
+        <div class="section-title">🌍 Rechercher un lieu (tapez 3+ lettres)</div>
+        <input type="text" id="dynamicSearch" class="search-input" placeholder="Ex: Casablanca, Tour Eiffel, New York...">
+        <div id="searchResults" class="city-grid" style="display:none;"></div>
+        <div id="searchFeedback" class="info-note" style="font-size:0.7rem; margin-top:5px;"></div>
+    </div>
+
+    <!-- PANEL DÉTAILS -->
+    <div class="section">
+        <div class="section-title">📍 Détails du lieu sélectionné</div>
+        <div id="placeDetails" class="place-detail-card">
+            <span style="color:var(--muted);">Aucun lieu sélectionné</span>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">✅ Ma sélection — <span id="selCount">0</span> ville(s)</div>
+        <div class="selected-list" id="selectedList"></div>
+        <div class="btn-row">
+            <button class="btn btn-danger" onclick="clearSelection()">🗑️ Vider</button>
+            <button class="btn btn-secondary" onclick="showMyLocation()">📍 Me localiser</button>
+            <button class="btn btn-primary" id="trackBtn" onclick="toggleTracking()">📡 Start Tracking</button>
+            <button class="btn btn-secondary" onclick="exportGeoJSON()">📤 Exporter GeoJSON</button>
+            <button class="btn btn-secondary" onclick="shareCurrentLocation()">🔗 Partager ma position</button>
+            <button class="btn btn-secondary" onclick="generatePositionQR()">📱 QR Position</button>
+        </div>
+    </div>
+    <div class="section">
+        <div class="section-title">☕ Export Java (coordonnées)</div>
+        <div class="java-export">
+            <button class="btn btn-primary" onclick="generateJavaCode()" style="width:100%; margin-bottom:8px;">🔁 Générer le tableau Java</button>
+            <textarea id="javaCodeArea" rows="6" readonly placeholder="Cliquez sur 'Générer' pour obtenir un tableau double[][] utilisable dans votre code Java."></textarea>
+            <button class="btn btn-secondary" onclick="copyJavaCode()" style="margin-top:6px;">📋 Copier</button>
+        </div>
+    </div>
+    <div class="section">
+        <div class="section-title">🎯 Paramètres TSP</div>
+        <div class="tsp-params">
+            <span>Max villes :</span><input type="number" id="maxCities" value="8" min="2" max="35">
+            <span>Départ :</span><select id="startCitySelect"></select>
+            <span>Transport :</span><select id="transportMode"><option value="car">🚗 Voiture</option><option value="foot">🚶 Piéton</option><option value="plane">✈️ Avion</option></select>
+            <span>Algorithme :</span><select id="algoSelect"><option value="nn">Plus proche voisin</option><option value="2opt">2-opt</option></select>
+        </div>
+        <div class="btn-row"><button class="btn btn-primary" onclick="computeTSP()">🚀 Lancer le TSP</button><button class="btn btn-secondary" id="cancelTSPBtn" onclick="cancelTSP()" style="display:none;">❌ Annuler</button></div>
+        <div class="route-loading" id="routeLoading" style="display:none;">⏳ Calcul...</div>
+    </div>
     <div class="section"><div class="section-title">➕ Ajouter une ville personnalisée</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
     <div class="footer">🌐 Routage OSRM · TSP · Export Java · Rappels · Tracking pro avec auto‑rotation · Polyline offset + 30 points lumineux animés · QR position avec logo fixe + scanner + copie d'image</div>
 </div>
 
 <script>
-// ==================== TOUT LE SCRIPT ORIGINAL (FONCTIONNALITÉS) ====================
-// (recopié à l'identique depuis la version précédente, aucune modification)
+// ==================== GESTION DES VILLES SÉLECTIONNÉES ====================
 let selectedCities = [];
 let nextCityId = 1;
 let selectionMarkers = [];
@@ -357,7 +516,15 @@ function updateMarkersOnMap() {
     selectionMarkers.forEach(m => map.removeLayer(m));
     selectionMarkers = [];
     selectedCities.forEach(city => {
-        let popupContent = `<div style="min-width:150px;"><b>${escapeHtml(city.name)}</b><br><i>${escapeHtml(city.country)}</i><br>📍 ${city.lat.toFixed(5)}, ${city.lon.toFixed(5)}<br>${city.desc ? `<small>${escapeHtml(city.desc)}</small><br>` : ''}<button onclick="window.zoomToCityById(${city.id})" style="margin-top:4px; padding:2px 8px; background:#00f5ff; border:none; border-radius:20px;">🎯 Centrer</button></div>`;
+        let popupContent = `
+            <div style="min-width:150px;">
+                <b>${escapeHtml(city.name)}</b><br>
+                <i>${escapeHtml(city.country)}</i><br>
+                📍 ${city.lat.toFixed(5)}, ${city.lon.toFixed(5)}<br>
+                ${city.desc ? `<small>${escapeHtml(city.desc)}</small><br>` : ''}
+                <button onclick="window.zoomToCityById(${city.id})" style="margin-top:4px; padding:2px 8px; background:#00f5ff; border:none; border-radius:20px;">🎯 Centrer</button>
+            </div>
+        `;
         let marker = L.marker([city.lat, city.lon], { title: city.name }).bindPopup(popupContent).addTo(map);
         marker.on('click', () => showPlaceDetails(city.name, city.lat, city.lon, city.country, city.desc));
         selectionMarkers.push(marker);
@@ -376,7 +543,12 @@ function updateSelUI() {
         document.getElementById('startCitySelect').innerHTML = '<option>Aucune</option>';
         return;
     }
-    container.innerHTML = selectedCities.map((city, i) => `<div class="sel-item" onclick="showPlaceDetails('${escapeHtml(city.name)}', ${city.lat}, ${city.lon}, '${escapeHtml(city.country)}', '${escapeHtml(city.desc || '')}'); zoomToCity(${i});"><span>${i+1}. ${escapeHtml(city.name)} (${escapeHtml(city.country)})</span><button class="rm" onclick="event.stopPropagation();removeCity(${i})">✖</button></div>`).join('');
+    container.innerHTML = selectedCities.map((city, i) => `
+        <div class="sel-item" onclick="showPlaceDetails('${escapeHtml(city.name)}', ${city.lat}, ${city.lon}, '${escapeHtml(city.country)}', '${escapeHtml(city.desc || '')}'); zoomToCity(${i});">
+            <span>${i+1}. ${escapeHtml(city.name)} (${escapeHtml(city.country)})</span>
+            <button class="rm" onclick="event.stopPropagation();removeCity(${i})">✖</button>
+        </div>
+    `).join('');
     let sel = document.getElementById('startCitySelect');
     sel.innerHTML = selectedCities.map((c,i) => `<option value="${i}">${escapeHtml(c.name)}</option>`).join('');
 }
@@ -422,8 +594,16 @@ function zoomToCity(idx) {
 }
 function showPlaceDetails(name, lat, lon, country, description) {
     let detailsDiv = document.getElementById('placeDetails');
-    detailsDiv.innerHTML = `<h4>📍 ${escapeHtml(name)}</h4><p><strong>Pays :</strong> ${escapeHtml(country)}</p><p><strong>Coordonnées :</strong> ${lat.toFixed(6)}°, ${lon.toFixed(6)}°</p>${description ? `<p><strong>Description :</strong> ${escapeHtml(description)}</p>` : ''}<button class="btn-secondary" onclick="map.flyTo([${lat}, ${lon}], 14);">🎯 Centrer la carte</button>`;
+    detailsDiv.innerHTML = `
+        <h4>📍 ${escapeHtml(name)}</h4>
+        <p><strong>Pays :</strong> ${escapeHtml(country)}</p>
+        <p><strong>Coordonnées :</strong> ${lat.toFixed(6)}°, ${lon.toFixed(6)}°</p>
+        ${description ? `<p><strong>Description :</strong> ${escapeHtml(description)}</p>` : ''}
+        <button class="btn-secondary" onclick="map.flyTo([${lat}, ${lon}], 14);">🎯 Centrer la carte</button>
+    `;
 }
+
+// ==================== RECHERCHE DYNAMIQUE ====================
 let searchTimeout = null;
 async function performSearch(query) {
     if (!query || query.length < 3) {
@@ -445,7 +625,12 @@ async function performSearch(query) {
         for (let place of data) {
             let name = place.display_name.split(',')[0];
             let country = place.address?.country || 'Monde';
-            resultsHtml += `<div class="city-card" onclick="selectSearchResult('${escapeHtml(name)}', ${place.lat}, ${place.lon}, '${escapeHtml(country)}', '')"><span><strong>${escapeHtml(name)}</strong> (${escapeHtml(country)})</span><span>➕</span></div>`;
+            resultsHtml += `
+                <div class="city-card" onclick="selectSearchResult('${escapeHtml(name)}', ${place.lat}, ${place.lon}, '${escapeHtml(country)}', '')">
+                    <span><strong>${escapeHtml(name)}</strong> (${escapeHtml(country)})</span>
+                    <span>➕</span>
+                </div>
+            `;
         }
         document.getElementById('searchResults').innerHTML = resultsHtml;
         document.getElementById('searchFeedback').innerHTML = `✅ ${data.length} résultat(s) trouvé(s)`;
@@ -464,6 +649,7 @@ function selectSearchResult(name, lat, lon, country, description) {
     }
     document.getElementById('dynamicSearch').value = '';
     document.getElementById('searchResults').style.display = 'none';
+    // ===== ZIEDA: sur mobile, cacher le dashboard après sélection =====
     if (window.innerWidth <= 768) {
         document.getElementById('dashboard').classList.add('collapsed');
     }
@@ -473,6 +659,8 @@ document.getElementById('dynamicSearch').addEventListener('input', function(e) {
     if (searchTimeout) clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => performSearch(val), 500);
 });
+
+// ==================== PARTAGE DE POSITION ====================
 function shareCurrentLocation() {
     requestGeolocationWithHelp(pos => {
         let lat = pos.coords.latitude, lon = pos.coords.longitude;
@@ -491,31 +679,67 @@ function handleUrlLocation() {
         let defaultName = suggestedName ? suggestedName : `Position partagée (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
         let customName = prompt("🟢 Une position vous a été partagée.\nDonnez-lui un nom :", defaultName);
         if (customName && customName.trim() !== "") {
-            addCityToList({ name: customName.trim(), lat: lat, lon: lon, country: "Partagé", desc: `Position reçue par lien (${new Date().toLocaleString()})`, custom: true });
+            addCityToList({
+                name: customName.trim(),
+                lat: lat,
+                lon: lon,
+                country: "Partagé",
+                desc: `Position reçue par lien (${new Date().toLocaleString()})`,
+                custom: true
+            });
             map.flyTo([lat, lon], 12);
             alert(`✅ "${customName}" ajouté à votre sélection.`);
         } else alert("Ajout annulé.");
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 }
-let lastQrUrl = null, scannerStream = null, scannerAnimFrame = null;
-const TSP_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="18" fill="#070714"/><text x="50" y="42" text-anchor="middle" font-size="34" font-family="sans-serif">✈️</text><text x="50" y="62" text-anchor="middle" font-size="9" font-weight="bold" fill="#00f5ff" font-family="sans-serif">TSP WORLD</text><text x="50" y="74" text-anchor="middle" font-size="7.5" fill="#00ffaa" font-family="sans-serif">ERROUIFI</text></svg>`;
-function svgToDataUrl(svg) { return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg))); }
+
+// ==================== QR CODE PRO (logo fixe, 3 façons) ====================
+let lastQrUrl = null;
+let scannerStream = null;
+let scannerAnimFrame = null;
+
+const TSP_LOGO_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="18" fill="#070714"/>
+  <text x="50" y="42" text-anchor="middle" font-size="34" font-family="sans-serif">✈️</text>
+  <text x="50" y="62" text-anchor="middle" font-size="9" font-weight="bold" fill="#00f5ff" font-family="sans-serif">TSP WORLD</text>
+  <text x="50" y="74" text-anchor="middle" font-size="7.5" fill="#00ffaa" font-family="sans-serif">ERROUIFI</text>
+</svg>`;
+
+function svgToDataUrl(svg) {
+    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+}
+
 function generatePositionQR() {
     requestGeolocationWithHelp(pos => {
-        let lat = pos.coords.latitude, lon = pos.coords.longitude;
+        let lat = pos.coords.latitude;
+        let lon = pos.coords.longitude;
         lastQrUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}`;
         document.getElementById('qrCoords').textContent = `📍 ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
         let modal = document.getElementById('qrModal');
         modal.style.display = 'flex';
-        modal.onclick = e => { if (e.target === modal) { modal.style.display = 'none'; stopQRScanner(); } };
+        modal.onclick = e => { 
+            if (e.target === modal) { 
+                modal.style.display = 'none'; 
+                stopQRScanner(); 
+            } 
+        };
         drawQRWithLogo(lastQrUrl);
     }, err => alert("❌ GPS refusé ou indisponible"));
 }
+
 function drawQRWithLogo(url) {
     let tempDiv = document.getElementById('qrcode');
     tempDiv.innerHTML = '';
-    new QRCode(tempDiv, { text: url, width: 280, height: 280, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
+    new QRCode(tempDiv, {
+        text: url,
+        width: 280,
+        height: 280,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+    });
     setTimeout(() => {
         let qrCanvas = tempDiv.querySelector('canvas');
         if (!qrCanvas) return;
@@ -531,26 +755,32 @@ function drawQRWithLogo(url) {
             let y = (280 - size) / 2;
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            if (ctx.roundRect) ctx.roundRect(x - 5, y - 5, size + 10, size + 10, 12);
-            else { ctx.rect(x - 5, y - 5, size + 10, size + 10); }
+            ctx.roundRect(x - 5, y - 5, size + 10, size + 10, 12);
             ctx.fill();
             ctx.drawImage(logo, x, y, size, size);
         };
         logo.src = svgToDataUrl(TSP_LOGO_SVG);
     }, 60);
 }
+
 async function copyQRImage() {
     let canvas = document.getElementById('qrCanvas');
     if (!canvas) return;
     try {
         canvas.toBlob(async blob => {
-            await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+            await navigator.clipboard.write([
+                new ClipboardItem({ 'image/png': blob })
+            ]);
             let btn = document.getElementById('copyQrBtn');
             btn.textContent = '✅ Copié !';
             setTimeout(() => { btn.textContent = '📋 Copier l\'image QR'; }, 2000);
         });
-    } catch(e) { downloadQR(); alert("Clipboard non supporté — image téléchargée à la place."); }
+    } catch(e) {
+        downloadQR();
+        alert("Clipboard non supporté — image téléchargée à la place.");
+    }
 }
+
 function downloadQR() {
     let canvas = document.getElementById('qrCanvas');
     if (!canvas) return;
@@ -559,19 +789,29 @@ function downloadQR() {
     link.href = canvas.toDataURL('image/png');
     link.click();
 }
+
 async function openQRScanner() {
     document.getElementById('scannerZone').style.display = 'block';
     document.getElementById('scanResult').textContent = '';
     try {
-        scannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        scannerStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'environment' } 
+        });
         let video = document.getElementById('scannerVideo');
         video.srcObject = scannerStream;
         video.play();
         scanQRFromVideo(video);
-    } catch(e) { alert("❌ Caméra non accessible.\n" + e.message); document.getElementById('scannerZone').style.display = 'none'; }
+    } catch(e) {
+        alert("❌ Caméra non accessible.\n" + e.message);
+        document.getElementById('scannerZone').style.display = 'none';
+    }
 }
+
 function scanQRFromVideo(video) {
-    if (!window.BarcodeDetector) { document.getElementById('scanResult').textContent = '⚠️ BarcodeDetector non supporté sur ce navigateur.'; return; }
+    if (!window.BarcodeDetector) {
+        document.getElementById('scanResult').textContent = '⚠️ BarcodeDetector non supporté sur ce navigateur.';
+        return;
+    }
     let detector = new BarcodeDetector({ formats: ['qr_code'] });
     function detect() {
         if (!scannerStream) return;
@@ -580,21 +820,38 @@ function scanQRFromVideo(video) {
                 let result = barcodes[0].rawValue;
                 document.getElementById('scanResult').innerHTML = `✅ <a href="${result}" style="color:#00ffaa;">${result}</a>`;
                 stopQRScanner();
-                if (result.includes('lat=') && result.includes('lon=')) { setTimeout(() => { window.location.href = result; }, 1000); }
-            } else { scannerAnimFrame = requestAnimationFrame(detect); }
-        }).catch(() => { scannerAnimFrame = requestAnimationFrame(detect); });
+                if (result.includes('lat=') && result.includes('lon=')) {
+                    setTimeout(() => { window.location.href = result; }, 1000);
+                }
+            } else {
+                scannerAnimFrame = requestAnimationFrame(detect);
+            }
+        }).catch(() => {
+            scannerAnimFrame = requestAnimationFrame(detect);
+        });
     }
     detect();
 }
+
 function stopQRScanner() {
-    if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
-    if (scannerAnimFrame) { cancelAnimationFrame(scannerAnimFrame); scannerAnimFrame = null; }
+    if (scannerStream) {
+        scannerStream.getTracks().forEach(t => t.stop());
+        scannerStream = null;
+    }
+    if (scannerAnimFrame) {
+        cancelAnimationFrame(scannerAnimFrame);
+        scannerAnimFrame = null;
+    }
     document.getElementById('scannerZone').style.display = 'none';
 }
+
 async function scanQRFromFile(event) {
     let file = event.target.files[0];
     if (!file) return;
-    if (!window.BarcodeDetector) { alert("⚠️ BarcodeDetector non supporté sur ce navigateur (Chrome/Edge recommandé)."); return; }
+    if (!window.BarcodeDetector) {
+        alert("⚠️ BarcodeDetector non supporté sur ce navigateur (Chrome/Edge recommandé).");
+        return;
+    }
     let img = new Image();
     img.onload = async () => {
         try {
@@ -604,12 +861,18 @@ async function scanQRFromFile(event) {
                 let result = barcodes[0].rawValue;
                 document.getElementById('scanResult').innerHTML = `✅ Lu : <a href="${result}" style="color:#00ffaa;">${result}</a>`;
                 document.getElementById('scannerZone').style.display = 'block';
-                if (result.includes('lat=') && result.includes('lon=')) { setTimeout(() => { window.location.href = result; }, 1200); }
-            } else { alert("❌ Aucun QR code détecté dans cette image."); }
+                if (result.includes('lat=') && result.includes('lon=')) {
+                    setTimeout(() => { window.location.href = result; }, 1200);
+                }
+            } else {
+                alert("❌ Aucun QR code détecté dans cette image.");
+            }
         } catch(e) { alert("Erreur lecture: " + e.message); }
     };
     img.src = URL.createObjectURL(file);
 }
+
+// ==================== SONS (Web Audio) ====================
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 function getAudioCtx() { if (!audioCtx) audioCtx = new AudioCtx(); return audioCtx; }
@@ -628,10 +891,23 @@ function playBeep(freq=880, duration=0.15, type='sine', vol=0.3) {
         osc.stop(ctx.currentTime + duration);
     } catch(e) { console.warn("Audio error", e); }
 }
-function soundStart() { playBeep(600,0.08,'sine',0.25); setTimeout(()=>playBeep(900,0.08,'sine',0.25),90); setTimeout(()=>playBeep(1200,0.15,'sine',0.3),180); }
-function soundStop() { playBeep(800,0.08,'sine',0.2); setTimeout(()=>playBeep(500,0.08,'sine',0.2),90); setTimeout(()=>playBeep(300,0.15,'sine',0.25),180); }
-function soundTick() { playBeep(1000,0.04,'sine',0.08); }
-function soundWarn() { playBeep(400,0.2,'square',0.15); setTimeout(()=>playBeep(300,0.3,'square',0.15),250); }
+function soundStart() {
+    playBeep(600,0.08,'sine',0.25);
+    setTimeout(()=>playBeep(900,0.08,'sine',0.25),90);
+    setTimeout(()=>playBeep(1200,0.15,'sine',0.3),180);
+}
+function soundStop() {
+    playBeep(800,0.08,'sine',0.2);
+    setTimeout(()=>playBeep(500,0.08,'sine',0.2),90);
+    setTimeout(()=>playBeep(300,0.15,'sine',0.25),180);
+}
+function soundTick()  { playBeep(1000,0.04,'sine',0.08); }
+function soundWarn()  {
+    playBeep(400,0.2,'square',0.15);
+    setTimeout(()=>playBeep(300,0.3,'square',0.15),250);
+}
+
+// ==================== OFFSET POLYLINE ====================
 function offsetLatLngs(points, offsetMeters) {
     if (points.length < 2) return points;
     let result = [];
@@ -644,23 +920,34 @@ function offsetLatLngs(points, offsetMeters) {
         let len = Math.sqrt(dx*dx + dy*dy);
         if (len === 0) { result.push(p); continue; }
         let nx = -dy / len;
-        let ny = dx / len;
+        let ny =  dx / len;
         let dLat = nx * offsetMeters / 111320;
         let dLon = ny * offsetMeters / (111320 * Math.cos(p[0] * Math.PI / 180));
         result.push([p[0] + dLat, p[1] + dLon]);
     }
     return result;
 }
-let dotAnimationInterval = null, animatedDots = [];
+
+// ==================== ANIMATION DES POINTS SUR TSP ====================
+let dotAnimationInterval = null;
+let animatedDots = [];
+
 function stopDotAnimation() {
-    if (dotAnimationInterval) { clearInterval(dotAnimationInterval); dotAnimationInterval = null; }
-    animatedDots.forEach(dot => { if (dot && map) map.removeLayer(dot); });
+    if (dotAnimationInterval) {
+        clearInterval(dotAnimationInterval);
+        dotAnimationInterval = null;
+    }
+    animatedDots.forEach(dot => {
+        if (dot && map) map.removeLayer(dot);
+    });
     animatedDots = [];
 }
+
 function animateDotsOnRoute(points) {
     stopDotAnimation();
     if (!points || points.length < 2) return;
-    let totalLen = 0, segments = [];
+    let totalLen = 0;
+    let segments = [];
     for (let i = 0; i < points.length - 1; i++) {
         let d = Math.sqrt(Math.pow(points[i+1][0] - points[i][0], 2) + Math.pow(points[i+1][1] - points[i][1], 2));
         segments.push({ start: points[i], end: points[i+1], len: d, cumLen: totalLen });
@@ -689,11 +976,29 @@ function animateDotsOnRoute(points) {
         }
     }, 38);
 }
-let isTracking = false, lastHeading = 0, trackingPolyline = null, watchId = null, trackingPoints = [], myLocationMarker = null;
-function toggleTracking() { if (isTracking) stopTrackingPro(); else startTrackingPro(); }
+
+// ==================== TRACKING PRO ====================
+let isTracking = false;
+let lastHeading = 0;
+let trackingPolyline = null;
+let watchId = null;
+let trackingPoints = [];
+let myLocationMarker = null;
+
+function toggleTracking() {
+    if (isTracking) stopTrackingPro();
+    else startTrackingPro();
+}
+
 function startTrackingPro() {
-    if (isFileProtocol()) { alert("Suivi impossible en file://\nOuvrez via serveur HTTP (Live Server)."); return; }
-    if (!navigator.geolocation) { alert("GPS non supporté par ce navigateur."); return; }
+    if (isFileProtocol()) {
+        alert("Suivi impossible en file://\nOuvrez via serveur HTTP (Live Server).");
+        return;
+    }
+    if (!navigator.geolocation) {
+        alert("GPS non supporté par ce navigateur.");
+        return;
+    }
     isTracking = true;
     trackingPoints = [];
     if (trackingPolyline) map.removeLayer(trackingPolyline);
@@ -709,21 +1014,26 @@ function startTrackingPro() {
         stopTrackingPro();
     }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 });
 }
+
 function stopTrackingPro() {
     if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
     isTracking = false;
     soundStop();
     if (map.setBearing) map.setBearing(0, { animate: true, duration: 0.8 });
+    // On ne stop pas l'animation TSP ici, on relance si route existe
     let currentRoute = routeLayer ? routeLayer.getLatLngs() : null;
     if (currentRoute && currentRoute.length) {
         let points = currentRoute.map(latlng => [latlng.lat, latlng.lng]);
         animateDotsOnRoute(points);
-    } else { stopDotAnimation(); }
+    } else {
+        stopDotAnimation();
+    }
     let btn = document.getElementById('trackBtn');
     btn.innerHTML = '📡 Start Tracking';
     btn.classList.remove('tracking');
     document.getElementById('trackingInfo').style.display = 'none';
 }
+
 function onTrackingUpdate(pos) {
     let lat = pos.coords.latitude, lon = pos.coords.longitude, speed = pos.coords.speed, heading = pos.coords.heading, accuracy = pos.coords.accuracy;
     soundTick();
@@ -752,6 +1062,7 @@ function onTrackingUpdate(pos) {
     document.getElementById('ti_acc').textContent = accuracy != null ? Math.round(accuracy) + ' m' : '-- m';
     updateDirectionDisplay(lastHeading);
 }
+
 function updateDirectionDisplay(heading) {
     let arrowSpan = document.getElementById('directionArrow');
     if (arrowSpan) arrowSpan.style.transform = `rotate(${heading}deg)`;
@@ -764,19 +1075,52 @@ function updateDirectionDisplay(heading) {
     let compassLabel = document.getElementById('compassLabel');
     if (compassLabel) compassLabel.textContent = `${Math.round(heading)}°`;
 }
-let map, currentTileLayer, routeLayer, routeMarkers = [], tspCancelRequested = false;
+
+// ==================== CARTE & ROTATION ====================
+let map, currentTileLayer, routeLayer, routeMarkers = [];
+let tspCancelRequested = false;
+
 const tileLayers = {
-    osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 20, detectRetina: true }),
-    googleSat: L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { attribution: '© Google Hybrid', maxZoom: 20, detectRetina: true })
+    osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+        attribution: '© OpenStreetMap',
+        maxZoom: 20,
+        detectRetina: true
+    }),
+    googleSat: L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { 
+        attribution: '© Google Hybrid', 
+        maxZoom: 20,
+        detectRetina: true
+    })
 };
-function setMapLayer(layerId) { if (currentTileLayer) map.removeLayer(currentTileLayer); currentTileLayer = tileLayers[layerId]; currentTileLayer.addTo(map); localStorage.setItem('tsp_map_layer', layerId); }
-function toggleMapLayer() { let newLayer = (localStorage.getItem('tsp_map_layer') || 'osm') === 'osm' ? 'googleSat' : 'osm'; setMapLayer(newLayer); }
-function updateCompass() { let bearing = map.getBearing ? map.getBearing() : 0; let needle = document.getElementById('compassNeedle'); if (needle) needle.setAttribute('transform', `rotate(${-bearing}, 40, 40)`); document.getElementById('compassLabel').innerHTML = bearing === 0 ? '↺ Nord' : `${Math.round(-bearing)}°`; }
+
+function setMapLayer(layerId) {
+    if (currentTileLayer) map.removeLayer(currentTileLayer);
+    currentTileLayer = tileLayers[layerId];
+    currentTileLayer.addTo(map);
+    localStorage.setItem('tsp_map_layer', layerId);
+}
+function toggleMapLayer() {
+    let newLayer = (localStorage.getItem('tsp_map_layer') || 'osm') === 'osm' ? 'googleSat' : 'osm';
+    setMapLayer(newLayer);
+}
+function updateCompass() {
+    let bearing = map.getBearing ? map.getBearing() : 0;
+    let needle = document.getElementById('compassNeedle');
+    if (needle) needle.setAttribute('transform', `rotate(${-bearing}, 40, 40)`);
+    document.getElementById('compassLabel').innerHTML = bearing === 0 ? '↺ Nord' : `${Math.round(-bearing)}°`;
+}
 function resetNorth() { if (map.setBearing) map.setBearing(0); updateCompass(); }
 window.resetNorth = resetNorth;
+
 function isFileProtocol() { return window.location.protocol === 'file:'; }
 if (isFileProtocol()) document.getElementById('gpsWarningBanner').style.display = 'block';
-function requestGeolocationWithHelp(cbSuccess, cbError) { if (isFileProtocol()) { alert("GPS bloqué: ouvrez via serveur HTTP."); if (cbError) cbError({ message: "file://" }); return; } if (!navigator.geolocation) { alert("Navigateur non supporté."); return; } navigator.geolocation.getCurrentPosition(cbSuccess, cbError); }
+
+function requestGeolocationWithHelp(cbSuccess, cbError) {
+    if (isFileProtocol()) { alert("GPS bloqué: ouvrez via serveur HTTP."); if (cbError) cbError({ message: "file://" }); return; }
+    if (!navigator.geolocation) { alert("Navigateur non supporté."); return; }
+    navigator.geolocation.getCurrentPosition(cbSuccess, cbError);
+}
+
 function showMyLocation() {
     requestGeolocationWithHelp(pos => {
         let lat = pos.coords.latitude, lon = pos.coords.longitude;
@@ -786,15 +1130,60 @@ function showMyLocation() {
         if (confirm("Ajouter cette position à votre liste de villes ?")) addCityToList({ name: "Ma position", lat, lon, country: "Local", desc: "GPS", custom: true });
     }, err => alert("Erreur GPS"));
 }
+
+// Rappels
 let reminders = [], nextReminderId = 1, reminderInterval = null;
-function loadReminders() { try { let saved = localStorage.getItem('tsp_reminders'); if (saved) { reminders = JSON.parse(saved); nextReminderId = Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); } } catch(e) {} startReminderWatcher(); }
+function loadReminders() {
+    try { let saved = localStorage.getItem('tsp_reminders'); if (saved) { reminders = JSON.parse(saved); nextReminderId = Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); } } catch(e) {}
+    startReminderWatcher();
+}
 function saveReminders() { localStorage.setItem('tsp_reminders', JSON.stringify(reminders)); }
-function renderReminderList() { let container = document.getElementById('reminderList'); if (!reminders.length) { container.innerHTML = '<div style="color:var(--muted); padding:8px;">Aucun rappel programmé.</div>'; return; } container.innerHTML = reminders.map(r => `<div class="reminder-item"><span class="reminder-time">⏰ ${r.timeStr}</span><span class="reminder-msg">${escapeHtml(r.message)}</span><button class="reminder-del" onclick="deleteReminder(${r.id})">✖</button></div>`).join(''); }
-function startReminderWatcher() { if (reminderInterval) clearInterval(reminderInterval); reminderInterval = setInterval(() => { const now = new Date(); const nowStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`; for (let i=reminders.length-1; i>=0; i--) { if (reminders[i].timeStr === nowStr) { showToastAlarm(reminders[i].message); if (Notification.permission === "granted") new Notification("⏰ Rappel TSP WORLD PRO", { body: reminders[i].message, icon: NOTIF_ICON }); reminders.splice(i,1); saveReminders(); renderReminderList(); } } }, 1000); }
-function scheduleAlarm() { let timeInput = document.getElementById('reminderTime').value; let message = document.getElementById('reminderMessage').value.trim(); if (!timeInput) { alert("Veuillez choisir une heure."); return; } if (!message) message = "Rappel !"; if (Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission(); let newId = nextReminderId++; reminders.push({ id: newId, timeStr: timeInput, message: message }); saveReminders(); renderReminderList(); document.getElementById('reminderTime').value = ''; document.getElementById('reminderMessage').value = ''; document.getElementById('notifStatus').innerHTML = `✅ Rappel ajouté pour ${timeInput}`; setTimeout(() => { if(document.getElementById('notifStatus')) document.getElementById('notifStatus').innerHTML = "💡 Cliquez sur Ajouter."; }, 3000); }
+function renderReminderList() {
+    let container = document.getElementById('reminderList');
+    if (!reminders.length) { container.innerHTML = '<div style="color:var(--muted); padding:8px;">Aucun rappel programmé.</div>'; return; }
+    container.innerHTML = reminders.map(r => `<div class="reminder-item"><span class="reminder-time">⏰ ${r.timeStr}</span><span class="reminder-msg">${escapeHtml(r.message)}</span><button class="reminder-del" onclick="deleteReminder(${r.id})">✖</button></div>`).join('');
+}
+function startReminderWatcher() {
+    if (reminderInterval) clearInterval(reminderInterval);
+    reminderInterval = setInterval(() => {
+        const now = new Date();
+        const nowStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
+        for (let i=reminders.length-1; i>=0; i--) {
+            if (reminders[i].timeStr === nowStr) {
+                showToastAlarm(reminders[i].message);
+                if (Notification.permission === "granted") new Notification("⏰ Rappel TSP WORLD PRO", { body: reminders[i].message, icon: NOTIF_ICON });
+                reminders.splice(i,1);
+                saveReminders();
+                renderReminderList();
+            }
+        }
+    }, 1000);
+}
+function scheduleAlarm() {
+    let timeInput = document.getElementById('reminderTime').value;
+    let message = document.getElementById('reminderMessage').value.trim();
+    if (!timeInput) { alert("Veuillez choisir une heure."); return; }
+    if (!message) message = "Rappel !";
+    if (Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission();
+    let newId = nextReminderId++;
+    reminders.push({ id: newId, timeStr: timeInput, message: message });
+    saveReminders();
+    renderReminderList();
+    document.getElementById('reminderTime').value = '';
+    document.getElementById('reminderMessage').value = '';
+    document.getElementById('notifStatus').innerHTML = `✅ Rappel ajouté pour ${timeInput}`;
+    setTimeout(() => { if(document.getElementById('notifStatus')) document.getElementById('notifStatus').innerHTML = "💡 Cliquez sur Ajouter."; }, 3000);
+}
 function deleteReminder(id) { reminders = reminders.filter(r => r.id !== id); saveReminders(); renderReminderList(); }
-function showToastAlarm(message) { let toast = document.createElement('div'); toast.className = 'toast-alarm'; toast.innerHTML = `<div class="toast-close" onclick="this.parentElement.remove()">✖</div><div class="toast-title">⏰ ALARME</div><div>${escapeHtml(message)}</div>`; document.body.appendChild(toast); setTimeout(() => { if(toast && toast.remove) toast.remove(); }, 8000); }
+function showToastAlarm(message) {
+    let toast = document.createElement('div'); toast.className = 'toast-alarm';
+    toast.innerHTML = `<div class="toast-close" onclick="this.parentElement.remove()">✖</div><div class="toast-title">⏰ ALARME</div><div>${escapeHtml(message)}</div>`;
+    document.body.appendChild(toast);
+    setTimeout(() => { if(toast && toast.remove) toast.remove(); }, 8000);
+}
 const NOTIF_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E";
+
+// Horloge / chrono
 let cronInterval = null, cronSeconds = parseInt(sessionStorage.getItem('tsp_cron_sec') || '0');
 function updateLiveClock() { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('fr-FR'); }
 setInterval(updateLiveClock, 1000); updateLiveClock();
@@ -803,6 +1192,8 @@ function startCron() { if(cronInterval) return; cronInterval=setInterval(()=>{cr
 function pauseCron() { if(cronInterval) {clearInterval(cronInterval); cronInterval=null;} }
 function resetCron() { pauseCron(); cronSeconds=0; updateCronDisplay(); sessionStorage.setItem('tsp_cron_sec',0); }
 updateCronDisplay();
+
+// Authentification
 async function hashPassword(pwd) { const encoder = new TextEncoder(); const data = encoder.encode(pwd); const hashBuffer = await crypto.subtle.digest('SHA-256', data); return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2,'0')).join(''); }
 function getUsers() { return JSON.parse(localStorage.getItem('tsp_users') || '{}'); }
 function saveUsers(u) { localStorage.setItem('tsp_users', JSON.stringify(u)); }
@@ -816,7 +1207,11 @@ function startApp(user) {
     document.getElementById('dashboard').style.display = 'block';
     document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`;
     map = L.map('map', { zoomControl: false, rotate: true, touchRotate: true, rotateControl: false, bearing: 0 }).setView([20,10], 2);
-    if (window.devicePixelRatio > 1) { map.options.zoomSnap = 0.5; map.options.zoomDelta = 0.5; }
+    // Haute résolution mobile
+    if (window.devicePixelRatio > 1) {
+        map.options.zoomSnap = 0.5;
+        map.options.zoomDelta = 0.5;
+    }
     map.dragging.rotateModifierKey = 'Shift';
     let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm';
     setMapLayer(savedLayer);
@@ -824,6 +1219,7 @@ function startApp(user) {
     map.on('rotate', updateCompass);
     map.on('move', updateCompass);
     updateCompass();
+
     map.on('click', async e => {
         if (pickMode) {
             document.getElementById('newLat').value = e.latlng.lat.toFixed(6);
@@ -846,16 +1242,41 @@ function startApp(user) {
             let gmapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
             let safeN = name.replace(/'/g,"&#39;").replace(/"/g,'&quot;');
             let safeC = country.replace(/'/g,"&#39;");
-            popup.setContent(`<div style="min-width:200px; font-family:sans-serif;"><div style="font-weight:800; font-size:1rem; margin-bottom:4px;">📍 ${name}</div>${road ? `<div style="font-size:0.82rem; color:#555;">🛣️ ${road}</div>` : ''}${city ? `<div style="font-size:0.82rem; color:#555;">🏙️ ${city}</div>` : ''}${country ? `<div style="font-size:0.82rem; color:#555;">🌍 ${country}</div>` : ''}<div style="font-size:0.75rem; color:#888; margin:4px 0;">📐 ${lat.toFixed(5)}, ${lon.toFixed(5)}</div><div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;"><button onclick="addCityToList({name:'${safeN}',lat:${lat},lon:${lon},country:'${safeC}',desc:'${road}'}); this.textContent='✅ Ajouté!';" style="padding:4px 10px; background:#00f5ff; border:none; border-radius:20px; cursor:pointer; font-weight:700; font-size:0.78rem;">➕ Ajouter</button><button onclick="window.open('${gmapsUrl}','_blank')" style="padding:4px 10px; background:#4285f4; color:white; border:none; border-radius:20px; cursor:pointer; font-weight:700; font-size:0.78rem;">🗺️ Google Maps</button></div></div>`);
+            popup.setContent(`
+                <div style="min-width:200px; font-family:sans-serif;">
+                    <div style="font-weight:800; font-size:1rem; margin-bottom:4px;">📍 ${name}</div>
+                    ${road ? `<div style="font-size:0.82rem; color:#555;">🛣️ ${road}</div>` : ''}
+                    ${city ? `<div style="font-size:0.82rem; color:#555;">🏙️ ${city}</div>` : ''}
+                    ${country ? `<div style="font-size:0.82rem; color:#555;">🌍 ${country}</div>` : ''}
+                    <div style="font-size:0.75rem; color:#888; margin:4px 0;">📐 ${lat.toFixed(5)}, ${lon.toFixed(5)}</div>
+                    <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                        <button onclick="addCityToList({name:'${safeN}',lat:${lat},lon:${lon},country:'${safeC}',desc:'${road}'}); this.textContent='✅ Ajouté!';" 
+                            style="padding:4px 10px; background:#00f5ff; border:none; border-radius:20px; cursor:pointer; font-weight:700; font-size:0.78rem;">
+                            ➕ Ajouter
+                        </button>
+                        <button onclick="window.open('${gmapsUrl}','_blank')" 
+                            style="padding:4px 10px; background:#4285f4; color:white; border:none; border-radius:20px; cursor:pointer; font-weight:700; font-size:0.78rem;">
+                            🗺️ Google Maps
+                        </button>
+                    </div>
+                </div>
+            `);
         } catch(e) { popup.setContent('❌ Erreur de chargement'); }
     });
+
     loadSelected();
     loadReminders();
     handleUrlLocation();
 }
+
 let isTilted = false;
-function toggleTilt() { isTilted = !isTilted; document.getElementById('map').classList.toggle('tilted', isTilted); document.getElementById('tiltBtn').classList.toggle('active', isTilted); }
+function toggleTilt() {
+    isTilted = !isTilted;
+    document.getElementById('map').classList.toggle('tilted', isTilted);
+    document.getElementById('tiltBtn').classList.toggle('active', isTilted);
+}
 window.toggleTilt = toggleTilt;
+
 let pickMode = false;
 function addCustomCity() { let name=document.getElementById('newName').value.trim(), country=document.getElementById('newCountry').value.trim(), lat=parseFloat(document.getElementById('newLat').value), lon=parseFloat(document.getElementById('newLon').value), desc=document.getElementById('newDesc').value.trim(); if(!name||!country||isNaN(lat)||isNaN(lon)) { alert('Champs requis'); return; } addCityToList({ name, lat, lon, country, desc, custom:true }); document.getElementById('newName').value=''; document.getElementById('newCountry').value=''; document.getElementById('newLat').value=''; document.getElementById('newLon').value=''; document.getElementById('newDesc').value=''; document.getElementById('pickMsg').textContent=`✅ ${escapeHtml(name)} ajoutée`; }
 function startMapPick() { pickMode=true; map.getContainer().style.cursor='crosshair'; document.getElementById('pickMsg').innerHTML='🔘 Cliquez sur la carte <span class="cancel-pick" onclick="cancelPick()">Annuler</span>'; }
@@ -863,26 +1284,43 @@ function cancelPick() { pickMode=false; map.getContainer().style.cursor=''; docu
 function useGeoloc() { requestGeolocationWithHelp(pos => { document.getElementById('newLat').value=pos.coords.latitude.toFixed(6); document.getElementById('newLon').value=pos.coords.longitude.toFixed(6); document.getElementById('pickMsg').textContent='📍 GPS récupéré'; }, err=>alert("GPS refusé")); }
 function exportGeoJSON() { let features = []; selectedCities.forEach(city => { features.push({ type:"Feature", geometry:{ type:"Point", coordinates:[city.lon,city.lat] }, properties:{ name:city.name, country:city.country } }); }); if(routeLayer && routeLayer.getLatLngs && routeLayer.getLatLngs().length) { let coords = routeLayer.getLatLngs().map(c => [c.lng, c.lat]); features.push({ type:"Feature", geometry:{ type:"LineString", coordinates:coords }, properties:{ name:"Itinéraire TSP" } }); } let geojson = { type:"FeatureCollection", features }; let blob = new Blob([JSON.stringify(geojson,null,2)], {type:"application/json"}); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "tsp.geojson"; a.click(); URL.revokeObjectURL(url); }
 function escapeHtml(s) { return String(s).replace(/[&<>]/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m];}); }
+
+// ==================== TSP & OSRM ====================
 function haversine(lat1,lon1,lat2,lon2) { const R=6371, r=Math.PI/180; const dLat=(lat2-lat1)*r, dLon=(lon2-lon1)*r; return R*2*Math.asin(Math.sqrt(Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2)); }
 function totalDistance(tour) { let d=0; for(let i=0;i<tour.length-1;i++) d+=haversine(tour[i].lat,tour[i].lon,tour[i+1].lat,tour[i+1].lon); return d; }
 function twoOpt(tour) { let improved=true, bestDist=totalDistance(tour); while(improved && !tspCancelRequested){ improved=false; for(let i=1;i<tour.length-2;i++){ for(let j=i+1;j<tour.length-1;j++){ if(tspCancelRequested) return tour; let newTour = [...tour.slice(0,i), ...tour.slice(i,j+1).reverse(), ...tour.slice(j+1)]; let newDist=totalDistance(newTour); if(newDist<bestDist-0.001){ bestDist=newDist; tour=newTour; improved=true; } } } } return tour; }
 function tspNN(cities,startIdx) { if(cities.length<2) return [[],0]; let unvisited=[...cities]; let start=unvisited.splice(startIdx,1)[0]; let tour=[start], current=start, total=0; while(unvisited.length){ let bestIdx=0, bestDist=haversine(current.lat,current.lon,unvisited[0].lat,unvisited[0].lon); for(let i=1;i<unvisited.length;i++){ let d=haversine(current.lat,current.lon,unvisited[i].lat,unvisited[i].lon); if(d<bestDist){bestDist=d;bestIdx=i;}} total+=bestDist; current=unvisited[bestIdx]; tour.push(current); unvisited.splice(bestIdx,1); } total+=haversine(current.lat,current.lon,start.lat,start.lon); tour.push(start); return [tour,total]; }
 async function fetchOsrmRoute(lat1, lon1, lat2, lon2, mode) { let profile = mode === 'foot' ? 'foot' : 'driving'; let url = `https://router.project-osrm.org/route/v1/${profile}/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`; try { let resp = await fetch(url); if (!resp.ok) return null; let data = await resp.json(); if (!data.routes || data.routes.length === 0) return null; let route = data.routes[0]; let distanceKm = route.distance / 1000; let durationSec = route.duration; let coords = route.geometry.coordinates.map(c => [c[1], c[0]]); return { routeCoords: coords, distanceKm, durationSec }; } catch(e) { return null; } }
-async function buildRouteGeometry(tour, mode) { if (tour.length < 2) return { routeLatLng: [], totalDistanceKm: 0, totalDurationSec: 0 }; let allLatLng = [], totalDistanceKm = 0, totalDurationSec = 0; for (let i = 0; i < tour.length - 1; i++) { if (tspCancelRequested) return { routeLatLng: [], totalDistanceKm: 0, totalDurationSec: 0 }; let c1 = tour[i], c2 = tour[i+1]; if (mode === 'plane') { let dist = haversine(c1.lat, c1.lon, c2.lat, c2.lon); totalDistanceKm += dist; totalDurationSec += (dist / 800) * 3600; if (allLatLng.length === 0 || allLatLng[allLatLng.length-1][0] !== c1.lat || allLatLng[allLatLng.length-1][1] !== c1.lon) allLatLng.push([c1.lat, c1.lon]); allLatLng.push([c2.lat, c2.lon]); } else { let result = await fetchOsrmRoute(c1.lat, c1.lon, c2.lat, c2.lon, mode); if (result && result.routeCoords && result.routeCoords.length > 0) { let segmentCoords = result.routeCoords; if (allLatLng.length > 0 && segmentCoords.length > 0) { let last = allLatLng[allLatLng.length-1]; let first = segmentCoords[0]; if (Math.abs(last[0]-first[0])<1e-7 && Math.abs(last[1]-first[1])<1e-7) segmentCoords.shift(); } allLatLng.push(...segmentCoords); totalDistanceKm += result.distanceKm; totalDurationSec += result.durationSec; } else { let dist = haversine(c1.lat, c1.lon, c2.lat, c2.lon); totalDistanceKm += dist; let speedKmh = (mode === 'foot') ? 5 : 80; totalDurationSec += (dist / speedKmh) * 3600; if (allLatLng.length === 0 || allLatLng[allLatLng.length-1][0] !== c1.lat || allLatLng[allLatLng.length-1][1] !== c1.lon) allLatLng.push([c1.lat, c1.lon]); allLatLng.push([c2.lat, c2.lon]); } await new Promise(r => setTimeout(r, 200)); } } return { routeLatLng: allLatLng, totalDistanceKm, totalDurationSec }; }
-function clearMapRoute() { if(routeLayer) map.removeLayer(routeLayer); routeMarkers.forEach(m=>map.removeLayer(m)); routeMarkers=[]; stopDotAnimation(); }
+async function buildRouteGeometry(tour, mode) { if (tour.length < 2) return { routeLatLng: [], totalDistanceKm: 0, totalDurationSec: 0 }; let allLatLng = []; let totalDistanceKm = 0; let totalDurationSec = 0; for (let i = 0; i < tour.length - 1; i++) { if (tspCancelRequested) return { routeLatLng: [], totalDistanceKm: 0, totalDurationSec: 0 }; let c1 = tour[i], c2 = tour[i+1]; if (mode === 'plane') { let dist = haversine(c1.lat, c1.lon, c2.lat, c2.lon); totalDistanceKm += dist; totalDurationSec += (dist / 800) * 3600; if (allLatLng.length === 0 || allLatLng[allLatLng.length-1][0] !== c1.lat || allLatLng[allLatLng.length-1][1] !== c1.lon) allLatLng.push([c1.lat, c1.lon]); allLatLng.push([c2.lat, c2.lon]); } else { let result = await fetchOsrmRoute(c1.lat, c1.lon, c2.lat, c2.lon, mode); if (result && result.routeCoords && result.routeCoords.length > 0) { let segmentCoords = result.routeCoords; if (allLatLng.length > 0 && segmentCoords.length > 0) { let last = allLatLng[allLatLng.length-1]; let first = segmentCoords[0]; if (Math.abs(last[0]-first[0])<1e-7 && Math.abs(last[1]-first[1])<1e-7) segmentCoords.shift(); } allLatLng.push(...segmentCoords); totalDistanceKm += result.distanceKm; totalDurationSec += result.durationSec; } else { let dist = haversine(c1.lat, c1.lon, c2.lat, c2.lon); totalDistanceKm += dist; let speedKmh = (mode === 'foot') ? 5 : 80; totalDurationSec += (dist / speedKmh) * 3600; if (allLatLng.length === 0 || allLatLng[allLatLng.length-1][0] !== c1.lat || allLatLng[allLatLng.length-1][1] !== c1.lon) allLatLng.push([c1.lat, c1.lon]); allLatLng.push([c2.lat, c2.lon]); } await new Promise(r => setTimeout(r, 200)); } } return { routeLatLng: allLatLng, totalDistanceKm, totalDurationSec }; }
+function clearMapRoute() { 
+    if(routeLayer) map.removeLayer(routeLayer); 
+    routeMarkers.forEach(m=>map.removeLayer(m)); 
+    routeMarkers=[]; 
+    stopDotAnimation(); 
+}
 async function computeTSP() { 
     tspCancelRequested = false; 
     document.getElementById('cancelTSPBtn').style.display = 'inline-block'; 
     let max = parseInt(document.getElementById('maxCities').value) || 8; 
     let cities = [...selectedCities]; 
-    if (cities.length < 2) { document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Sélectionnez au moins 2 villes</div>'; document.getElementById('cancelTSPBtn').style.display = 'none'; return; } 
+    if (cities.length < 2) { 
+        document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Sélectionnez au moins 2 villes</div>'; 
+        document.getElementById('cancelTSPBtn').style.display = 'none'; 
+        return; 
+    } 
     if (cities.length > max) cities = cities.slice(0, max); 
     let startIdx = parseInt(document.getElementById('startCitySelect').value) || 0; 
     let [tour, straightDist] = tspNN(cities, startIdx); 
-    if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } 
+    if (tspCancelRequested) { 
+        document.getElementById('cancelTSPBtn').style.display = 'none'; 
+        return; 
+    } 
     let algo = document.getElementById('algoSelect').value; 
     if (algo === '2opt') tour = twoOpt(tour); 
-    if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } 
+    if (tspCancelRequested) { 
+        document.getElementById('cancelTSPBtn').style.display = 'none'; 
+        return; 
+    } 
     let orderedCities = tour.slice(0, -1); 
     selectedCities = orderedCities; 
     saveSelected(); 
@@ -894,14 +1332,23 @@ async function computeTSP() {
     loadEl.style.display = 'block'; 
     let { routeLatLng, totalDistanceKm, totalDurationSec } = await buildRouteGeometry(tour, mode); 
     loadEl.style.display = 'none'; 
-    if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } 
-    if (routeLatLng.length < 2) { document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Erreur tracé route</div>'; document.getElementById('cancelTSPBtn').style.display = 'none'; return; } 
+    if (tspCancelRequested) { 
+        document.getElementById('cancelTSPBtn').style.display = 'none'; 
+        return; 
+    } 
+    if (routeLatLng.length < 2) { 
+        document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Erreur tracé route</div>'; 
+        document.getElementById('cancelTSPBtn').style.display = 'none'; 
+        return; 
+    } 
     routeLayer = L.polyline(routeLatLng, { color: '#00f5ff', weight: 4, opacity: 0.85 }).addTo(map); 
     animateDotsOnRoute(routeLatLng);
     tour.slice(0, -1).forEach((city, idx) => { 
         let isStart = (idx === 0); 
         let color = isStart ? '#ff4466' : (city.custom ? '#00ffaa' : '#00ccff'); 
-        let marker = L.marker([city.lat, city.lon], { icon: L.divIcon({ html: `<div style="background:${color};width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:${isStart ? '#fff' : '#000'};border:2px solid white;font-size:12px;">${isStart ? '🏁' : idx+1}</div>`, iconSize: [30,30] }) }).addTo(map).bindPopup(`<b>${idx+1}. ${escapeHtml(city.name)}</b><br>${escapeHtml(city.country)}`); 
+        let marker = L.marker([city.lat, city.lon], { 
+            icon: L.divIcon({ html: `<div style="background:${color};width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:${isStart ? '#fff' : '#000'};border:2px solid white;font-size:12px;">${isStart ? '🏁' : idx+1}</div>`, iconSize: [30,30] }) 
+        }).addTo(map).bindPopup(`<b>${idx+1}. ${escapeHtml(city.name)}</b><br>${escapeHtml(city.country)}`); 
         routeMarkers.push(marker); 
     }); 
     let lats = cities.map(c => c.lat), lons = cities.map(c => c.lon); 
@@ -915,9 +1362,20 @@ async function computeTSP() {
     document.getElementById('cancelTSPBtn').style.display = 'none'; 
 }
 function cancelTSP() { tspCancelRequested = true; }
+
+// Export Java
 function generateJavaCode() { if (!selectedCities.length) { document.getElementById('javaCodeArea').value = "// Aucune ville sélectionnée."; return; } let coordsArray = selectedCities.map(c => `    {${c.lat}, ${c.lon}}`).join(",\n"); let javaCode = `public class TSPCoords {\n    public static double[][] getCoordinates() {\n        return new double[][] {\n${coordsArray}\n        };\n    }\n}`; document.getElementById('javaCodeArea').value = javaCode; }
 function copyJavaCode() { let textarea = document.getElementById('javaCodeArea'); textarea.select(); document.execCommand('copy'); alert("Code Java copié !"); }
-function switchTab(t) { document.getElementById('loginForm').style.display = t === 'login' ? 'block' : 'none'; document.getElementById('registerForm').style.display = t === 'register' ? 'block' : 'none'; document.getElementById('tabLogin').classList.toggle('active', t === 'login'); document.getElementById('tabReg').classList.toggle('active', t === 'register'); }
+
+// Switch tabs
+function switchTab(t) {
+    document.getElementById('loginForm').style.display = t === 'login' ? 'block' : 'none';
+    document.getElementById('registerForm').style.display = t === 'register' ? 'block' : 'none';
+    document.getElementById('tabLogin').classList.toggle('active', t === 'login');
+    document.getElementById('tabReg').classList.toggle('active', t === 'register');
+}
+
+// Exports globaux
 window.switchTab = switchTab;
 window.doLogin = doLogin;
 window.doRegister = doRegister;
@@ -952,6 +1410,8 @@ window.downloadQR = downloadQR;
 window.openQRScanner = openQRScanner;
 window.stopQRScanner = stopQRScanner;
 window.scanQRFromFile = scanQRFromFile;
+
+// Démarrage
 document.addEventListener('DOMContentLoaded', () => {
     const splash = document.getElementById('splashScreen');
     setTimeout(() => {
