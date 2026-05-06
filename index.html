@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -259,6 +260,28 @@
 <div class="map-switch" onclick="toggleMapLayer()">🗺️ Changer fond</div>
 <button id="tiltBtn" onclick="toggleTilt()">🏔️ Tilt 3D</button>
 
+<!-- QR Modal -->
+<div id="qrModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#0a0a1e; border:2px solid #00f5ff; border-radius:24px; padding:32px; text-align:center; max-width:340px; width:90%; box-shadow:0 0 60px rgba(0,245,255,0.3);">
+        <div style="font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800; color:#00f5ff; margin-bottom:6px;">📡 QR Position</div>
+        <div id="qrSubtitle" style="font-size:0.75rem; color:rgba(200,210,255,0.6); margin-bottom:16px;">Scannez pour rejoindre cette position</div>
+        <div style="margin-bottom:14px;">
+            <label for="qrLogoInput" style="display:inline-block; padding:7px 16px; background:rgba(0,245,255,0.1); border:1px dashed #00f5ff; border-radius:50px; cursor:pointer; font-size:0.78rem; color:#00f5ff;">
+                🖼️ Choisir logo (PNG/JPG)
+            </label>
+            <input type="file" id="qrLogoInput" accept="image/*" style="display:none;" onchange="onLogoSelected(event)">
+            <div id="logoName" style="font-size:0.7rem; color:rgba(200,210,255,0.5); margin-top:4px;"></div>
+        </div>
+        <canvas id="qrCanvas" style="border-radius:12px; display:block; margin:0 auto 16px;"></canvas>
+        <div id="qrcode" style="display:none;"></div>
+        <div id="qrCoords" style="font-family:monospace; font-size:0.72rem; color:#00ffaa; margin-bottom:16px;"></div>
+        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+            <button onclick="downloadQR()" style="padding:8px 18px; background:linear-gradient(135deg,#00f5ff,#0088ff); border:none; border-radius:50px; font-weight:700; cursor:pointer; font-size:0.82rem;">⬇️ Télécharger</button>
+            <button onclick="document.getElementById('qrModal').style.display='none'" style="padding:8px 18px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:50px; cursor:pointer; font-size:0.82rem;">✖ Fermer</button>
+        </div>
+    </div>
+</div>
+
 <!-- Compass -->
 <div id="compass" title="Cliquer pour réorienter vers le nord" onclick="resetNorth()">
     <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
@@ -338,6 +361,7 @@
             <button class="btn btn-primary" id="trackBtn" onclick="toggleTracking()">📡 Start Tracking</button>
             <button class="btn btn-secondary" onclick="exportGeoJSON()">📤 Exporter GeoJSON</button>
             <button class="btn btn-secondary" onclick="shareCurrentLocation()">🔗 Partager ma position</button>
+            <button class="btn btn-secondary" onclick="generatePositionQR()">📱 QR Position</button>
         </div>
     </div>
     <div class="section">
@@ -361,7 +385,7 @@
     </div>
     <div class="section"><div class="section-title">➕ Ajouter une ville personnalisée</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
-    <div class="footer">🌐 Routage OSRM · TSP · Export Java · Rappels · Tracking pro avec auto‑rotation · Polyline offset + 30 points lumineux animés (boucle continue sur TSP)</div>
+    <div class="footer">🌐 Routage OSRM · TSP · Export Java · Rappels · Tracking pro avec auto‑rotation · Polyline offset + 30 points lumineux animés · QR position avec logo personnalisable</div>
 </div>
 
 <script>
@@ -562,6 +586,82 @@ function handleUrlLocation() {
     }
 }
 
+// ==================== QR CODE AVEC LOGO ====================
+let qrLogoDataUrl = null;
+let lastQrUrl = null;
+
+function onLogoSelected(event) {
+    let file = event.target.files[0];
+    if (!file) return;
+    document.getElementById('logoName').textContent = '✅ ' + file.name;
+    let reader = new FileReader();
+    reader.onload = e => {
+        qrLogoDataUrl = e.target.result;
+        if (lastQrUrl) drawQRWithLogo(lastQrUrl);
+    };
+    reader.readAsDataURL(file);
+}
+
+function generatePositionQR() {
+    requestGeolocationWithHelp(pos => {
+        let lat = pos.coords.latitude;
+        let lon = pos.coords.longitude;
+        lastQrUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}`;
+        document.getElementById('qrCoords').textContent = `📍 ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+        document.getElementById('qrModal').style.display = 'flex';
+        document.getElementById('qrModal').onclick = e => {
+            if (e.target === document.getElementById('qrModal'))
+                document.getElementById('qrModal').style.display = 'none';
+        };
+        drawQRWithLogo(lastQrUrl);
+    }, err => alert("❌ GPS refusé ou indisponible"));
+}
+
+function drawQRWithLogo(url) {
+    let tempDiv = document.getElementById('qrcode');
+    tempDiv.innerHTML = '';
+    new QRCode(tempDiv, {
+        text: url,
+        width: 256,
+        height: 256,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    setTimeout(() => {
+        let qrCanvas = tempDiv.querySelector('canvas');
+        if (!qrCanvas) return;
+        let finalCanvas = document.getElementById('qrCanvas');
+        finalCanvas.width = 256;
+        finalCanvas.height = 256;
+        let ctx = finalCanvas.getContext('2d');
+        ctx.drawImage(qrCanvas, 0, 0, 256, 256);
+        if (qrLogoDataUrl) {
+            let logo = new Image();
+            logo.onload = () => {
+                let size = 56;
+                let x = (256 - size) / 2;
+                let y = (256 - size) / 2;
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.roundRect(x - 4, y - 4, size + 8, size + 8, 10);
+                ctx.fill();
+                ctx.drawImage(logo, x, y, size, size);
+            };
+            logo.src = qrLogoDataUrl;
+        }
+    }, 50);
+}
+
+function downloadQR() {
+    let canvas = document.getElementById('qrCanvas');
+    if (!canvas) { alert("QR pas encore généré"); return; }
+    let link = document.createElement('a');
+    link.download = 'qr-position-tsp.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+}
+
 // ==================== SONS (Web Audio) ====================
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
@@ -618,11 +718,10 @@ function offsetLatLngs(points, offsetMeters) {
     return result;
 }
 
-// ==================== ANIMATION DES POINTS SUR TSP (BOUCLE CONTINUE) ====================
+// ==================== ANIMATION DES POINTS SUR TSP ====================
 let dotAnimationInterval = null;
 let animatedDots = [];
 
-// Arrêter l'animation et effacer les points
 function stopDotAnimation() {
     if (dotAnimationInterval) {
         clearInterval(dotAnimationInterval);
@@ -634,65 +733,36 @@ function stopDotAnimation() {
     animatedDots = [];
 }
 
-// Démarrer l'animation continue sur un tableau de points (route)
 function animateDotsOnRoute(points) {
-    stopDotAnimation(); // Nettoyer tout ancien
+    stopDotAnimation();
     if (!points || points.length < 2) return;
-
-    // Calcul des segments et distance totale (dans l'espace mathématique, pas en km)
     let totalLen = 0;
     let segments = [];
     for (let i = 0; i < points.length - 1; i++) {
-        let d = Math.sqrt(
-            Math.pow(points[i+1][0] - points[i][0], 2) +
-            Math.pow(points[i+1][1] - points[i][1], 2)
-        );
-        segments.push({
-            start: points[i],
-            end: points[i+1],
-            len: d,
-            cumLen: totalLen
-        });
+        let d = Math.sqrt(Math.pow(points[i+1][0] - points[i][0], 2) + Math.pow(points[i+1][1] - points[i][1], 2));
+        segments.push({ start: points[i], end: points[i+1], len: d, cumLen: totalLen });
         totalLen += d;
     }
     if (totalLen === 0) return;
-
     const NUM_DOTS = 30;
     let progress = 0;
-
-    // Créer les points
     for (let i = 0; i < NUM_DOTS; i++) {
-        let dot = L.circleMarker(points[0], {
-            radius: 2.5,
-            color: 'transparent',
-            fillColor: '#ffffff',
-            fillOpacity: 0.8,
-            weight: 0,
-            className: 'moving-dot'
-        }).addTo(map);
+        let dot = L.circleMarker(points[0], { radius: 2.5, color: 'transparent', fillColor: '#ffffff', fillOpacity: 0.8, weight: 0 }).addTo(map);
         animatedDots.push(dot);
     }
-
-    // Animation: progression cyclique
     dotAnimationInterval = setInterval(() => {
-        progress = (progress + 0.0035) % 1; // vitesse douce
-
+        progress = (progress + 0.0035) % 1;
         for (let i = 0; i < NUM_DOTS; i++) {
             let t = (progress + i / NUM_DOTS) % 1;
             let targetLen = t * totalLen;
             let seg = segments[segments.length - 1];
-            for (let s of segments) {
-                if (s.cumLen + s.len >= targetLen) { seg = s; break; }
-            }
+            for (let s of segments) if (s.cumLen + s.len >= targetLen) { seg = s; break; }
             let segT = seg.len > 0 ? (targetLen - seg.cumLen) / seg.len : 0;
             let lat = seg.start[0] + (seg.end[0] - seg.start[0]) * segT;
             let lon = seg.start[1] + (seg.end[1] - seg.start[1]) * segT;
             let isHead = (i >= NUM_DOTS - 4);
             animatedDots[i].setLatLng([lat, lon]);
-            animatedDots[i].setStyle({
-                radius: isHead ? 3.5 : 2,
-                fillOpacity: isHead ? 1 : 0.7
-            });
+            animatedDots[i].setStyle({ radius: isHead ? 3.5 : 2, fillOpacity: isHead ? 1 : 0.7 });
         }
     }, 38);
 }
@@ -723,57 +793,31 @@ function startTrackingPro() {
     trackingPoints = [];
     if (trackingPolyline) map.removeLayer(trackingPolyline);
     soundStart();
-
     let btn = document.getElementById('trackBtn');
     btn.innerHTML = '⏹️ Stop Tracking';
     btn.classList.add('tracking');
     document.getElementById('trackingInfo').style.display = 'block';
-
-    watchId = navigator.geolocation.watchPosition(
-        onTrackingUpdate,
-        err => {
-            soundWarn();
-            let msg = {
-                1: "❌ Permission GPS refusée.\nAutorisez la localisation dans votre navigateur.",
-                2: "⚠️ Position GPS indisponible.\nVérifiez que le GPS est activé sur votre appareil.",
-                3: "⏱️ Timeout GPS.\nEssayez de vous déplacer ou rechargez."
-            }[err.code] || "❌ Erreur GPS inconnue.";
-            alert(msg);
-            stopTrackingPro();
-        },
-        { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }
-    );
+    watchId = navigator.geolocation.watchPosition(onTrackingUpdate, err => {
+        soundWarn();
+        let msg = { 1: "❌ Permission GPS refusée.\nAutorisez la localisation dans votre navigateur.", 2: "⚠️ Position GPS indisponible.\nVérifiez que le GPS est activé sur votre appareil.", 3: "⏱️ Timeout GPS.\nEssayez de vous déplacer ou rechargez." }[err.code] || "❌ Erreur GPS inconnue.";
+        alert(msg);
+        stopTrackingPro();
+    }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 });
 }
 
 function stopTrackingPro() {
-    if (watchId) {
-        navigator.geolocation.clearWatch(watchId);
-        watchId = null;
-    }
+    if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
     isTracking = false;
     soundStop();
-
-    if (map.setBearing) {
-        map.setBearing(0, { animate: true, duration: 0.8 });
+    if (map.setBearing) map.setBearing(0, { animate: true, duration: 0.8 });
+    // On ne stop pas l'animation TSP ici, on relance si route existe
+    let currentRoute = routeLayer ? routeLayer.getLatLngs() : null;
+    if (currentRoute && currentRoute.length) {
+        let points = currentRoute.map(latlng => [latlng.lat, latlng.lng]);
+        animateDotsOnRoute(points);
+    } else {
+        stopDotAnimation();
     }
-
-    // On arrête l'animation des points de tracking mais pas celle du TSP
-    if (dotAnimationInterval) {
-        // On ne clear pas ici car c'est l'animation TSP qui tourne séparément
-        // Mais attention: stopTrackingPro ne doit pas interférer avec l'animation TSP.
-        // On va juste arrêter les points de tracking (qui sont stockés dans animatedDots)
-        // MAIS en réalité les points de tracking utilisent aussi animatedDots.
-        // Nous allons séparer les animations : pour le tracking on utilise une autre variable.
-        // Pour simplifier, on arrête tout puis on relance si route existe.
-        let currentRoute = routeLayer ? routeLayer.getLatLngs() : null;
-        if (currentRoute && currentRoute.length) {
-            let points = currentRoute.map(latlng => [latlng.lat, latlng.lng]);
-            animateDotsOnRoute(points);
-        } else {
-            stopDotAnimation();
-        }
-    }
-
     let btn = document.getElementById('trackBtn');
     btn.innerHTML = '📡 Start Tracking';
     btn.classList.remove('tracking');
@@ -781,78 +825,41 @@ function stopTrackingPro() {
 }
 
 function onTrackingUpdate(pos) {
-    let lat = pos.coords.latitude;
-    let lon = pos.coords.longitude;
-    let speed = pos.coords.speed;
-    let heading = pos.coords.heading;
-    let accuracy = pos.coords.accuracy;
-
+    let lat = pos.coords.latitude, lon = pos.coords.longitude, speed = pos.coords.speed, heading = pos.coords.heading, accuracy = pos.coords.accuracy;
     soundTick();
-
     trackingPoints.push([lat, lon]);
-
     if (trackingPolyline) map.removeLayer(trackingPolyline);
     let offsetPoints = offsetLatLngs(trackingPoints, 3);
-    trackingPolyline = L.polyline(offsetPoints, {
-        color: '#00f5ff',
-        weight: 5,
-        opacity: 0.85
-    }).addTo(map);
-
-    // L'animation des points de tracking : on ne l'affiche pas car on veut que les points TSP restent
-    // Mais on peut laisser l'animation TSP inchangée.
-    // On ne touche pas à animateDotsOnRoute ici.
-
+    trackingPolyline = L.polyline(offsetPoints, { color: '#00f5ff', weight: 5, opacity: 0.85 }).addTo(map);
     if (myLocationMarker) {
         myLocationMarker.setLatLng([lat, lon]);
         if (heading != null && !isNaN(heading)) {
-            let newIcon = L.divIcon({
-                html: `<div style="width:28px; height:28px; background: radial-gradient(circle, #00f5ff, #0055ff); border-radius:50%; border:3px solid white; box-shadow:0 0 18px rgba(0,245,255,0.9); position:relative;">
-                    <div style="position:absolute; top:-10px; left:50%; transform:translateX(-50%) rotate(${heading}deg); width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:12px solid #00f5ff;"></div>
-                </div>`,
-                iconSize: [28, 28],
-                iconAnchor: [14, 14]
-            });
+            let newIcon = L.divIcon({ html: `<div style="width:28px; height:28px; background: radial-gradient(circle, #00f5ff, #0055ff); border-radius:50%; border:3px solid white; box-shadow:0 0 18px rgba(0,245,255,0.9); position:relative;"><div style="position:absolute; top:-10px; left:50%; transform:translateX(-50%) rotate(${heading}deg); width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:12px solid #00f5ff;"></div></div>`, iconSize: [28,28], iconAnchor: [14,14] });
             myLocationMarker.setIcon(newIcon);
         }
     } else {
-        let iconHtml = `<div style="width:28px; height:28px; background: radial-gradient(circle, #00f5ff, #0055ff); border-radius:50%; border:3px solid white; box-shadow:0 0 18px rgba(0,245,255,0.9); position:relative;">
-            <div style="position:absolute; top:-10px; left:50%; transform:translateX(-50%) rotate(${heading || 0}deg); width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:12px solid #00f5ff;"></div>
-        </div>`;
-        myLocationMarker = L.marker([lat, lon], {
-            icon: L.divIcon({ html: iconHtml, iconSize: [28,28], iconAnchor: [14,14] })
-        }).addTo(map);
+        let iconHtml = `<div style="width:28px; height:28px; background: radial-gradient(circle, #00f5ff, #0055ff); border-radius:50%; border:3px solid white; box-shadow:0 0 18px rgba(0,245,255,0.9); position:relative;"><div style="position:absolute; top:-10px; left:50%; transform:translateX(-50%) rotate(${heading || 0}deg); width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:12px solid #00f5ff;"></div></div>`;
+        myLocationMarker = L.marker([lat, lon], { icon: L.divIcon({ html: iconHtml, iconSize: [28,28], iconAnchor: [14,14] }) }).addTo(map);
     }
-
     if (heading != null && !isNaN(heading) && heading !== 0) {
         lastHeading = heading;
-        if (map.setBearing) {
-            map.setBearing(-heading, { animate: true, duration: 0.5 });
-        }
+        if (map.setBearing) map.setBearing(-heading, { animate: true, duration: 0.5 });
     }
-
     map.flyTo([lat, lon], map.getZoom(), { animate: true, duration: 0.8 });
-
     document.getElementById('ti_lat').textContent = lat.toFixed(6) + '°';
     document.getElementById('ti_lon').textContent = lon.toFixed(6) + '°';
     document.getElementById('ti_speed').textContent = speed != null ? (speed * 3.6).toFixed(1) + ' km/h' : '0 km/h';
     document.getElementById('ti_acc').textContent = accuracy != null ? Math.round(accuracy) + ' m' : '-- m';
-
     updateDirectionDisplay(lastHeading);
 }
 
 function updateDirectionDisplay(heading) {
     let arrowSpan = document.getElementById('directionArrow');
     if (arrowSpan) arrowSpan.style.transform = `rotate(${heading}deg)`;
-
-    let dirs  = ['N','NE','E','SE','S','SO','O','NO'];
-    let names = {
-        'N':'⬆️ Nord','NE':'↗️ Nord-Est','E':'➡️ Est','SE':'↘️ Sud-Est',
-        'S':'⬇️ Sud','SO':'↙️ Sud-Ouest','O':'⬅️ Ouest','NO':'↖️ Nord-Ouest'
-    };
+    let dirs = ['N','NE','E','SE','S','SO','O','NO'];
+    let names = { 'N':'⬆️ Nord','NE':'↗️ Nord-Est','E':'➡️ Est','SE':'↘️ Sud-Est', 'S':'⬇️ Sud','SO':'↙️ Sud-Ouest','O':'⬅️ Ouest','NO':'↖️ Nord-Ouest' };
     let idx = Math.round(heading / 45) % 8;
     document.getElementById('ti_dir').innerHTML = names[dirs[idx]] || `${Math.round(heading)}°`;
-
     let needle = document.getElementById('compassNeedle');
     if (needle) needle.setAttribute('transform', `rotate(${heading}, 40, 40)`);
     let compassLabel = document.getElementById('compassLabel');
@@ -878,29 +885,20 @@ function toggleMapLayer() {
     let newLayer = (localStorage.getItem('tsp_map_layer') || 'osm') === 'osm' ? 'googleSat' : 'osm';
     setMapLayer(newLayer);
 }
-
 function updateCompass() {
     let bearing = map.getBearing ? map.getBearing() : 0;
     let needle = document.getElementById('compassNeedle');
     if (needle) needle.setAttribute('transform', `rotate(${-bearing}, 40, 40)`);
     document.getElementById('compassLabel').innerHTML = bearing === 0 ? '↺ Nord' : `${Math.round(-bearing)}°`;
 }
-function resetNorth() {
-    if (map.setBearing) map.setBearing(0);
-    updateCompass();
-}
+function resetNorth() { if (map.setBearing) map.setBearing(0); updateCompass(); }
 window.resetNorth = resetNorth;
 
-// ==================== FONCTIONS UTILES ====================
 function isFileProtocol() { return window.location.protocol === 'file:'; }
 if (isFileProtocol()) document.getElementById('gpsWarningBanner').style.display = 'block';
 
 function requestGeolocationWithHelp(cbSuccess, cbError) {
-    if (isFileProtocol()) {
-        alert("GPS bloqué: ouvrez via serveur HTTP.");
-        if (cbError) cbError({ message: "file://" });
-        return;
-    }
+    if (isFileProtocol()) { alert("GPS bloqué: ouvrez via serveur HTTP."); if (cbError) cbError({ message: "file://" }); return; }
     if (!navigator.geolocation) { alert("Navigateur non supporté."); return; }
     navigator.geolocation.getCurrentPosition(cbSuccess, cbError);
 }
@@ -910,23 +908,15 @@ function showMyLocation() {
         let lat = pos.coords.latitude, lon = pos.coords.longitude;
         map.setView([lat, lon], 14);
         if (myLocationMarker) myLocationMarker.setLatLng([lat, lon]);
-        else {
-            myLocationMarker = L.marker([lat, lon], {
-                icon: L.divIcon({ html: '<div style="background:#00aaff;width:20px;height:20px;border-radius:50%;border:2px solid white;"></div>', iconSize: [20,20] })
-            }).addTo(map).bindPopup('Votre position').openPopup();
-        }
-        if (confirm("Ajouter cette position à votre liste de villes ?"))
-            addCityToList({ name: "Ma position", lat, lon, country: "Local", desc: "GPS", custom: true });
+        else { myLocationMarker = L.marker([lat, lon], { icon: L.divIcon({ html: '<div style="background:#00aaff;width:20px;height:20px;border-radius:50%;border:2px solid white;"></div>', iconSize: [20,20] }) }).addTo(map).bindPopup('Votre position').openPopup(); }
+        if (confirm("Ajouter cette position à votre liste de villes ?")) addCityToList({ name: "Ma position", lat, lon, country: "Local", desc: "GPS", custom: true });
     }, err => alert("Erreur GPS"));
 }
 
 // Rappels
 let reminders = [], nextReminderId = 1, reminderInterval = null;
 function loadReminders() {
-    try {
-        let saved = localStorage.getItem('tsp_reminders');
-        if (saved) { reminders = JSON.parse(saved); nextReminderId = Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); }
-    } catch(e) {}
+    try { let saved = localStorage.getItem('tsp_reminders'); if (saved) { reminders = JSON.parse(saved); nextReminderId = Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); } } catch(e) {}
     startReminderWatcher();
 }
 function saveReminders() { localStorage.setItem('tsp_reminders', JSON.stringify(reminders)); }
@@ -1007,7 +997,6 @@ function startApp(user) {
     map.on('move', updateCompass);
     updateCompass();
 
-    // ========== CLICK SUR CARTE AVEC POPUP INFORMATIONS ==========
     map.on('click', async e => {
         if (pickMode) {
             document.getElementById('newLat').value = e.latlng.lat.toFixed(6);
@@ -1049,16 +1038,14 @@ function startApp(user) {
                     </div>
                 </div>
             `);
-        } catch(e) {
-            popup.setContent('❌ Erreur de chargement');
-        }
+        } catch(e) { popup.setContent('❌ Erreur de chargement'); }
     });
 
     loadSelected();
     loadReminders();
     handleUrlLocation();
 }
-// Nouvelle fonction pour le tilt 3D
+
 let isTilted = false;
 function toggleTilt() {
     isTilted = !isTilted;
@@ -1132,10 +1119,7 @@ async function computeTSP() {
         return; 
     } 
     routeLayer = L.polyline(routeLatLng, { color: '#00f5ff', weight: 4, opacity: 0.85 }).addTo(map); 
-    
-    // Lancer l'animation des 30 points lumineux sur cette route
     animateDotsOnRoute(routeLatLng);
-    
     tour.slice(0, -1).forEach((city, idx) => { 
         let isStart = (idx === 0); 
         let color = isStart ? '#ff4466' : (city.custom ? '#00ffaa' : '#00ccff'); 
@@ -1197,6 +1181,9 @@ window.selectSearchResult = selectSearchResult;
 window.toggleTracking = toggleTracking;
 window.startTracking = startTrackingPro;
 window.stopTracking = stopTrackingPro;
+window.generatePositionQR = generatePositionQR;
+window.onLogoSelected = onLogoSelected;
+window.downloadQR = downloadQR;
 
 // Démarrage
 document.addEventListener('DOMContentLoaded', () => {
