@@ -25,7 +25,16 @@
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
-        #map { position:absolute; inset:0; z-index:1; }
+        #map { 
+            position:absolute; 
+            inset:0; 
+            z-index:1; 
+            transition: transform 0.4s ease;
+            transform-origin: center bottom;
+        }
+        #map.tilted {
+            transform: perspective(800px) rotateX(35deg) scale(1.15);
+        }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 10px; }
@@ -112,10 +121,28 @@
         .reminder-msg { flex: 1; font-size: 0.8rem; }
         .reminder-del { cursor: pointer; background: none; border: none; color: #ff8888; font-size: 1rem; }
         .map-switch { position: fixed; bottom: 20px; left: 20px; z-index: 1001; background: var(--surface); border: 1px solid var(--cyan); border-radius: 40px; padding: 6px 12px; cursor: pointer; font-size: 0.8rem; backdrop-filter: blur(8px); color: var(--cyan); }
+        #tiltBtn {
+            position: fixed;
+            bottom: 60px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--surface);
+            border: 1px solid var(--cyan);
+            border-radius: 40px;
+            padding: 6px 14px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            backdrop-filter: blur(8px);
+            color: var(--cyan);
+            transition: all 0.2s;
+        }
+        #tiltBtn.active {
+            background: var(--cyan);
+            color: #000;
+            font-weight: 700;
+        }
         @media (max-width: 700px) { .dashboard { width: 380px; } }
         .gps-warning { background: rgba(255,170,0,0.2); border-left: 3px solid var(--warning); padding: 6px 12px; border-radius: 12px; margin-bottom: 12px; font-size: 0.7rem; }
-
-        /* Compass */
         #compass {
             position: fixed;
             bottom: 80px;
@@ -129,8 +156,6 @@
         }
         #compass:hover { filter: drop-shadow(0 0 22px rgba(0,245,255,0.9)); }
         #compassLabel { text-align: center; font-size: 0.65rem; color: #00f5ff; margin-top: 2px; }
-
-        /* Tracking button */
         #trackBtn { transition: all 0.3s ease; }
         #trackBtn.tracking {
             background: linear-gradient(135deg, #ff4466, #ff0033) !important;
@@ -142,8 +167,6 @@
             0%,100% { box-shadow: 0 0 20px rgba(255,50,80,0.5); }
             50%      { box-shadow: 0 0 40px rgba(255,50,80,1); }
         }
-
-        /* Tracking info card */
         #trackingInfo {
             position: fixed;
             top: 16px; right: 16px;
@@ -234,6 +257,7 @@
 <div id="map"></div>
 <button class="toggle-dash" onclick="document.getElementById('dashboard').classList.toggle('collapsed')">⚙️ Menu</button>
 <div class="map-switch" onclick="toggleMapLayer()">🗺️ Changer fond</div>
+<button id="tiltBtn" onclick="toggleTilt()">🏔️ Tilt 3D</button>
 
 <!-- Compass -->
 <div id="compass" title="Cliquer pour réorienter vers le nord" onclick="resetNorth()">
@@ -574,7 +598,6 @@ function soundWarn()  {
 }
 
 // ==================== OFFSET POLYLINE ====================
-// Calcule une ligne parallèle décalée de `offsetMeters` mètres (positif = à droite)
 function offsetLatLngs(points, offsetMeters) {
     if (points.length < 2) return points;
     let result = [];
@@ -582,11 +605,11 @@ function offsetLatLngs(points, offsetMeters) {
         let p = points[i];
         let prev = points[Math.max(0, i - 1)];
         let next = points[Math.min(points.length - 1, i + 1)];
-        let dx = next[1] - prev[1]; // delta lon
-        let dy = next[0] - prev[0]; // delta lat
+        let dx = next[1] - prev[1];
+        let dy = next[0] - prev[0];
         let len = Math.sqrt(dx*dx + dy*dy);
         if (len === 0) { result.push(p); continue; }
-        let nx = -dy / len;   // vecteur normal (perpendiculaire)
+        let nx = -dy / len;
         let ny =  dx / len;
         let dLat = nx * offsetMeters / 111320;
         let dLon = ny * offsetMeters / (111320 * Math.cos(p[0] * Math.PI / 180));
@@ -597,16 +620,14 @@ function offsetLatLngs(points, offsetMeters) {
 
 // ==================== ANIMATION AVEC 30 POINTS LUMINEUX ====================
 let dotAnimationInterval = null;
-let animatedDots = [];   // stocke les marqueurs (L.circleMarker)
+let animatedDots = [];
 
 function animateDotsOnRoute(points) {
-    // Supprime les anciens points
     animatedDots.forEach(dot => map.removeLayer(dot));
     animatedDots = [];
     if (dotAnimationInterval) clearInterval(dotAnimationInterval);
     if (points.length < 2) return;
 
-    // Calcul des distances cumulées le long de la polyligne
     let totalLen = 0;
     let segments = [];
     for (let i = 0; i < points.length - 1; i++) {
@@ -624,12 +645,10 @@ function animateDotsOnRoute(points) {
     }
     if (totalLen === 0) return;
 
-    // Nombre de points : 30 pour un effet "trainée" dense
     const NUM_DOTS = 30;
     let offsets = Array.from({length: NUM_DOTS}, (_, i) => i / NUM_DOTS);
-    let progress = 0; // de 0 à 1
+    let progress = 0;
 
-    // Créer les cercles (blancs, très petits, avec ombre)
     for (let i = 0; i < NUM_DOTS; i++) {
         let dot = L.circleMarker(points[0], {
             radius: 2.5,
@@ -642,9 +661,8 @@ function animateDotsOnRoute(points) {
         animatedDots.push(dot);
     }
 
-    // Animation fluide (rafraîchissement toutes les 40ms)
     dotAnimationInterval = setInterval(() => {
-        progress = (progress + 0.004) % 1;  // vitesse modérée
+        progress = (progress + 0.004) % 1;
         for (let i = 0; i < NUM_DOTS; i++) {
             let t = (progress + offsets[i]) % 1;
             let targetLen = t * totalLen;
@@ -655,17 +673,12 @@ function animateDotsOnRoute(points) {
             let segT = seg.len > 0 ? (targetLen - seg.cumLen) / seg.len : 0;
             let lat = seg.start[0] + (seg.end[0] - seg.start[0]) * segT;
             let lon = seg.start[1] + (seg.end[1] - seg.start[1]) * segT;
-            
-            // Effet de "trainée" : les points en tête sont plus gros et opaques
             let intensity = 0.3 + 0.7 * (i / NUM_DOTS);
-            let radius = 2 + intensity * 2.5;  // entre 2 et 4.5 pixels
+            let radius = 2 + intensity * 2.5;
             animatedDots[i].setLatLng([lat, lon]);
-            animatedDots[i].setStyle({ 
-                fillOpacity: intensity,
-                radius: radius
-            });
+            animatedDots[i].setStyle({ fillOpacity: intensity, radius: radius });
         }
-    }, 40); // 25 fps
+    }, 40);
 }
 
 // ==================== TRACKING PRO ====================
@@ -724,12 +737,10 @@ function stopTrackingPro() {
     isTracking = false;
     soundStop();
 
-    // Remet la carte au nord (bearing 0) à l'arrêt
     if (map.setBearing) {
         map.setBearing(0, { animate: true, duration: 0.8 });
     }
 
-    // Arrêter l'animation des points
     if (dotAnimationInterval) clearInterval(dotAnimationInterval);
     animatedDots.forEach(dot => map.removeLayer(dot));
     animatedDots = [];
@@ -740,7 +751,6 @@ function stopTrackingPro() {
     document.getElementById('trackingInfo').style.display = 'none';
 }
 
-// Mise à jour GPS
 function onTrackingUpdate(pos) {
     let lat = pos.coords.latitude;
     let lon = pos.coords.longitude;
@@ -752,7 +762,6 @@ function onTrackingUpdate(pos) {
 
     trackingPoints.push([lat, lon]);
 
-    // Tracé offset (3 mètres à droite)
     if (trackingPolyline) map.removeLayer(trackingPolyline);
     let offsetPoints = offsetLatLngs(trackingPoints, 3);
     trackingPolyline = L.polyline(offsetPoints, {
@@ -761,30 +770,14 @@ function onTrackingUpdate(pos) {
         opacity: 0.85
     }).addTo(map);
 
-    // Lancer l'animation des points sur ce nouveau tracé
     animateDotsOnRoute(offsetPoints);
 
-    // Marqueur avec flèche orientée
     if (myLocationMarker) {
         myLocationMarker.setLatLng([lat, lon]);
         if (heading != null && !isNaN(heading)) {
             let newIcon = L.divIcon({
-                html: `<div style="
-                    width:28px; height:28px;
-                    background: radial-gradient(circle, #00f5ff, #0055ff);
-                    border-radius:50%;
-                    border:3px solid white;
-                    box-shadow:0 0 18px rgba(0,245,255,0.9);
-                    position:relative;
-                ">
-                    <div style="
-                        position:absolute; top:-10px; left:50%;
-                        transform:translateX(-50%) rotate(${heading}deg);
-                        width:0; height:0;
-                        border-left:6px solid transparent;
-                        border-right:6px solid transparent;
-                        border-bottom:12px solid #00f5ff;
-                    "></div>
+                html: `<div style="width:28px; height:28px; background: radial-gradient(circle, #00f5ff, #0055ff); border-radius:50%; border:3px solid white; box-shadow:0 0 18px rgba(0,245,255,0.9); position:relative;">
+                    <div style="position:absolute; top:-10px; left:50%; transform:translateX(-50%) rotate(${heading}deg); width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:12px solid #00f5ff;"></div>
                 </div>`,
                 iconSize: [28, 28],
                 iconAnchor: [14, 14]
@@ -800,7 +793,6 @@ function onTrackingUpdate(pos) {
         }).addTo(map);
     }
 
-    // Auto‑rotation pour que le cap pointe vers le haut
     if (heading != null && !isNaN(heading) && heading !== 0) {
         lastHeading = heading;
         if (map.setBearing) {
@@ -808,10 +800,8 @@ function onTrackingUpdate(pos) {
         }
     }
 
-    // Centrage fluide
     map.flyTo([lat, lon], map.getZoom(), { animate: true, duration: 0.8 });
 
-    // Mise à jour panneau info
     document.getElementById('ti_lat').textContent = lat.toFixed(6) + '°';
     document.getElementById('ti_lon').textContent = lon.toFixed(6) + '°';
     document.getElementById('ti_speed').textContent = speed != null ? (speed * 3.6).toFixed(1) + ' km/h' : '0 km/h';
@@ -844,7 +834,7 @@ let tspCancelRequested = false;
 
 const tileLayers = {
     osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }),
-    googleSat: L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { attribution: '© Google Satellite', maxZoom: 20 })
+    googleSat: L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { attribution: '© Google Hybrid', maxZoom: 20 })
 };
 
 function setMapLayer(layerId) {
@@ -978,7 +968,6 @@ function startApp(user) {
     document.getElementById('dashboard').style.display = 'block';
     document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`;
     map = L.map('map', { zoomControl: false, rotate: true, touchRotate: true, rotateControl: false, bearing: 0 }).setView([20,10], 2);
-    // Rotation sur PC avec Shift
     map.dragging.rotateModifierKey = 'Shift';
     let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm';
     setMapLayer(savedLayer);
@@ -986,11 +975,67 @@ function startApp(user) {
     map.on('rotate', updateCompass);
     map.on('move', updateCompass);
     updateCompass();
-    map.on('click', e => { if(pickMode) { document.getElementById('newLat').value=e.latlng.lat.toFixed(6); document.getElementById('newLon').value=e.latlng.lng.toFixed(6); document.getElementById('pickMsg').textContent='✅ Coordonnées récupérées'; pickMode=false; map.getContainer().style.cursor=''; } });
+
+    // ========== NOUVEAU CLICK SUR CARTE AVEC POPUP INFORMATIONS ==========
+    map.on('click', async e => {
+        if (pickMode) {
+            document.getElementById('newLat').value = e.latlng.lat.toFixed(6);
+            document.getElementById('newLon').value = e.latlng.lng.toFixed(6);
+            document.getElementById('pickMsg').textContent = '✅ Coordonnées récupérées';
+            pickMode = false;
+            map.getContainer().style.cursor = '';
+            return;
+        }
+        let lat = e.latlng.lat, lon = e.latlng.lng;
+        let popup = L.popup().setLatLng(e.latlng).setContent('⏳ Chargement...').openOn(map);
+        try {
+            let resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`);
+            let data = await resp.json();
+            let name = data.name || (data.display_name ? data.display_name.split(',')[0] : 'Lieu inconnu');
+            let addr = data.address || {};
+            let city = addr.city || addr.town || addr.village || addr.county || '';
+            let country = addr.country || '';
+            let road = addr.road || addr.pedestrian || addr.suburb || '';
+            let gmapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+            let safeN = name.replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+            let safeC = country.replace(/'/g,"&#39;");
+            popup.setContent(`
+                <div style="min-width:200px; font-family:sans-serif;">
+                    <div style="font-weight:800; font-size:1rem; margin-bottom:4px;">📍 ${name}</div>
+                    ${road ? `<div style="font-size:0.82rem; color:#555;">🛣️ ${road}</div>` : ''}
+                    ${city ? `<div style="font-size:0.82rem; color:#555;">🏙️ ${city}</div>` : ''}
+                    ${country ? `<div style="font-size:0.82rem; color:#555;">🌍 ${country}</div>` : ''}
+                    <div style="font-size:0.75rem; color:#888; margin:4px 0;">📐 ${lat.toFixed(5)}, ${lon.toFixed(5)}</div>
+                    <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                        <button onclick="addCityToList({name:'${safeN}',lat:${lat},lon:${lon},country:'${safeC}',desc:'${road}'}); this.textContent='✅ Ajouté!';" 
+                            style="padding:4px 10px; background:#00f5ff; border:none; border-radius:20px; cursor:pointer; font-weight:700; font-size:0.78rem;">
+                            ➕ Ajouter
+                        </button>
+                        <button onclick="window.open('${gmapsUrl}','_blank')" 
+                            style="padding:4px 10px; background:#4285f4; color:white; border:none; border-radius:20px; cursor:pointer; font-weight:700; font-size:0.78rem;">
+                            🗺️ Google Maps
+                        </button>
+                    </div>
+                </div>
+            `);
+        } catch(e) {
+            popup.setContent('❌ Erreur de chargement');
+        }
+    });
+
     loadSelected();
     loadReminders();
     handleUrlLocation();
 }
+// Nouvelle fonction pour le tilt 3D
+let isTilted = false;
+function toggleTilt() {
+    isTilted = !isTilted;
+    document.getElementById('map').classList.toggle('tilted', isTilted);
+    document.getElementById('tiltBtn').classList.toggle('active', isTilted);
+}
+window.toggleTilt = toggleTilt;
+
 let pickMode = false;
 function addCustomCity() { let name=document.getElementById('newName').value.trim(), country=document.getElementById('newCountry').value.trim(), lat=parseFloat(document.getElementById('newLat').value), lon=parseFloat(document.getElementById('newLon').value), desc=document.getElementById('newDesc').value.trim(); if(!name||!country||isNaN(lat)||isNaN(lon)) { alert('Champs requis'); return; } addCityToList({ name, lat, lon, country, desc, custom:true }); document.getElementById('newName').value=''; document.getElementById('newCountry').value=''; document.getElementById('newLat').value=''; document.getElementById('newLon').value=''; document.getElementById('newDesc').value=''; document.getElementById('pickMsg').textContent=`✅ ${escapeHtml(name)} ajoutée`; }
 function startMapPick() { pickMode=true; map.getContainer().style.cursor='crosshair'; document.getElementById('pickMsg').innerHTML='🔘 Cliquez sur la carte <span class="cancel-pick" onclick="cancelPick()">Annuler</span>'; }
