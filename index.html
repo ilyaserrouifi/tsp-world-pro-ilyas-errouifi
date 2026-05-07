@@ -86,7 +86,7 @@
         .city-card:hover { background:rgba(0,245,255,0.08); border-color:rgba(0,245,255,0.3); }
         .selected-list { max-height:140px; overflow-y:auto; margin:8px 0; }
         .sel-item { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.04); border-radius:50px; padding:7px 14px; font-size:0.82rem; margin-bottom:4px; cursor:pointer; }
-        .place-detail-card { background: rgba(0,245,255,0.05); border-radius: 16px; padding: 12px; margin: 8px 0; border-left: 4px solid var(--cyan); }
+        .place-detail-card { background: rgba(0,245,255,0.05); border-radius: 16px; padding: 12px; margin: 8px 0; border-left: 4px solid var(--cyan); font-size:0.85rem; }
         .btn { padding:9px 16px; border:none; border-radius:50px; cursor:pointer; font-weight:600; font-family:'Space Grotesk',sans-serif; font-size:0.8rem; }
         .btn-primary { background:linear-gradient(135deg,var(--cyan),var(--cyan2)); color:#000; }
         .btn-secondary { background:rgba(255,255,255,0.07); color:var(--text); border:1px solid rgba(255,255,255,0.1); }
@@ -126,6 +126,63 @@
         #trackingInfo .ti-title { font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:800; color:#00f5ff; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
         .tracking-dot { width:10px; height:10px; background:#ff4466; border-radius:50%; animation:trackPulse 1s infinite; }
         #directionArrow { font-size:1.8rem; text-align:center; margin:6px 0 2px; display:block; transition: transform 0.5s ease; }
+        
+        /* ===== NOUVEAUX STYLES : POPUP GOOGLE MAPS STYLE + REDESIGN AJOUT VILLE ===== */
+        .place-popup {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%);
+            width: 420px;
+            max-width: 96vw;
+            z-index: 3000;
+            background: #0a0a1e;
+            border: 1px solid rgba(0,245,255,0.3);
+            border-bottom: none;
+            border-radius: 28px 28px 0 0;
+            overflow: hidden;
+            box-shadow: 0 -20px 60px rgba(0,0,0,0.9);
+            transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
+        }
+        .place-popup.visible { transform: translateX(-50%) translateY(0); }
+        .place-popup-img { width: 100%; height: 200px; object-fit: cover; display: block; background: linear-gradient(135deg, #0d0d2e, #0a1a3a); position: relative; }
+        .place-popup-img-container { position: relative; height: 200px; overflow: hidden; }
+        .place-popup-img-container::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, #0a0a1e 100%); pointer-events: none; }
+        .img-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg,#0d0d2e,#0a1a3a); color: var(--muted); font-size: 2.5rem; animation: imgPulse 1.5s infinite; }
+        @keyframes imgPulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+        .popup-handle { width: 40px; height: 4px; background: rgba(0,245,255,0.3); border-radius: 10px; margin: 12px auto 0; }
+        .place-popup-body { padding: 14px 20px 24px; }
+        .place-popup-name { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; line-height: 1.2; }
+        .place-popup-type { font-size: 0.78rem; color: var(--cyan); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .place-popup-desc { font-size: 0.82rem; color: rgba(200,210,255,0.75); line-height: 1.6; margin-bottom: 14px; max-height: 80px; overflow-y: auto; }
+        .place-popup-coords { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--muted); background: rgba(0,245,255,0.05); padding: 6px 12px; border-radius: 30px; margin-bottom: 14px; font-family: monospace; }
+        .place-popup-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .popup-action-btn { flex: 1; min-width: 80px; padding: 10px 8px; border: none; border-radius: 16px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s; }
+        .popup-action-btn .btn-icon { font-size: 1.3rem; }
+        .popup-action-btn.primary { background: linear-gradient(135deg,var(--cyan),var(--cyan2)); color: #000; }
+        .popup-action-btn.secondary { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid rgba(255,255,255,0.1); }
+        .popup-action-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+        .popup-action-btn.secondary:hover { background: rgba(0,245,255,0.1); border-color: var(--cyan); }
+        .popup-close { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; background: rgba(0,0,0,0.6); border: none; border-radius: 50%; color: #fff; font-size: 1rem; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .popup-weather { display: flex; align-items: center; gap: 8px; background: rgba(0,136,255,0.1); border: 1px solid rgba(0,136,255,0.2); border-radius: 12px; padding: 8px 12px; margin-bottom: 12px; font-size: 0.78rem; }
+        .popup-weather-temp { font-size: 1.2rem; font-weight: 700; color: var(--cyan); }
+
+        .add-city-redesign { background: rgba(0,0,0,0.3); border-radius: 20px; overflow: hidden; border: 1px solid rgba(0,245,255,0.1); }
+        .add-city-map-preview { height: 120px; background: linear-gradient(135deg,#0d1a2e,#0a0a1e); position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; overflow: hidden; }
+        .add-city-map-preview:hover { background: linear-gradient(135deg,#102040,#0d1030); }
+        .add-city-map-preview .preview-pin { font-size: 2.5rem; filter: drop-shadow(0 4px 12px rgba(0,245,255,0.5)); transition: transform 0.2s; }
+        .add-city-map-preview:hover .preview-pin { transform: translateY(-4px) scale(1.1); }
+        .add-city-map-preview .preview-label { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,245,255,0.15); border: 1px solid rgba(0,245,255,0.3); color: var(--cyan); font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+        .add-city-map-preview .coords-display { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: var(--muted); font-family: monospace; font-size: 0.65rem; padding: 3px 8px; border-radius: 8px; }
+        .add-city-fields { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+        .add-city-input { width: 100%; padding: 10px 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; transition: border-color 0.2s; }
+        .add-city-input:focus { outline: none; border-color: var(--cyan); background: rgba(0,245,255,0.04); }
+        .add-city-quick-btns { display: flex; gap: 6px; }
+        .add-city-quick-btn { flex: 1; padding: 8px 6px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: var(--muted); font-size: 0.72rem; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.2s; }
+        .add-city-quick-btn:hover { background: rgba(0,245,255,0.1); border-color: var(--cyan); color: var(--cyan); }
+        .add-city-confirm { width: 100%; padding: 12px; background: linear-gradient(135deg,var(--cyan),var(--cyan2)); border: none; border-radius: 12px; color: #000; font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .add-city-confirm:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,245,255,0.3); }
+        
         @media (max-width: 768px) {
             .dashboard { top: auto !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; max-width: 100% !important; max-height: 70vh; border-radius: 22px 22px 0 0 !important; border-bottom: none; transform: translateY(0) !important; transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); padding-top: 28px; }
             .dashboard::before { content: ''; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; background: rgba(0,245,255,0.4); border-radius: 10px; }
@@ -134,10 +191,10 @@
             #compass { width: 56px; height: 56px; bottom: 16px; right: 16px; }
             .map-switch { bottom: 16px; left: 16px; font-size: 0.75rem; padding: 6px 10px; }
             #trackingInfo { top: 60px; right: 8px; min-width: 150px; padding: 10px 12px; font-size: 0.75rem; border-radius: 14px; }
-            .field input, .search-input, .add-form input, .add-form textarea { padding: 13px 16px; font-size: 0.95rem; }
-            .city-card, .sel-item { padding: 11px 14px; min-height: 44px; }
+            .place-popup { width: 96vw; }
         }
-        /* INTRO ILIASS ERROUIFI */
+        
+        /* Intro splash existant conservé */
         #introSplash {
             position: fixed;
             inset: 0;
@@ -259,15 +316,82 @@
     </div>
     <div class="section"><div class="section-title">📍 Détails du lieu sélectionné</div><div id="placeDetails" class="place-detail-card"><span style="color:var(--muted);">Aucun lieu sélectionné</span></div></div>
     <div class="section"><div class="section-title">✅ Ma sélection — <span id="selCount">0</span> ville(s)</div><div class="selected-list" id="selectedList"></div><div class="btn-row"><button class="btn btn-danger" onclick="clearSelection()">🗑️ Vider</button><button class="btn btn-secondary" onclick="showMyLocation()">📍 Me localiser</button><button class="btn btn-primary" id="trackBtn" onclick="toggleTracking()">📡 Start Tracking</button><button class="btn btn-secondary" onclick="exportGeoJSON()">📤 Exporter GeoJSON</button><button class="btn btn-secondary" onclick="shareCurrentLocation()">🔗 Partager ma position</button><button class="btn btn-secondary" onclick="openShareQR()">📱 QR Position</button></div></div>
+    
+    <!-- REDESIGN AJOUTER VILLE -->
+    <div class="section">
+        <div class="section-title">📍 Ajouter un lieu</div>
+        <div class="add-city-redesign">
+            <div class="add-city-map-preview" id="mapPickPreview" onclick="startMapPick()">
+                <div class="preview-pin">📍</div>
+                <div class="preview-label">🖱️ Cliquer sur la carte</div>
+                <div class="coords-display" id="coordsDisplay">-- , --</div>
+            </div>
+            <div class="add-city-fields">
+                <input id="newName" class="add-city-input" placeholder="🏙️ Nom du lieu">
+                <input id="newCountry" class="add-city-input" placeholder="🌍 Pays (optionnel)">
+                <div style="display:flex;gap:8px;">
+                    <input id="newLat" class="add-city-input" placeholder="Lat" style="flex:1;">
+                    <input id="newLon" class="add-city-input" placeholder="Lon" style="flex:1;">
+                </div>
+                <div class="add-city-quick-btns">
+                    <div class="add-city-quick-btn" onclick="startMapPick()">🗺️ Carte</div>
+                    <div class="add-city-quick-btn" onclick="useGeoloc()">📡 GPS</div>
+                    <div class="add-city-quick-btn" onclick="searchAndFillCoords()">🔍 Rechercher</div>
+                </div>
+                <button class="add-city-confirm" onclick="addCustomCity()">
+                    <span>✅</span> Ajouter au trajet
+                </button>
+            </div>
+        </div>
+        <div id="pickMsg" style="font-size:0.75rem;color:var(--cyan);text-align:center;margin-top:6px;"></div>
+    </div>
+    
     <div class="section"><div class="section-title">☕ Export Java (coordonnées)</div><div class="java-export"><button class="btn btn-primary" onclick="generateJavaCode()" style="width:100%; margin-bottom:8px;">🔁 Générer le tableau Java</button><textarea id="javaCodeArea" rows="6" readonly placeholder="Cliquez sur 'Générer' pour obtenir un tableau double[][] utilisable dans votre code Java."></textarea><button class="btn btn-secondary" onclick="copyJavaCode()" style="margin-top:6px;">📋 Copier</button></div></div>
     <div class="section"><div class="section-title">🎯 Paramètres TSP</div><div class="tsp-params"><span>Max villes :</span><input type="number" id="maxCities" value="8" min="2" max="35"><span>Départ :</span><select id="startCitySelect"></select><span>Transport :</span><select id="transportMode"><option value="car">🚗 Voiture</option><option value="foot">🚶 Piéton</option><option value="plane">✈️ Avion</option></select><span>Algorithme :</span><select id="algoSelect"><option value="nn">Plus proche voisin</option><option value="2opt">2-opt</option></select></div><div class="btn-row"><button class="btn btn-primary" onclick="computeTSP()">🚀 Lancer le TSP</button><button class="btn btn-secondary" id="cancelTSPBtn" onclick="cancelTSP()" style="display:none;">❌ Annuler</button></div><div class="route-loading" id="routeLoading" style="display:none;">⏳ Calcul...</div></div>
-    <div class="section"><div class="section-title">➕ Ajouter une ville personnalisée</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
     <div class="footer">🌐 Routage OSRM · TSP · Export Java · Rappels · Tracking pro · Points lumineux · QR avec logo · Scanner direct depuis recherche</div>
 </div>
 
+<!-- PLACE POPUP (Google Maps style) -->
+<div class="place-popup" id="placePopup">
+    <button class="popup-close" onclick="closePlacePopup()">✕</button>
+    <div class="popup-handle"></div>
+    <div class="place-popup-img-container" id="popupImgContainer">
+        <div class="img-loading" id="popupImgLoading">🌍</div>
+        <img id="popupImg" class="place-popup-img" style="display:none;" alt="">
+    </div>
+    <div class="place-popup-body">
+        <div class="place-popup-name" id="popupName">—</div>
+        <div class="place-popup-type" id="popupType">📍 Lieu</div>
+        <div class="place-popup-coords" id="popupCoords">📌 — , —</div>
+        <div class="place-popup-desc" id="popupDesc">Chargement des informations...</div>
+        <div class="popup-weather" id="popupWeather" style="display:none;">
+            <span style="font-size:1.4rem;" id="weatherIcon">🌤️</span>
+            <div>
+                <div class="popup-weather-temp" id="weatherTemp">--°</div>
+                <div style="font-size:0.7rem;color:var(--muted)" id="weatherDesc">—</div>
+            </div>
+            <div style="margin-left:auto;font-size:0.72rem;color:var(--muted);" id="weatherExtra"></div>
+        </div>
+        <div class="place-popup-actions">
+            <button class="popup-action-btn primary" onclick="addPopupCityToList()">
+                <span class="btn-icon">➕</span> Ajouter
+            </button>
+            <button class="popup-action-btn secondary" onclick="goDirections()">
+                <span class="btn-icon">🧭</span> Itinéraire
+            </button>
+            <button class="popup-action-btn secondary" onclick="openInMaps()">
+                <span class="btn-icon">🗺️</span> Maps
+            </button>
+            <button class="popup-action-btn secondary" onclick="sharePlace()">
+                <span class="btn-icon">📤</span> Partager
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
-// ==================== FONCTIONS PRINCIPALES (AUTH, TSP, TRACKING, ETC.) ====================
+// ==================== FONCTIONS EXISTANTES CONSERVÉES ====================
 let selectedCities = [], nextCityId = 1, selectionMarkers = [];
 let map, currentTileLayer, routeLayer, routeMarkers = [], tspCancelRequested = false;
 let isTracking = false, watchId = null, trackingPoints = [], trackingPolyline = null, myLocationMarker = null, lastHeading = 0;
@@ -357,12 +481,51 @@ function showConfirm(u) { pendingUser = u; document.getElementById('cf_username'
 function finalizeLogin() { localStorage.setItem('tsp_session', JSON.stringify(pendingUser)); document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('confirmOverlay').classList.add('hidden'); startApp(pendingUser); }
 function logout() { localStorage.removeItem('tsp_session'); location.reload(); }
 
-function startApp(user) { document.getElementById('dashboard').style.display = 'block'; document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`; map = L.map('map', { zoomControl: false, rotate: true, touchRotate: true, bearing: 0 }).setView([20,10], 2); if (window.devicePixelRatio > 1) { map.options.zoomSnap = 0.5; } map.dragging.rotateModifierKey = 'Shift'; let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm'; setMapLayer(savedLayer); L.control.zoom({ position: 'bottomright' }).addTo(map); map.on('rotate', updateCompass); map.on('move', updateCompass); updateCompass(); map.on('click', async e => { if (pickMode) { document.getElementById('newLat').value = e.latlng.lat.toFixed(6); document.getElementById('newLon').value = e.latlng.lng.toFixed(6); document.getElementById('pickMsg').textContent = '✅ Coordonnées récupérées'; pickMode = false; map.getContainer().style.cursor = ''; return; } let lat = e.latlng.lat, lon = e.latlng.lng; let popup = L.popup().setLatLng(e.latlng).setContent('⏳ Chargement...').openOn(map); try { let resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`); let data = await resp.json(); let name = data.name || (data.display_name ? data.display_name.split(',')[0] : 'Lieu'); let addr = data.address || {}; let country = addr.country || ''; let road = addr.road || ''; let safeN = name.replace(/'/g,"&#39;"); let safeC = country.replace(/'/g,"&#39;"); popup.setContent(`<div><b>📍 ${name}</b><br>${road?`🛣️ ${road}<br>`:''}${country?`🌍 ${country}<br>`:''}<button onclick="addCityToList({name:'${safeN}',lat:${lat},lon:${lon},country:'${safeC}',desc:'${road}'})">➕ Ajouter</button> <a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank">🗺️ Maps</a></div>`); } catch(e) { popup.setContent('❌ Erreur'); } }); loadSelected(); loadReminders(); handleUrlLocation(); }
+function startApp(user) { 
+    document.getElementById('dashboard').style.display = 'block'; 
+    document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`; 
+    map = L.map('map', { zoomControl: false, rotate: true, touchRotate: true, bearing: 0 }).setView([20,10], 2); 
+    if (window.devicePixelRatio > 1) { map.options.zoomSnap = 0.5; } 
+    map.dragging.rotateModifierKey = 'Shift'; 
+    let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm'; 
+    setMapLayer(savedLayer); 
+    L.control.zoom({ position: 'bottomright' }).addTo(map); 
+    map.on('rotate', updateCompass); 
+    map.on('move', updateCompass); 
+    updateCompass(); 
+    
+    // NOUVEAU GESTIONNAIRE CLIC CARTE : popup style Google Maps (sauf si pickMode actif)
+    map.on('click', async function(e) {
+        if (pickMode) {
+            document.getElementById('newLat').value = e.latlng.lat.toFixed(6);
+            document.getElementById('newLon').value = e.latlng.lng.toFixed(6);
+            document.getElementById('coordsDisplay').innerText = e.latlng.lat.toFixed(4) + ' , ' + e.latlng.lng.toFixed(4);
+            pickMode = false;
+            map.getContainer().style.cursor = '';
+            document.getElementById('pickMsg').innerText = '✅ Position sélectionnée !';
+            setTimeout(() => document.getElementById('pickMsg').innerText = '', 3000);
+            return;
+        }
+        openPlacePopup(e.latlng.lat, e.latlng.lng);
+    });
+    
+    loadSelected(); 
+    loadReminders(); 
+    handleUrlLocation(); 
+}
 function toggleTilt() { isTilted = !isTilted; document.getElementById('map').classList.toggle('tilted', isTilted); document.getElementById('tiltBtn').classList.toggle('active', isTilted); }
-function addCustomCity() { let name=document.getElementById('newName').value.trim(), country=document.getElementById('newCountry').value.trim(), lat=parseFloat(document.getElementById('newLat').value), lon=parseFloat(document.getElementById('newLon').value), desc=document.getElementById('newDesc').value.trim(); if(!name||!country||isNaN(lat)||isNaN(lon)) { alert('Champs requis'); return; } addCityToList({ name, lat, lon, country, desc, custom:true }); document.getElementById('newName').value=''; document.getElementById('newCountry').value=''; document.getElementById('newLat').value=''; document.getElementById('newLon').value=''; document.getElementById('newDesc').value=''; document.getElementById('pickMsg').textContent=`✅ ${escapeHtml(name)} ajoutée`; }
+function addCustomCity() { 
+    let name=document.getElementById('newName').value.trim(), country=document.getElementById('newCountry').value.trim(), lat=parseFloat(document.getElementById('newLat').value), lon=parseFloat(document.getElementById('newLon').value), desc=document.getElementById('newDesc')?.value.trim() || ''; 
+    if(!name||isNaN(lat)||isNaN(lon)) { alert('Nom et coordonnées requis'); return; } 
+    addCityToList({ name, lat, lon, country, desc, custom:true }); 
+    document.getElementById('newName').value=''; document.getElementById('newCountry').value=''; document.getElementById('newLat').value=''; document.getElementById('newLon').value=''; 
+    document.getElementById('coordsDisplay').innerText = '-- , --';
+    document.getElementById('pickMsg').innerHTML=`✅ ${escapeHtml(name)} ajoutée`; 
+    setTimeout(() => document.getElementById('pickMsg').innerHTML = '', 3000);
+}
 function startMapPick() { pickMode=true; map.getContainer().style.cursor='crosshair'; document.getElementById('pickMsg').innerHTML='🔘 Cliquez sur la carte <span onclick="cancelPick()">Annuler</span>'; }
 function cancelPick() { pickMode=false; map.getContainer().style.cursor=''; document.getElementById('pickMsg').innerHTML=''; }
-function useGeoloc() { requestGeolocationWithHelp(pos => { document.getElementById('newLat').value=pos.coords.latitude.toFixed(6); document.getElementById('newLon').value=pos.coords.longitude.toFixed(6); document.getElementById('pickMsg').textContent='📍 GPS récupéré'; }, ()=>alert("GPS refusé")); }
+function useGeoloc() { requestGeolocationWithHelp(pos => { document.getElementById('newLat').value=pos.coords.latitude.toFixed(6); document.getElementById('newLon').value=pos.coords.longitude.toFixed(6); document.getElementById('coordsDisplay').innerText = pos.coords.latitude.toFixed(4)+' , '+pos.coords.longitude.toFixed(4); document.getElementById('pickMsg').textContent='📍 GPS récupéré'; }, ()=>alert("GPS refusé")); }
 function exportGeoJSON() { let features = []; selectedCities.forEach(city => { features.push({ type:"Feature", geometry:{ type:"Point", coordinates:[city.lon,city.lat] }, properties:{ name:city.name, country:city.country } }); }); if(routeLayer && routeLayer.getLatLngs && routeLayer.getLatLngs().length) { let coords = routeLayer.getLatLngs().map(c => [c.lng, c.lat]); features.push({ type:"Feature", geometry:{ type:"LineString", coordinates:coords }, properties:{ name:"Itinéraire TSP" } }); } let geojson = { type:"FeatureCollection", features }; let blob = new Blob([JSON.stringify(geojson,null,2)], {type:"application/json"}); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "tsp.geojson"; a.click(); URL.revokeObjectURL(url); }
 function twoOpt(tour) { let improved=true, bestDist=totalDistance(tour); while(improved && !tspCancelRequested){ improved=false; for(let i=1;i<tour.length-2;i++){ for(let j=i+1;j<tour.length-1;j++){ if(tspCancelRequested) return tour; let newTour = [...tour.slice(0,i), ...tour.slice(i,j+1).reverse(), ...tour.slice(j+1)]; let newDist=totalDistance(newTour); if(newDist<bestDist-0.001){ bestDist=newDist; tour=newTour; improved=true; } } } } return tour; }
 function tspNN(cities,startIdx) { if(cities.length<2) return [[],0]; let unvisited=[...cities]; let start=unvisited.splice(startIdx,1)[0]; let tour=[start], current=start, total=0; while(unvisited.length){ let bestIdx=0, bestDist=haversine(current.lat,current.lon,unvisited[0].lat,unvisited[0].lon); for(let i=1;i<unvisited.length;i++){ let d=haversine(current.lat,current.lon,unvisited[i].lat,unvisited[i].lon); if(d<bestDist){bestDist=d;bestIdx=i;}} total+=bestDist; current=unvisited[bestIdx]; tour.push(current); unvisited.splice(bestIdx,1); } total+=haversine(current.lat,current.lon,start.lat,start.lon); tour.push(start); return [tour,total]; }
@@ -374,8 +537,154 @@ function cancelTSP() { tspCancelRequested = true; }
 function generateJavaCode() { if (!selectedCities.length) { document.getElementById('javaCodeArea').value = "// Aucune ville"; return; } let coordsArray = selectedCities.map(c => `    {${c.lat}, ${c.lon}}`).join(",\n"); document.getElementById('javaCodeArea').value = `public class TSPCoords {\n    public static double[][] getCoordinates() {\n        return new double[][] {\n${coordsArray}\n        };\n    }\n}`; }
 function copyJavaCode() { let ta = document.getElementById('javaCodeArea'); ta.select(); document.execCommand('copy'); alert("Code Java copié !"); }
 
-// ==================== FONCTIONS QR SPÉCIALES POUR LA RECHERCHE ====================
-function decodeQRAndAddLocation(file, mode='file') { return new Promise((resolve, reject) => { let img = new Image(); img.onload = () => { let canvas = document.createElement('canvas'); canvas.width = img.width; canvas.height = img.height; let ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0); let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height); function run() { if (!window.jsQR) { let script = document.createElement('script'); script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js'; script.onload = () => { let code = jsQR(imageData.data, imageData.width, imageData.height); code ? resolve(code.data) : reject("Aucun QR"); }; document.head.appendChild(script); } else { let code = jsQR(imageData.data, imageData.width, imageData.height); code ? resolve(code.data) : reject("Aucun QR"); } } run(); }; img.onerror = () => reject("Impossible de charger"); if (mode==='file' && file instanceof File) img.src = URL.createObjectURL(file); else img.src = file; }); }
+// ==================== NOUVELLES FONCTIONS : POPUP GOOGLE MAPS STYLE ====================
+let popupCurrentLat = 0, popupCurrentLng = 0, popupCurrentName = '';
+
+async function openPlacePopup(lat, lng) {
+    popupCurrentLat = lat;
+    popupCurrentLng = lng;
+    document.getElementById('popupName').innerText = 'Chargement...';
+    document.getElementById('popupType').innerText = '📍 Lieu';
+    document.getElementById('popupDesc').innerText = 'Récupération des données...';
+    document.getElementById('popupCoords').innerHTML = `📌 ${lat.toFixed(5)} , ${lng.toFixed(5)}`;
+    document.getElementById('popupImg').style.display = 'none';
+    document.getElementById('popupImgLoading').style.display = 'flex';
+    document.getElementById('popupWeather').style.display = 'none';
+    document.getElementById('placePopup').classList.add('visible');
+
+    try {
+        const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&extratags=1&zoom=16`, { headers: { 'Accept-Language': 'fr' } });
+        const geo = await geoRes.json();
+        const name = geo.name || geo.address?.city || geo.address?.town || geo.address?.village || geo.address?.county || 'Lieu inconnu';
+        popupCurrentName = name;
+        document.getElementById('popupName').innerText = name;
+        const typeMap = { city:'🏙️ Ville', town:'🏘️ Commune', village:'🏡 Village', hamlet:'🏚️ Hameau', suburb:'🏙️ Quartier', neighbourhood:'🏙️ Quartier', road:'🛣️ Route', motorway:'🛣️ Autoroute', peak:'⛰️ Sommet', water:'🌊 Plan d\'eau', forest:'🌲 Forêt', park:'🌳 Parc', airport:'✈️ Aéroport', station:'🚉 Gare', hotel:'🏨 Hôtel', restaurant:'🍽️ Restaurant', museum:'🏛️ Musée', hospital:'🏥 Hôpital' };
+        const osm_type = geo.type || geo.class || 'place';
+        const typeLabel = typeMap[osm_type] || `📍 ${osm_type.charAt(0).toUpperCase() + osm_type.slice(1)}`;
+        document.getElementById('popupType').innerText = typeLabel;
+        const addrParts = [geo.address?.road, geo.address?.suburb, geo.address?.city || geo.address?.town || geo.address?.village, geo.address?.country].filter(Boolean);
+        document.getElementById('popupDesc').innerText = addrParts.join(', ') || geo.display_name || '—';
+        if (name && name.length > 2) fetchWikiInfo(name);
+        fetchPlaceImage(name, lat, lng);
+        fetchMiniWeather(lat, lng);
+    } catch(e) { 
+        document.getElementById('popupName').innerText = 'Lieu inconnu';
+        document.getElementById('popupDesc').innerText = `📌 ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        popupCurrentName = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+        fetchPlaceImage('landscape nature', lat, lng);
+    }
+}
+
+async function fetchWikiInfo(name) {
+    try {
+        const searchRes = await fetch(`https://fr.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`);
+        if (!searchRes.ok) throw new Error();
+        const wiki = await searchRes.json();
+        if (wiki.extract && wiki.extract.length > 20) document.getElementById('popupDesc').innerText = wiki.extract.slice(0, 200) + (wiki.extract.length > 200 ? '...' : '');
+    } catch(e) {}
+}
+
+async function fetchPlaceImage(name, lat, lng) {
+    const imgEl = document.getElementById('popupImg');
+    const loadEl = document.getElementById('popupImgLoading');
+    const sources = [
+        async () => { const res = await fetch(`https://fr.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`); const data = await res.json(); return data.thumbnail?.source || data.originalimage?.source; },
+        async () => `https://source.unsplash.com/600x300/?${encodeURIComponent(name + ' landmark travel')}`,
+        async () => { const seed = Math.abs(Math.round(lat * 100 + lng * 100)) % 1000; return `https://picsum.photos/seed/${seed}/600/300`; }
+    ];
+    for (const src of sources) {
+        try {
+            const url = await src();
+            if (!url) continue;
+            await new Promise((resolve, reject) => { const testImg = new Image(); testImg.onload = resolve; testImg.onerror = reject; testImg.src = url; setTimeout(reject, 5000); });
+            imgEl.src = url;
+            imgEl.style.display = 'block';
+            loadEl.style.display = 'none';
+            return;
+        } catch(e) { continue; }
+    }
+    loadEl.innerText = getPlaceEmoji(name);
+    loadEl.style.animation = 'none';
+    loadEl.style.fontSize = '4rem';
+    loadEl.style.opacity = '0.7';
+}
+
+function getPlaceEmoji(name) {
+    const n = name.toLowerCase();
+    if (n.includes('paris') || n.includes('tour')) return '🗼';
+    if (n.includes('mer') || n.includes('beach') || n.includes('ocean')) return '🌊';
+    if (n.includes('mont') || n.includes('mountain') || n.includes('peak')) return '⛰️';
+    if (n.includes('forêt') || n.includes('forest')) return '🌲';
+    if (n.includes('desert') || n.includes('sahara')) return '🏜️';
+    if (n.includes('maroc') || n.includes('morocco') || n.includes('rabat') || n.includes('casablanca')) return '🕌';
+    if (n.includes('airport') || n.includes('aéroport')) return '✈️';
+    return '🌍';
+}
+
+async function fetchMiniWeather(lat, lng) {
+    try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code,wind_speed_10m&wind_speed_unit=kmh`);
+        const data = await res.json();
+        const temp = data.current?.temperature_2m;
+        const code = data.current?.weather_code;
+        const wind = data.current?.wind_speed_10m;
+        if (temp === undefined) return;
+        const weatherIcons = { 0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌧️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'❄️',73:'❄️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️' };
+        document.getElementById('weatherIcon').innerText = weatherIcons[code] || '🌡️';
+        document.getElementById('weatherTemp').innerText = `${Math.round(temp)}°C`;
+        document.getElementById('weatherDesc').innerText = getWeatherDesc(code);
+        document.getElementById('weatherExtra').innerHTML = `💨 ${wind} km/h`;
+        document.getElementById('popupWeather').style.display = 'flex';
+    } catch(e) {}
+}
+
+function getWeatherDesc(code) {
+    if (code === 0) return 'Ciel dégagé';
+    if (code <= 3) return 'Partiellement nuageux';
+    if (code <= 48) return 'Brouillard';
+    if (code <= 67) return 'Pluie';
+    if (code <= 77) return 'Neige';
+    if (code <= 82) return 'Averses';
+    return 'Orage';
+}
+
+function closePlacePopup() { document.getElementById('placePopup').classList.remove('visible'); }
+function addPopupCityToList() {
+    if (!popupCurrentName) return;
+    addCityToList({ name: popupCurrentName, lat: popupCurrentLat, lon: popupCurrentLng, country: '' });
+    const btn = document.querySelector('.popup-action-btn.primary');
+    btn.innerHTML = '<span class="btn-icon">✅</span> Ajouté !';
+    btn.style.background = 'linear-gradient(135deg,#00ffaa,#00cc88)';
+    setTimeout(() => { btn.innerHTML = '<span class="btn-icon">➕</span> Ajouter'; btn.style.background = ''; }, 2000);
+}
+function goDirections() {
+    if (!popupCurrentName) return;
+    if (!myLocationMarker) { showMyLocation(); setTimeout(() => goDirections(), 2000); return; }
+    const myPos = myLocationMarker.getLatLng();
+    addPopupCityToList();
+    closePlacePopup();
+    alert('Lieu ajouté ! Lance le TSP pour calculer l\'itinéraire. 🗺️');
+}
+function openInMaps() { window.open(`https://www.google.com/maps?q=${popupCurrentLat},${popupCurrentLng}`, '_blank'); }
+function sharePlace() { const url = `https://www.google.com/maps?q=${popupCurrentLat},${popupCurrentLng}`; if (navigator.share) navigator.share({ title: popupCurrentName, url }); else { navigator.clipboard.writeText(url); alert('Lien copié ! 📋'); } }
+function searchAndFillCoords() {
+    const name = document.getElementById('newName').value.trim();
+    if (!name) { alert('Écris le nom d\'abord'); return; }
+    fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=json&limit=1`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.length) {
+                document.getElementById('newLat').value = parseFloat(data[0].lat).toFixed(6);
+                document.getElementById('newLon').value = parseFloat(data[0].lon).toFixed(6);
+                document.getElementById('coordsDisplay').innerText = parseFloat(data[0].lat).toFixed(4) + ' , ' + parseFloat(data[0].lon).toFixed(4);
+                map.flyTo([data[0].lat, data[0].lon], 13);
+                document.getElementById('pickMsg').innerText = `✅ Trouvé: ${data[0].display_name.split(',')[0]}`;
+            } else { document.getElementById('pickMsg').innerText = '❌ Lieu non trouvé'; }
+        });
+}
+
+// ==================== FONCTIONS QR EXISTANTES ====================
+async function decodeQRAndAddLocation(file, mode='file') { return new Promise((resolve, reject) => { let img = new Image(); img.onload = () => { let canvas = document.createElement('canvas'); canvas.width = img.width; canvas.height = img.height; let ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0); let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height); function run() { if (!window.jsQR) { let script = document.createElement('script'); script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js'; script.onload = () => { let code = jsQR(imageData.data, imageData.width, imageData.height); code ? resolve(code.data) : reject("Aucun QR"); }; document.head.appendChild(script); } else { let code = jsQR(imageData.data, imageData.width, imageData.height); code ? resolve(code.data) : reject("Aucun QR"); } } run(); }; img.onerror = () => reject("Impossible de charger"); if (mode==='file' && file instanceof File) img.src = URL.createObjectURL(file); else img.src = file; }); }
 function processQRUrl(url) { try { let urlObj = new URL(url); let lat = parseFloat(urlObj.searchParams.get('lat')); let lon = parseFloat(urlObj.searchParams.get('lon')); let name = urlObj.searchParams.get('name') || `Position scannée (${lat.toFixed(4)}, ${lon.toFixed(4)})`; if (isNaN(lat) || isNaN(lon)) throw new Error(); addCityToList({ name: decodeURIComponent(name), lat, lon, country: "QR scanné", desc: "Lu par QR" }); map.flyTo([lat, lon], 14); alert(`✅ ${name} ajouté`); } catch(e) { alert("QR invalide (lat/lon manquants)"); } }
 async function scanQRFromFileSearch(event) { let file = event.target.files[0]; if (!file) return; try { let result = await decodeQRAndAddLocation(file, 'file'); processQRUrl(result); } catch(e) { alert("Impossible de lire le QR : " + e.message); } event.target.value = ''; }
 async function pasteQRToSearch() { try { const items = await navigator.clipboard.read(); for (let item of items) { let imageType = item.types.find(t => t.startsWith('image/')); if (imageType) { let blob = await item.getType(imageType); let file = new File([blob], 'paste.png', { type: imageType }); let result = await decodeQRAndAddLocation(file, 'file'); processQRUrl(result); return; } } alert("Aucune image dans le presse-papiers"); } catch(e) { alert("Accès au presse-papiers refusé"); } }
@@ -386,6 +695,7 @@ function shareQRNative() { if (!lastQrUrl) return; if (navigator.share) navigato
 async function scanQRFromFileAuto(event) { scanQRFromFileSearch(event); }
 async function pasteQRFromClipboard() { pasteQRToSearch(); }
 
+// Liaison globale
 window.selectSearchResult = selectSearchResult;
 window.switchTab = function(t) { document.getElementById('loginForm').style.display = t === 'login' ? 'block' : 'none'; document.getElementById('registerForm').style.display = t === 'register' ? 'block' : 'none'; document.getElementById('tabLogin').classList.toggle('active', t === 'login'); document.getElementById('tabReg').classList.toggle('active', t === 'register'); };
 window.doLogin = doLogin; window.doRegister = doRegister; window.finalizeLogin = finalizeLogin; window.logout = logout;
@@ -399,8 +709,9 @@ window.copyQRImage = copyQRImage; window.downloadQR = downloadQR; window.openQRS
 window.scanQRFromFile = scanQRFromFile; window.openQRScannerForSearch = openQRScannerForSearch; window.scanQRFromFileSearch = scanQRFromFileSearch;
 window.pasteQRToSearch = pasteQRToSearch; window.openShareQR = openShareQR; window.copyQRLink = copyQRLink; window.shareQRNative = shareQRNative;
 window.scanQRFromFileAuto = scanQRFromFileAuto; window.pasteQRFromClipboard = pasteQRFromClipboard;
+window.closePlacePopup = closePlacePopup; window.addPopupCityToList = addPopupCityToList; window.goDirections = goDirections; window.openInMaps = openInMaps; window.sharePlace = sharePlace; window.searchAndFillCoords = searchAndFillCoords;
 
-// Démarrage : intro 5s, splash TSP 5s
+// Démarrage des splashs
 document.addEventListener('DOMContentLoaded', () => {
     const intro = document.getElementById('introSplash');
     const splash = document.getElementById('splashScreen');
