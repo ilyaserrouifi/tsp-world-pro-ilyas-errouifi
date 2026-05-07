@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-60BN38BEQ0"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -34,36 +33,12 @@
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
-        #map { 
-            position:absolute; 
-            inset:0; 
-            z-index:1; 
-            transition: transform 0.4s ease;
-            transform-origin: center bottom;
-            image-rendering: -webkit-optimize-contrast;
-            -webkit-font-smoothing: antialiased;
-        }
-        #map.tilted {
-            transform: perspective(800px) rotateX(35deg) scale(1.15);
-        }
-        canvas {
-            image-rendering: -webkit-optimize-contrast;
-        }
+        #map { position:absolute; inset:0; z-index:1; transition: transform 0.4s ease; transform-origin: center bottom; }
+        #map.tilted { transform: perspective(800px) rotateX(35deg) scale(1.15); }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 10px; }
-        
-        .splash {
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle at center, #0a0a1a, #020208);
-            z-index: 20000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.8s ease;
-            font-family: 'Syne', sans-serif;
-        }
+        .splash { position: fixed; inset: 0; background: radial-gradient(circle at center, #0a0a1a, #020208); z-index: 20000; display: flex; align-items: center; justify-content: center; transition: opacity 0.8s ease; font-family: 'Syne', sans-serif; }
         .splash.hidden { opacity: 0; pointer-events: none; }
         .splash-content { text-align: center; animation: fadeInScale 0.6s cubic-bezier(0.16,1,0.3,1); }
         @keyframes fadeInScale { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
@@ -71,7 +46,6 @@
         .splash-logo { font-size:5rem; background:linear-gradient(135deg,var(--cyan),var(--cyan2),#00ffaa); -webkit-background-clip:text; background-clip:text; color:transparent; }
         .splash-title { font-size:2rem; font-weight:800; background:linear-gradient(135deg,var(--cyan),var(--cyan2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
         .splash-sub { font-size:0.9rem; color:var(--muted); margin-top:0.5rem; }
-        
         .overlay { position: fixed; inset: 0; background: rgba(4,4,18,0.96); backdrop-filter: blur(20px); z-index: 10000; display: flex; align-items: center; justify-content: center; transition: opacity 0.4s ease; }
         .overlay.hidden { opacity:0; pointer-events:none; }
         .auth-card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 28px; padding: 36px 32px; width: 460px; max-width: 92vw; box-shadow: 0 0 80px rgba(0,245,255,0.1); animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1); }
@@ -135,162 +109,35 @@
         .reminder-msg { flex: 1; font-size: 0.8rem; }
         .reminder-del { cursor: pointer; background: none; border: none; color: #ff8888; font-size: 1rem; }
         .map-switch { position: fixed; bottom: 20px; left: 20px; z-index: 1001; background: var(--surface); border: 1px solid var(--cyan); border-radius: 40px; padding: 6px 12px; cursor: pointer; font-size: 0.8rem; backdrop-filter: blur(8px); color: var(--cyan); }
-        #tiltBtn {
-            position: fixed;
-            bottom: 60px;
-            left: 20px;
-            z-index: 1001;
-            background: var(--surface);
-            border: 1px solid var(--cyan);
-            border-radius: 40px;
-            padding: 6px 14px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            backdrop-filter: blur(8px);
-            color: var(--cyan);
-            transition: all 0.2s;
-        }
-        #tiltBtn.active {
-            background: var(--cyan);
-            color: #000;
-            font-weight: 700;
-        }
+        #tiltBtn { position: fixed; bottom: 60px; left: 20px; z-index: 1001; background: var(--surface); border: 1px solid var(--cyan); border-radius: 40px; padding: 6px 14px; cursor: pointer; font-size: 0.8rem; backdrop-filter: blur(8px); color: var(--cyan); transition: all 0.2s; }
+        #tiltBtn.active { background: var(--cyan); color: #000; font-weight: 700; }
         @media (max-width: 700px) { .dashboard { width: 380px; } }
         .gps-warning { background: rgba(255,170,0,0.2); border-left: 3px solid var(--warning); padding: 6px 12px; border-radius: 12px; margin-bottom: 12px; font-size: 0.7rem; }
-        #compass {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 80px;
-            height: 80px;
-            z-index: 1002;
-            cursor: pointer;
-            user-select: none;
-            filter: drop-shadow(0 0 12px rgba(0,245,255,0.5));
-        }
+        #compass { position: fixed; bottom: 80px; right: 20px; width: 80px; height: 80px; z-index: 1002; cursor: pointer; user-select: none; filter: drop-shadow(0 0 12px rgba(0,245,255,0.5)); }
         #compass:hover { filter: drop-shadow(0 0 22px rgba(0,245,255,0.9)); }
         #compassLabel { text-align: center; font-size: 0.65rem; color: #00f5ff; margin-top: 2px; }
         #trackBtn { transition: all 0.3s ease; }
-        #trackBtn.tracking {
-            background: linear-gradient(135deg, #ff4466, #ff0033) !important;
-            box-shadow: 0 0 20px rgba(255,50,80,0.6);
-            animation: trackPulse 1.2s infinite;
-            color: white;
-        }
-        @keyframes trackPulse {
-            0%,100% { box-shadow: 0 0 20px rgba(255,50,80,0.5); }
-            50%      { box-shadow: 0 0 40px rgba(255,50,80,1); }
-        }
-        #trackingInfo {
-            position: fixed;
-            top: 16px; right: 16px;
-            z-index: 1003;
-            background: rgba(7,7,20,0.92);
-            border: 1px solid rgba(0,245,255,0.5);
-            border-radius: 20px;
-            padding: 14px 18px;
-            min-width: 200px;
-            backdrop-filter: blur(16px);
-            display: none;
-            animation: slideInRight 0.4s cubic-bezier(0.16,1,0.3,1);
-        }
-        @keyframes slideInRight {
-            from { opacity:0; transform:translateX(30px); }
-            to   { opacity:1; transform:translateX(0); }
-        }
-        #trackingInfo .ti-row {
-            display:flex; justify-content:space-between; align-items:center;
-            padding:4px 0; font-size:0.82rem;
-            border-bottom:1px solid rgba(255,255,255,0.05);
-        }
+        #trackBtn.tracking { background: linear-gradient(135deg, #ff4466, #ff0033) !important; box-shadow: 0 0 20px rgba(255,50,80,0.6); animation: trackPulse 1.2s infinite; color: white; }
+        @keyframes trackPulse { 0%,100% { box-shadow: 0 0 20px rgba(255,50,80,0.5); } 50% { box-shadow: 0 0 40px rgba(255,50,80,1); } }
+        #trackingInfo { position: fixed; top: 16px; right: 16px; z-index: 1003; background: rgba(7,7,20,0.92); border: 1px solid rgba(0,245,255,0.5); border-radius: 20px; padding: 14px 18px; min-width: 200px; backdrop-filter: blur(16px); display: none; animation: slideInRight 0.4s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes slideInRight { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:translateX(0); } }
+        #trackingInfo .ti-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; font-size:0.82rem; border-bottom:1px solid rgba(255,255,255,0.05); }
         #trackingInfo .ti-val { font-family:monospace; font-weight:700; color:#00f5ff; }
-        #trackingInfo .ti-title {
-            font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:800;
-            color:#00f5ff; margin-bottom:8px;
-            display:flex; align-items:center; gap:8px;
-        }
-        .tracking-dot {
-            width:10px; height:10px; background:#ff4466;
-            border-radius:50%; animation:trackPulse 1s infinite;
-        }
-        #directionArrow {
-            font-size:1.8rem; text-align:center;
-            margin:6px 0 2px; display:block;
-            transition: transform 0.5s ease;
-        }
-
-        /* ===== MOBILE BOTTOM SHEET ===== */
+        #trackingInfo .ti-title { font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:800; color:#00f5ff; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+        .tracking-dot { width:10px; height:10px; background:#ff4466; border-radius:50%; animation:trackPulse 1s infinite; }
+        #directionArrow { font-size:1.8rem; text-align:center; margin:6px 0 2px; display:block; transition: transform 0.5s ease; }
         @media (max-width: 768px) {
-            .dashboard {
-                top: auto !important;
-                bottom: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                max-height: 70vh;
-                border-radius: 22px 22px 0 0 !important;
-                border-bottom: none;
-                transform: translateY(0) !important;
-                transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
-                padding-top: 28px;
-            }
-            .dashboard::before {
-                content: '';
-                position: absolute;
-                top: 10px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 40px;
-                height: 4px;
-                background: rgba(0,245,255,0.4);
-                border-radius: 10px;
-            }
-            .dashboard.collapsed {
-                transform: translateY(100%) !important;
-            }
-            .toggle-dash {
-                bottom: auto;
-                top: 16px;
-                right: 16px;
-                font-size: 0.8rem;
-                padding: 7px 14px;
-            }
-            #compass {
-                width: 56px;
-                height: 56px;
-                bottom: 16px;
-                right: 16px;
-            }
-            .map-switch {
-                bottom: 16px;
-                left: 16px;
-                font-size: 0.75rem;
-                padding: 6px 10px;
-            }
-            #trackingInfo {
-                top: 60px;
-                right: 8px;
-                min-width: 150px;
-                padding: 10px 12px;
-                font-size: 0.75rem;
-                border-radius: 14px;
-            }
-            .field input,
-            .search-input,
-            .add-form input,
-            .add-form textarea {
-                padding: 13px 16px;
-                font-size: 0.95rem;
-            }
-            .city-card,
-            .sel-item {
-                padding: 11px 14px;
-                min-height: 44px;
-            }
+            .dashboard { top: auto !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; max-width: 100% !important; max-height: 70vh; border-radius: 22px 22px 0 0 !important; border-bottom: none; transform: translateY(0) !important; transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); padding-top: 28px; }
+            .dashboard::before { content: ''; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; background: rgba(0,245,255,0.4); border-radius: 10px; }
+            .dashboard.collapsed { transform: translateY(100%) !important; }
+            .toggle-dash { bottom: auto; top: 16px; right: 16px; font-size: 0.8rem; padding: 7px 14px; }
+            #compass { width: 56px; height: 56px; bottom: 16px; right: 16px; }
+            .map-switch { bottom: 16px; left: 16px; font-size: 0.75rem; padding: 6px 10px; }
+            #trackingInfo { top: 60px; right: 8px; min-width: 150px; padding: 10px 12px; font-size: 0.75rem; border-radius: 14px; }
+            .field input, .search-input, .add-form input, .add-form textarea { padding: 13px 16px; font-size: 0.95rem; }
+            .city-card, .sel-item { padding: 11px 14px; min-height: 44px; }
         }
-
-        /* ══════ NOUVEAU SPLASH INTRO — ILIASS ERROUIFI ══════ */
+        /* INTRO ILIASS ERROUIFI */
         #introSplash {
             position: fixed;
             inset: 0;
@@ -303,522 +150,203 @@
             overflow: hidden;
             transition: opacity 0.8s ease;
         }
-        #introSplash.hide {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .intro-orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.15;
-            animation: introOrb 7s ease-in-out infinite;
-        }
+        #introSplash.hide { opacity: 0; pointer-events: none; }
+        .intro-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; animation: introOrb 7s ease-in-out infinite; }
         .intro-orb-1 { width:500px;height:500px;background:#00e5ff;top:-150px;left:-150px;animation-delay:0s; }
         .intro-orb-2 { width:400px;height:400px;background:#c8a84b;bottom:-120px;right:-100px;animation-delay:-3s; }
-        @keyframes introOrb {
-            0%,100% { transform:scale(1) translate(0,0); }
-            50%      { transform:scale(1.1) translate(20px,15px); }
-        }
-        .intro-grid {
-            position: absolute;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
-            background-size: 60px 60px;
-        }
-        .intro-body {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
-        .intro-logo-wrap {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 8px;
-            animation: introRise 0.9s cubic-bezier(0.16,1,0.3,1) 0.1s both;
-        }
-        .intro-emblem {
-            position: relative;
-            width: 110px;
-            height: 110px;
-            margin-bottom: 14px;
-        }
-        .intro-emblem svg {
-            width: 110px;
-            height: 110px;
-            animation: introSpin 18s linear infinite;
-            filter: drop-shadow(0 0 14px rgba(200,168,75,0.45));
-        }
+        @keyframes introOrb { 0%,100% { transform:scale(1) translate(0,0); } 50% { transform:scale(1.1) translate(20px,15px); } }
+        .intro-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px); background-size: 60px 60px; }
+        .intro-body { position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .intro-logo-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 8px; animation: introRise 0.9s cubic-bezier(0.16,1,0.3,1) 0.1s both; }
+        .intro-emblem { position: relative; width: 110px; height: 110px; margin-bottom: 14px; }
+        .intro-emblem svg { width: 110px; height: 110px; animation: introSpin 18s linear infinite; filter: drop-shadow(0 0 14px rgba(200,168,75,0.45)); }
         @keyframes introSpin { to { transform: rotate(360deg); } }
-        .intro-center {
-            position: absolute;
-            inset: 16px;
-            background: linear-gradient(145deg, #0a0a20, #0d0d2a);
-            border-radius: 50%;
-            border: 1px solid rgba(200,168,75,0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-        }
+        .intro-center { position: absolute; inset: 16px; background: linear-gradient(145deg, #0a0a20, #0d0d2a); border-radius: 50%; border: 1px solid rgba(200,168,75,0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
         .intro-center .ic-icon { font-size: 1.3rem; line-height: 1; }
-        .intro-center .ic-text {
-            font-family: Georgia, serif;
-            font-size: 0.55rem;
-            font-weight: 700;
-            letter-spacing: 0.2em;
-            color: #c8a84b;
-            text-transform: uppercase;
-        }
-        .intro-asso-name {
-            font-family: Georgia, serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #eef2ff;
-            letter-spacing: 0.04em;
-            text-align: center;
-            line-height: 1.2;
-        }
-        .intro-asso-name .ig {
-            background: linear-gradient(135deg, #c8a84b, #f0d080);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .intro-sep {
-            width: 70px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #c8a84b, transparent);
-            margin: 14px auto 0;
-        }
-        .intro-profile {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            animation: introRise 0.9s cubic-bezier(0.16,1,0.3,1) 0.35s both;
-        }
-        .intro-avatar-wrap {
-            position: relative;
-            width: 180px;
-            height: 180px;
-            margin-bottom: 18px;
-        }
-        .intro-avatar-wrap::before {
-            content: '';
-            position: absolute;
-            inset: -3px;
-            border-radius: 50%;
-            background: conic-gradient(from 0deg, #c8a84b, #00e5ff, #f0d080, #00e5ff, #c8a84b);
-            animation: introSpin 4s linear infinite;
-            z-index: 1;
-        }
-        .intro-avatar-inner {
-            position: absolute;
-            inset: 3px;
-            border-radius: 50%;
-            z-index: 2;
-            overflow: hidden;
-            background: #0a0a1e;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        /* ★ REMPLACEZ "votre-photo.jpg" PAR LE NOM DE VOTRE IMAGE (placée dans le même dossier) */
-        .intro-avatar-inner img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-        .intro-avatar-fallback {
-            font-size: 3rem;
-            color: rgba(0,229,255,0.35);
-        }
-        .intro-name {
-            font-family: Georgia, serif;
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #eef2ff;
-            text-align: center;
-            letter-spacing: 0.02em;
-        }
-        .intro-title-badge {
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: linear-gradient(135deg, rgba(200,168,75,0.1), rgba(240,208,128,0.07));
-            border: 1px solid rgba(200,168,75,0.3);
-            border-radius: 50px;
-            padding: 7px 18px;
-        }
-        .intro-title-badge .itb-dot {
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: #c8a84b;
-            box-shadow: 0 0 8px #c8a84b;
-            flex-shrink: 0;
-        }
-        .intro-title-badge span {
-            font-size: 0.72rem;
-            font-weight: 500;
-            letter-spacing: 0.1em;
-            color: #f0d080;
-            text-transform: uppercase;
-        }
-        .intro-progress-section {
-            margin-top: 36px;
-            width: 200px;
-            animation: introRise 0.9s cubic-bezier(0.16,1,0.3,1) 0.55s both;
-        }
-        .intro-progress-label {
-            font-size: 0.62rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: rgba(200,215,255,0.4);
-            text-align: center;
-            margin-bottom: 8px;
-        }
-        .intro-progress-track {
-            height: 2px;
-            background: rgba(255,255,255,0.06);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .intro-progress-fill {
-            height: 100%;
-            width: 0%;
-            border-radius: 10px;
-            background: linear-gradient(90deg, #c8a84b, #00e5ff);
-            box-shadow: 0 0 10px rgba(0,229,255,0.5);
-        }
-        @keyframes introRise {
-            from { opacity:0; transform:translateY(28px); }
-            to   { opacity:1; transform:translateY(0); }
-        }
+        .intro-center .ic-text { font-family: Georgia, serif; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.2em; color: #c8a84b; text-transform: uppercase; }
+        .intro-asso-name { font-family: Georgia, serif; font-size: 1.5rem; font-weight: 700; color: #eef2ff; letter-spacing: 0.04em; text-align: center; line-height: 1.2; }
+        .intro-asso-name .ig { background: linear-gradient(135deg, #c8a84b, #f0d080); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .intro-sep { width: 70px; height: 1px; background: linear-gradient(90deg, transparent, #c8a84b, transparent); margin: 14px auto 0; }
+        .intro-profile { display: flex; flex-direction: column; align-items: center; animation: introRise 0.9s cubic-bezier(0.16,1,0.3,1) 0.35s both; }
+        .intro-avatar-wrap { position: relative; width: 180px; height: 180px; margin-bottom: 18px; }
+        .intro-avatar-wrap::before { content: ''; position: absolute; inset: -3px; border-radius: 50%; background: conic-gradient(from 0deg, #c8a84b, #00e5ff, #f0d080, #00e5ff, #c8a84b); animation: introSpin 4s linear infinite; z-index: 1; }
+        .intro-avatar-inner { position: absolute; inset: 3px; border-radius: 50%; z-index: 2; overflow: hidden; background: #0a0a1e; display: flex; align-items: center; justify-content: center; }
+        .intro-avatar-inner img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .intro-avatar-fallback { font-size: 3rem; color: rgba(0,229,255,0.35); }
+        .intro-name { font-family: Georgia, serif; font-size: 1.8rem; font-weight: 700; color: #eef2ff; text-align: center; letter-spacing: 0.02em; }
+        .intro-title-badge { margin-top: 10px; display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, rgba(200,168,75,0.1), rgba(240,208,128,0.07)); border: 1px solid rgba(200,168,75,0.3); border-radius: 50px; padding: 7px 18px; }
+        .intro-title-badge .itb-dot { width: 6px; height: 6px; border-radius: 50%; background: #c8a84b; box-shadow: 0 0 8px #c8a84b; flex-shrink: 0; }
+        .intro-title-badge span { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.1em; color: #f0d080; text-transform: uppercase; }
+        .intro-progress-section { margin-top: 36px; width: 200px; animation: introRise 0.9s cubic-bezier(0.16,1,0.3,1) 0.55s both; }
+        .intro-progress-label { font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(200,215,255,0.4); text-align: center; margin-bottom: 8px; }
+        .intro-progress-track { height: 2px; background: rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden; }
+        .intro-progress-fill { height: 100%; width: 0%; border-radius: 10px; background: linear-gradient(90deg, #c8a84b, #00e5ff); box-shadow: 0 0 10px rgba(0,229,255,0.5); }
+        @keyframes introRise { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
     </style>
 </head>
 <body>
-
-<!-- ══════════ INTRO PAGE — FONDATEUR ILIASS ERROUIFI ══════════ -->
+<!-- INTRO ILIASS ERROUIFI -->
 <div id="introSplash">
-    <div class="intro-orb intro-orb-1"></div>
-    <div class="intro-orb intro-orb-2"></div>
-    <div class="intro-grid"></div>
+    <div class="intro-orb intro-orb-1"></div><div class="intro-orb intro-orb-2"></div><div class="intro-grid"></div>
     <div class="intro-body">
         <div class="intro-logo-wrap">
-            <div class="intro-emblem">
-                <svg viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="55" cy="55" r="52" fill="none" stroke="rgba(200,168,75,0.2)" stroke-width="0.8" stroke-dasharray="4 6"/>
-                    <g stroke="#c8a84b" stroke-width="1.2" opacity="0.6">
-                        <line x1="55" y1="3"  x2="55" y2="11"  transform="rotate(0   55 55)"/>
-                        <line x1="55" y1="3"  x2="55" y2="9"   transform="rotate(45  55 55)"/>
-                        <line x1="55" y1="3"  x2="55" y2="11"  transform="rotate(90  55 55)"/>
-                        <line x1="55" y1="3"  x2="55" y2="9"   transform="rotate(135 55 55)"/>
-                        <line x1="55" y1="3"  x2="55" y2="11"  transform="rotate(180 55 55)"/>
-                        <line x1="55" y1="3"  x2="55" y2="9"   transform="rotate(225 55 55)"/>
-                        <line x1="55" y1="3"  x2="55" y2="11"  transform="rotate(270 55 55)"/>
-                        <line x1="55" y1="3"  x2="55" y2="9"   transform="rotate(315 55 55)"/>
-                    </g>
-                    <polygon points="55,2 58,7 55,11 52,7" fill="#c8a84b" opacity="0.9"/>
-                    <polygon points="55,2 58,7 55,11 52,7" fill="#c8a84b" opacity="0.9" transform="rotate(90  55 55)"/>
-                    <polygon points="55,2 58,7 55,11 52,7" fill="#c8a84b" opacity="0.9" transform="rotate(180 55 55)"/>
-                    <polygon points="55,2 58,7 55,11 52,7" fill="#c8a84b" opacity="0.9" transform="rotate(270 55 55)"/>
-                    <circle cx="55" cy="55" r="46" fill="none" stroke="url(#ig2)" stroke-width="1" opacity="0.5"/>
-                    <defs>
-                        <linearGradient id="ig2" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%"   stop-color="#00e5ff" stop-opacity="0.8"/>
-                            <stop offset="100%" stop-color="#c8a84b" stop-opacity="0.6"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
-                <div class="intro-center">
-                    <div class="ic-icon">🏛️</div>
-                    <div class="ic-text">A · E</div>
-                </div>
-            </div>
-            <div class="intro-asso-name">
-                Association<br><span class="ig">Errouifi</span>
-            </div>
-            <div class="intro-sep"></div>
+            <div class="intro-emblem"><svg viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg"><circle cx="55" cy="55" r="52" fill="none" stroke="rgba(200,168,75,0.2)" stroke-width="0.8" stroke-dasharray="4 6"/><g stroke="#c8a84b" stroke-width="1.2" opacity="0.6"><line x1="55" y1="3"  x2="55" y2="11"  transform="rotate(0   55 55)"/><line x1="55" y1="3"  x2="55" y2="9"   transform="rotate(45  55 55)"/><line x1="55" y1="3"  x2="55" y2="11"  transform="rotate(90  55 55)"/><line x1="55" y1="3"  x2="55" y2="9"   transform="rotate(135 55 55)"/><line x1="55" y1="3"  x2="55" y2="11"  transform="rotate(180 55 55)"/><line x1="55" y1="3"  x2="55" y2="9"   transform="rotate(225 55 55)"/><line x1="55" y1="3"  x2="55" y2="11"  transform="rotate(270 55 55)"/><line x1="55" y1="3"  x2="55" y2="9"   transform="rotate(315 55 55)"/></g><polygon points="55,2 58,7 55,11 52,7" fill="#c8a84b" opacity="0.9"/><polygon points="55,2 58,7 55,11 52,7" fill="#c8a84b" opacity="0.9" transform="rotate(90  55 55)"/><polygon points="55,2 58,7 55,11 52,7" fill="#c8a84b" opacity="0.9" transform="rotate(180 55 55)"/><polygon points="55,2 58,7 55,11 52,7" fill="#c8a84b" opacity="0.9" transform="rotate(270 55 55)"/><circle cx="55" cy="55" r="46" fill="none" stroke="url(#ig2)" stroke-width="1" opacity="0.5"/><defs><linearGradient id="ig2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#00e5ff" stop-opacity="0.8"/><stop offset="100%" stop-color="#c8a84b" stop-opacity="0.6"/></linearGradient></defs></svg><div class="intro-center"><div class="ic-icon">🏛️</div><div class="ic-text">A · E</div></div></div>
+            <div class="intro-asso-name">Association<br><span class="ig">Errouifi</span></div><div class="intro-sep"></div>
         </div>
         <div class="intro-profile">
-            <div class="intro-avatar-wrap">
-                <div class="intro-avatar-inner">
-                    <!-- ★ REMPLACEZ "votre-photo.jpg" PAR LE NOM DE VOTRE FICHIER (ex: iliass.jpg) -->
-                    <img src="errouifi.jpg" alt="Iliass Errouifi" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div class="intro-avatar-fallback" style="display:none;">👤</div>
-                </div>
-            </div>
-            <div class="intro-name">Iliass Errouifi</div>
-            <div class="intro-title-badge">
-                <div class="itb-dot"></div>
-                <span>Fondateur · Association Errouifi</span>
-            </div>
+            <div class="intro-avatar-wrap"><div class="intro-avatar-inner"><img src="errouifi.jpg" alt="Iliass Errouifi" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="intro-avatar-fallback" style="display:none;">👤</div></div></div>
+            <div class="intro-name">Iliass Errouifi</div><div class="intro-title-badge"><div class="itb-dot"></div><span>Fondateur · Association Errouifi</span></div>
         </div>
-        <div class="intro-progress-section">
-            <div class="intro-progress-label">Chargement · · ·</div>
-            <div class="intro-progress-track">
-                <div class="intro-progress-fill" id="introProgressFill"></div>
-            </div>
-        </div>
+        <div class="intro-progress-section"><div class="intro-progress-label">Chargement · · ·</div><div class="intro-progress-track"><div class="intro-progress-fill" id="introProgressFill"></div></div></div>
     </div>
 </div>
 
-<!-- Splash original TSP WORLD PRO (caché au début) -->
-<div id="splashScreen" class="splash hidden">
-    <div class="splash-content">
-        <div class="splash-asso-top">🏛️ Association Errouifi</div>
-        <div class="splash-logo">✈️</div>
-        <div class="splash-title">TSP WORLD PRO</div>
-        <div class="splash-sub">Planification optimisée des tournées</div>
-    </div>
-</div>
+<!-- Splash TSP WORLD PRO -->
+<div id="splashScreen" class="splash hidden"><div class="splash-content"><div class="splash-asso-top">🏛️ Association Errouifi</div><div class="splash-logo">✈️</div><div class="splash-title">TSP WORLD PRO</div><div class="splash-sub">Planification optimisée des tournées</div></div></div>
 
 <div id="loginOverlay" class="overlay hidden">
-    <div class="auth-card">
-        <div class="auth-logo">✈️ TSP WORLD PRO</div>
-        <div class="auth-sub">Planifiez votre tournée mondiale optimisée</div>
-        <div class="tab-row">
-            <button id="tabLogin" class="tab-btn active" onclick="switchTab('login')">🔐 Connexion</button>
-            <button id="tabReg" class="tab-btn" onclick="switchTab('register')">📝 Inscription</button>
-        </div>
-        <div id="loginForm">
-            <div class="field"><label>Nom d'utilisateur</label><input type="text" id="loginUsername" placeholder="Votre pseudo"></div>
-            <div class="field"><label>Mot de passe</label><input type="password" id="loginPassword" placeholder="••••••••"></div>
-            <button class="primary-btn" onclick="doLogin()">✅ Se connecter</button>
-            <div class="err-msg" id="loginErr"></div>
-        </div>
-        <div id="registerForm" style="display:none">
-            <div class="field"><label>Pseudo</label><input type="text" id="regUsername"></div>
-            <div class="field"><label>Prénom</label><input type="text" id="regFirstName"></div>
-            <div class="field"><label>Nom</label><input type="text" id="regLastName"></div>
-            <div class="field"><label>Mot de passe</label><input type="password" id="regPassword"></div>
-            <div class="field"><label>Confirmer</label><input type="password" id="regConfirm"></div>
-            <button class="primary-btn" onclick="doRegister()">📝 S'inscrire</button>
-            <div class="err-msg" id="regErr"></div>
-        </div>
+    <div class="auth-card"><div class="auth-logo">✈️ TSP WORLD PRO</div><div class="auth-sub">Planifiez votre tournée mondiale optimisée</div><div class="tab-row"><button id="tabLogin" class="tab-btn active" onclick="switchTab('login')">🔐 Connexion</button><button id="tabReg" class="tab-btn" onclick="switchTab('register')">📝 Inscription</button></div>
+    <div id="loginForm"><div class="field"><label>Nom d'utilisateur</label><input type="text" id="loginUsername" placeholder="Votre pseudo"></div><div class="field"><label>Mot de passe</label><input type="password" id="loginPassword" placeholder="••••••••"></div><button class="primary-btn" onclick="doLogin()">✅ Se connecter</button><div class="err-msg" id="loginErr"></div></div>
+    <div id="registerForm" style="display:none"><div class="field"><label>Pseudo</label><input type="text" id="regUsername"></div><div class="field"><label>Prénom</label><input type="text" id="regFirstName"></div><div class="field"><label>Nom</label><input type="text" id="regLastName"></div><div class="field"><label>Mot de passe</label><input type="password" id="regPassword"></div><div class="field"><label>Confirmer</label><input type="password" id="regConfirm"></div><button class="primary-btn" onclick="doRegister()">📝 S'inscrire</button><div class="err-msg" id="regErr"></div></div>
     </div>
 </div>
-<div id="confirmOverlay" class="overlay hidden">
-    <div class="confirm-card">
-        <div class="confirm-icon">🎉</div>
-        <h3>Bienvenue !</h3>
-        <div class="confirm-table">
-            <div class="confirm-row"><span>Pseudo</span><span id="cf_username"></span></div>
-            <div class="confirm-row"><span>Prénom</span><span id="cf_first"></span></div>
-            <div class="confirm-row"><span>Nom</span><span id="cf_last"></span></div>
-        </div>
-        <button class="primary-btn" onclick="finalizeLogin()">▶ Accéder</button>
-    </div>
-</div>
+<div id="confirmOverlay" class="overlay hidden"><div class="confirm-card"><div class="confirm-icon">🎉</div><h3>Bienvenue !</h3><div class="confirm-table"><div class="confirm-row"><span>Pseudo</span><span id="cf_username"></span></div><div class="confirm-row"><span>Prénom</span><span id="cf_first"></span></div><div class="confirm-row"><span>Nom</span><span id="cf_last"></span></div></div><button class="primary-btn" onclick="finalizeLogin()">▶ Accéder</button></div></div>
 <div id="map"></div>
 <button class="toggle-dash" onclick="document.getElementById('dashboard').classList.toggle('collapsed')">⚙️ Menu</button>
 <div class="map-switch" onclick="toggleMapLayer()">🗺️ Changer fond</div>
 <button id="tiltBtn" onclick="toggleTilt()">🏔️ Tilt 3D</button>
 
-<!-- QR Modal PRO -->
+<!-- QR MODAL -->
 <div id="qrModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(8px);">
     <div style="background:linear-gradient(145deg,#0a0a1e,#0d0d2b); border:2px solid #00f5ff; border-radius:28px; padding:28px 24px; text-align:center; max-width:360px; width:92%; box-shadow:0 0 80px rgba(0,245,255,0.25), inset 0 0 40px rgba(0,245,255,0.03);">
         <div style="font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800; background:linear-gradient(135deg,#00f5ff,#00ffaa); -webkit-background-clip:text; background-clip:text; color:transparent; margin-bottom:4px;">📡 QR Position</div>
         <div id="qrSubtitle" style="font-size:0.72rem; color:rgba(200,210,255,0.5); margin-bottom:18px; letter-spacing:0.05em;">ASSOCIATION ERROUIFI · TSP WORLD PRO</div>
-        <div style="position:relative; display:inline-block; margin-bottom:14px;">
-            <canvas id="qrCanvas" style="border-radius:16px; display:block; box-shadow:0 0 30px rgba(0,245,255,0.2);"></canvas>
-        </div>
+        <div style="position:relative; display:inline-block; margin-bottom:14px;"><canvas id="qrCanvas" style="border-radius:16px; display:block; box-shadow:0 0 30px rgba(0,245,255,0.2);"></canvas></div>
         <div id="qrcode" style="display:none;"></div>
         <div id="qrCoords" style="font-family:monospace; font-size:0.75rem; color:#00ffaa; margin-bottom:18px; background:rgba(0,255,170,0.06); padding:6px 14px; border-radius:20px; display:inline-block;"></div>
-        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
-            <button id="copyQrBtn" onclick="copyQRImage()" style="padding:12px; background:linear-gradient(135deg,#00f5ff,#0088ff); border:none; border-radius:50px; font-weight:700; cursor:pointer; font-size:0.88rem; color:#000; display:flex; align-items:center; justify-content:center; gap:8px;">📋 Copier l'image QR</button>
-            <button onclick="openQRScanner()" style="padding:12px; background:rgba(0,245,255,0.1); border:1px solid rgba(0,245,255,0.4); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.88rem; color:#00f5ff; display:flex; align-items:center; justify-content:center; gap:8px;">📷 Scanner avec caméra</button>
-            <label style="padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.88rem; color:var(--text); display:flex; align-items:center; justify-content:center; gap:8px;">📂 Charger depuis fichier
-                <input type="file" accept="image/*" style="display:none;" onchange="scanQRFromFile(event)">
-            </label>
+        <div style="display:flex; gap:8px; justify-content:center; margin-bottom:12px; flex-wrap:wrap;">
+            <button onclick="copyQRLink()" style="padding:9px 16px; background:rgba(0,255,170,0.12); border:1px solid rgba(0,255,170,0.4); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.82rem; color:#00ffaa;">🔗 Copier lien</button>
+            <button onclick="shareQRNative()" style="padding:9px 16px; background:rgba(0,245,255,0.12); border:1px solid rgba(0,245,255,0.4); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.82rem; color:#00f5ff;">📤 Partager</button>
+            <label style="padding:9px 16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.82rem; color:white;">📷 Scanner image<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="scanQRFromFileAuto(event)"></label>
+            <button onclick="pasteQRFromClipboard()" style="padding:9px 16px; background:rgba(255,170,0,0.12); border:1px solid rgba(255,170,0,0.4); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.82rem; color:#ffaa33;">📋 Coller image</button>
         </div>
-        <div style="display:flex; gap:8px; justify-content:center;">
-            <button onclick="downloadQR()" style="padding:9px 20px; background:rgba(0,255,170,0.12); border:1px solid rgba(0,255,170,0.4); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.82rem; color:#00ffaa;">⬇️ Télécharger</button>
-            <button onclick="document.getElementById('qrModal').style.display='none'; stopQRScanner();" style="padding:9px 20px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:white; border-radius:50px; cursor:pointer; font-size:0.82rem;">✖ Fermer</button>
-        </div>
-        <div id="scannerZone" style="display:none; margin-top:16px;">
-            <video id="scannerVideo" style="width:100%; border-radius:16px; border:2px solid #00f5ff;" autoplay playsinline></video>
-            <div style="font-size:0.72rem; color:rgba(200,210,255,0.5); margin-top:6px;">Pointez vers un QR code...</div>
-            <button onclick="stopQRScanner()" style="margin-top:8px; padding:6px 16px; background:rgba(255,80,80,0.15); border:1px solid #ff6b8a; color:#ff6b8a; border-radius:50px; cursor:pointer; font-size:0.78rem;">⏹ Arrêter</button>
-            <div id="scanResult" style="font-size:0.8rem; color:#00ffaa; margin-top:6px;"></div>
-        </div>
+        <div style="display:flex; gap:8px; justify-content:center;"><button onclick="downloadQR()" style="padding:9px 20px; background:rgba(0,255,170,0.12); border:1px solid rgba(0,255,170,0.4); border-radius:50px; font-weight:700; cursor:pointer; font-size:0.82rem; color:#00ffaa;">⬇️ Télécharger</button><button onclick="document.getElementById('qrModal').style.display='none'; stopQRScanner();" style="padding:9px 20px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:white; border-radius:50px; cursor:pointer; font-size:0.82rem;">✖ Fermer</button></div>
+        <div id="scannerZone" style="display:none; margin-top:16px;"><video id="scannerVideo" style="width:100%; border-radius:16px; border:2px solid #00f5ff;" autoplay playsinline></video><div style="font-size:0.72rem; color:rgba(200,210,255,0.5); margin-top:6px;">Pointez vers un QR code...</div><button onclick="stopQRScanner()" style="margin-top:8px; padding:6px 16px; background:rgba(255,80,80,0.15); border:1px solid #ff6b8a; color:#ff6b8a; border-radius:50px; cursor:pointer; font-size:0.78rem;">⏹ Arrêter</button><div id="scanResult" style="font-size:0.8rem; color:#00ffaa; margin-top:6px;"></div></div>
     </div>
 </div>
 
-<!-- Compass -->
-<div id="compass" title="Cliquer pour réorienter vers le nord" onclick="resetNorth()">
-    <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="40" cy="40" r="38" fill="rgba(7,7,20,0.85)" stroke="rgba(0,245,255,0.6)" stroke-width="1.5"/>
-        <text x="40" y="19" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="800" fill="#ff4466">N</text>
-        <text x="40" y="65" text-anchor="middle" font-family="sans-serif" font-size="8" fill="rgba(200,210,255,0.6)">S</text>
-        <text x="65" y="44" text-anchor="middle" font-family="sans-serif" font-size="8" fill="rgba(200,210,255,0.6)">E</text>
-        <text x="15" y="44" text-anchor="middle" font-family="sans-serif" font-size="8" fill="rgba(200,210,255,0.6)">O</text>
-        <g id="compassNeedle" transform="rotate(0,40,40)">
-            <polygon points="40,8 37,40 43,40" fill="#ff4466"/>
-            <polygon points="40,72 37,40 43,40" fill="#00f5ff" opacity="0.7"/>
-            <circle cx="40" cy="40" r="3.5" fill="#fff"/>
-        </g>
-    </svg>
-    <div id="compassLabel">↺ Nord</div>
-</div>
+<div id="compass" title="Cliquer pour réorienter vers le nord" onclick="resetNorth()"><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="38" fill="rgba(7,7,20,0.85)" stroke="rgba(0,245,255,0.6)" stroke-width="1.5"/><text x="40" y="19" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="800" fill="#ff4466">N</text><text x="40" y="65" text-anchor="middle" font-family="sans-serif" font-size="8" fill="rgba(200,210,255,0.6)">S</text><text x="65" y="44" text-anchor="middle" font-family="sans-serif" font-size="8" fill="rgba(200,210,255,0.6)">E</text><text x="15" y="44" text-anchor="middle" font-family="sans-serif" font-size="8" fill="rgba(200,210,255,0.6)">O</text><g id="compassNeedle" transform="rotate(0,40,40)"><polygon points="40,8 37,40 43,40" fill="#ff4466"/><polygon points="40,72 37,40 43,40" fill="#00f5ff" opacity="0.7"/><circle cx="40" cy="40" r="3.5" fill="#fff"/></g></svg><div id="compassLabel">↺ Nord</div></div>
 
-<!-- Tracking info card -->
-<div id="trackingInfo">
-    <div class="ti-title"><div class="tracking-dot"></div>Suivi en direct</div>
-    <span id="directionArrow">⬆️</span>
-    <div class="ti-row"><span>📍 Lat</span><span class="ti-val" id="ti_lat">--</span></div>
-    <div class="ti-row"><span>📍 Lon</span><span class="ti-val" id="ti_lon">--</span></div>
-    <div class="ti-row"><span>⚡ Vitesse</span><span class="ti-val" id="ti_speed">-- km/h</span></div>
-    <div class="ti-row"><span>🧭 Direction</span><span class="ti-val" id="ti_dir">--</span></div>
-    <div class="ti-row"><span>🎯 Précision</span><span class="ti-val" id="ti_acc">-- m</span></div>
-</div>
+<div id="trackingInfo"><div class="ti-title"><div class="tracking-dot"></div>Suivi en direct</div><span id="directionArrow">⬆️</span><div class="ti-row"><span>📍 Lat</span><span class="ti-val" id="ti_lat">--</span></div><div class="ti-row"><span>📍 Lon</span><span class="ti-val" id="ti_lon">--</span></div><div class="ti-row"><span>⚡ Vitesse</span><span class="ti-val" id="ti_speed">-- km/h</span></div><div class="ti-row"><span>🧭 Direction</span><span class="ti-val" id="ti_dir">--</span></div><div class="ti-row"><span>🎯 Précision</span><span class="ti-val" id="ti_acc">-- m</span></div></div>
 
 <div class="dashboard" id="dashboard" style="display:none;">
     <div class="dash-header"><div class="dash-title">✈️ TSP WORLD PRO</div></div>
     <div class="welcome-pill"><span>👋 Bonjour, <strong id="welcomeName"></strong></span><button class="logout-btn" onclick="logout()">🚪 Déconnexion</button></div>
     <div id="gpsWarningBanner" style="display:none;" class="gps-warning">⚠️ Géolocalisation bloquée – ouvrez via serveur HTTP (ex: Live Server).</div>
-    <div class="time-panel">
-        <div class="current-time" id="liveClock">--:--:--</div>
-        <div><span class="chrono" id="cronDisplay">00:00:00</span> <button class="btn btn-secondary" onclick="startCron()">▶</button><button class="btn btn-secondary" onclick="pauseCron()">⏸</button><button class="btn btn-secondary" onclick="resetCron()">🔄</button></div>
+    <div class="time-panel"><div class="current-time" id="liveClock">--:--:--</div><div><span class="chrono" id="cronDisplay">00:00:00</span> <button class="btn btn-secondary" onclick="startCron()">▶</button><button class="btn btn-secondary" onclick="pauseCron()">⏸</button><button class="btn btn-secondary" onclick="resetCron()">🔄</button></div></div>
+    <div class="section"><div class="section-title">⏰ Planifier un rappel (alarme)</div><div class="notif-row" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;"><input type="time" id="reminderTime" step="1"><input type="text" id="reminderMessage" placeholder="Message personnalisé" style="flex:1;"><button class="btn btn-primary" onclick="scheduleAlarm()">📌 Ajouter</button></div><div id="reminderList" class="reminder-list"></div><div class="notif-info" id="notifStatus">💡 Cliquez sur Ajouter.</div></div>
+    <div class="section">
+        <div class="section-title">🌍 Rechercher un lieu (tapez 3+ lettres)</div>
+        <input type="text" id="dynamicSearch" class="search-input" placeholder="Ex: Casablanca, Tour Eiffel, New York...">
+        <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; align-items:center;">
+            <button class="btn btn-secondary" onclick="openShareQR()" style="display:flex;align-items:center;gap:6px;">📱 QR Ma position</button>
+            <button class="btn btn-secondary" onclick="openQRScannerForSearch()" style="display:flex;align-items:center;gap:6px;">📷 Scanner QR</button>
+            <label class="btn btn-secondary" style="display:flex;align-items:center;gap:6px;cursor:pointer;">📂 Image QR<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="scanQRFromFileSearch(event)"></label>
+            <button class="btn btn-secondary" onclick="pasteQRToSearch()" style="display:flex;align-items:center;gap:6px;">📋 Coller QR</button>
+        </div>
+        <div id="searchResults" class="city-grid" style="display:none;"></div>
+        <div id="searchFeedback" class="info-note" style="font-size:0.7rem; margin-top:5px;"></div>
     </div>
-    <div class="section"><div class="section-title">⏰ Planifier un rappel (alarme)</div><div class="notif-row" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;"><input type="time" id="reminderTime" step="1"><input type="text" id="reminderMessage" placeholder="Message personnalisé" style="flex:1;"><button class="btn btn-primary" onclick="scheduleAlarm()">📌 Ajouter</button></div><div id="reminderList" class="reminder-list"></div><div class="notif-info" id="notifStatus">💡 Cliquez sur Ajouter. Une notification apparaîtra + un message à l'écran.</div></div>
-    <div class="section"><div class="section-title">🌍 Rechercher un lieu (tapez 3+ lettres)</div><input type="text" id="dynamicSearch" class="search-input" placeholder="Ex: Casablanca, Tour Eiffel, New York..."><div id="searchResults" class="city-grid" style="display:none;"></div><div id="searchFeedback" class="info-note" style="font-size:0.7rem; margin-top:5px;"></div></div>
     <div class="section"><div class="section-title">📍 Détails du lieu sélectionné</div><div id="placeDetails" class="place-detail-card"><span style="color:var(--muted);">Aucun lieu sélectionné</span></div></div>
-    <div class="section"><div class="section-title">✅ Ma sélection — <span id="selCount">0</span> ville(s)</div><div class="selected-list" id="selectedList"></div><div class="btn-row"><button class="btn btn-danger" onclick="clearSelection()">🗑️ Vider</button><button class="btn btn-secondary" onclick="showMyLocation()">📍 Me localiser</button><button class="btn btn-primary" id="trackBtn" onclick="toggleTracking()">📡 Start Tracking</button><button class="btn btn-secondary" onclick="exportGeoJSON()">📤 Exporter GeoJSON</button><button class="btn btn-secondary" onclick="shareCurrentLocation()">🔗 Partager ma position</button><button class="btn btn-secondary" onclick="generatePositionQR()">📱 QR Position</button></div></div>
+    <div class="section"><div class="section-title">✅ Ma sélection — <span id="selCount">0</span> ville(s)</div><div class="selected-list" id="selectedList"></div><div class="btn-row"><button class="btn btn-danger" onclick="clearSelection()">🗑️ Vider</button><button class="btn btn-secondary" onclick="showMyLocation()">📍 Me localiser</button><button class="btn btn-primary" id="trackBtn" onclick="toggleTracking()">📡 Start Tracking</button><button class="btn btn-secondary" onclick="exportGeoJSON()">📤 Exporter GeoJSON</button><button class="btn btn-secondary" onclick="shareCurrentLocation()">🔗 Partager ma position</button><button class="btn btn-secondary" onclick="openShareQR()">📱 QR Position</button></div></div>
     <div class="section"><div class="section-title">☕ Export Java (coordonnées)</div><div class="java-export"><button class="btn btn-primary" onclick="generateJavaCode()" style="width:100%; margin-bottom:8px;">🔁 Générer le tableau Java</button><textarea id="javaCodeArea" rows="6" readonly placeholder="Cliquez sur 'Générer' pour obtenir un tableau double[][] utilisable dans votre code Java."></textarea><button class="btn btn-secondary" onclick="copyJavaCode()" style="margin-top:6px;">📋 Copier</button></div></div>
     <div class="section"><div class="section-title">🎯 Paramètres TSP</div><div class="tsp-params"><span>Max villes :</span><input type="number" id="maxCities" value="8" min="2" max="35"><span>Départ :</span><select id="startCitySelect"></select><span>Transport :</span><select id="transportMode"><option value="car">🚗 Voiture</option><option value="foot">🚶 Piéton</option><option value="plane">✈️ Avion</option></select><span>Algorithme :</span><select id="algoSelect"><option value="nn">Plus proche voisin</option><option value="2opt">2-opt</option></select></div><div class="btn-row"><button class="btn btn-primary" onclick="computeTSP()">🚀 Lancer le TSP</button><button class="btn btn-secondary" id="cancelTSPBtn" onclick="cancelTSP()" style="display:none;">❌ Annuler</button></div><div class="route-loading" id="routeLoading" style="display:none;">⏳ Calcul...</div></div>
     <div class="section"><div class="section-title">➕ Ajouter une ville personnalisée</div><div class="add-form"><input id="newName" placeholder="Nom"><input id="newCountry" placeholder="Pays"><textarea id="newDesc" rows="2" placeholder="Description"></textarea><div class="coords-row"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"></div><div class="btn-row"><button class="btn btn-secondary" onclick="startMapPick()">🗺️ Choisir sur carte</button><button class="btn btn-secondary" onclick="useGeoloc()">📍 Ma position GPS</button><button class="btn btn-primary" onclick="addCustomCity()">✅ Ajouter</button></div><div class="pick-msg" id="pickMsg"></div></div></div>
     <div class="results-panel" id="resultsPanel"><div class="stats-grid"><div class="stat-card">💡 Sélectionnez des villes</div></div></div>
-    <div class="footer">🌐 Routage OSRM · TSP · Export Java · Rappels · Tracking pro avec auto‑rotation · Polyline offset + 30 points lumineux animés · QR position avec logo fixe + scanner + copie d'image</div>
+    <div class="footer">🌐 Routage OSRM · TSP · Export Java · Rappels · Tracking pro · Points lumineux · QR avec logo · Scanner direct depuis recherche</div>
 </div>
 
 <script>
-// ==================== TOUTES LES FONCTIONS EXISTANTES SONT CONSERVÉES ====================
-// (Le code original du TSP WORLD PRO est intégralement présent, sans aucune modification)
-// Nous insérons juste le nouveau gestionnaire DOMContentLoaded qui lance l'intro personnalisée.
-// Les variables globales et fonctions sont définies plus bas, mais pour la clarté du fichier,
-// nous les incluons normalement. Ci-dessous on retrouve tout le JS original.
-// Afin d'éviter des répétitions et pour garantir la stabilité, j'inclus le code JS complet
-// tel qu'il était à l'origine, avec la seule modification du bloc DOMContentLoaded final.
-// (En pratique, ce script contient la totalité de la logique originale inchangée, puis le nouveau listener)
-// ==================== DÉBUT DU SCRIPT ORIGINAL (compact) ====================
-let selectedCities = [];
-let nextCityId = 1;
-let selectionMarkers = [];
+// ==================== FONCTIONS PRINCIPALES (AUTH, TSP, TRACKING, ETC.) ====================
+let selectedCities = [], nextCityId = 1, selectionMarkers = [];
+let map, currentTileLayer, routeLayer, routeMarkers = [], tspCancelRequested = false;
+let isTracking = false, watchId = null, trackingPoints = [], trackingPolyline = null, myLocationMarker = null, lastHeading = 0;
+let dotAnimationInterval = null, animatedDots = [];
+let reminders = [], nextReminderId = 1, reminderInterval = null;
+let cronInterval = null, cronSeconds = parseInt(sessionStorage.getItem('tsp_cron_sec') || '0');
+let lastQrUrl = null, scannerStream = null, scannerAnimFrame = null;
+let pickMode = false, isTilted = false;
 
-function loadSelected() {
-    let saved = localStorage.getItem('tsp_selected_cities');
-    if (saved) {
-        try {
-            selectedCities = JSON.parse(saved);
-            if (selectedCities.length) nextCityId = Math.max(...selectedCities.map(c=>c.id), 0) + 1;
-        } catch(e) {}
-    }
-    updateSelUI();
-    updateMarkersOnMap();
-}
+const TSP_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="18" fill="#070714"/><text x="50" y="42" text-anchor="middle" font-size="34" font-family="sans-serif">✈️</text><text x="50" y="62" text-anchor="middle" font-size="9" font-weight="bold" fill="#00f5ff" font-family="sans-serif">TSP WORLD</text><text x="50" y="74" text-anchor="middle" font-size="7.5" fill="#00ffaa" font-family="sans-serif">ERROUIFI</text></svg>`;
+const NOTIF_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E";
+const tileLayers = { osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 20, detectRetina: true }), googleSat: L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { attribution: '© Google Hybrid', maxZoom: 20, detectRetina: true }) };
+
+function escapeHtml(s) { return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+function isFileProtocol() { return window.location.protocol === 'file:'; }
+if (isFileProtocol()) document.getElementById('gpsWarningBanner').style.display = 'block';
+function haversine(lat1,lon1,lat2,lon2) { const R=6371, r=Math.PI/180, dLat=(lat2-lat1)*r, dLon=(lon2-lon1)*r; return R*2*Math.asin(Math.sqrt(Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2)); }
+function totalDistance(tour) { let d=0; for(let i=0;i<tour.length-1;i++) d+=haversine(tour[i].lat,tour[i].lon,tour[i+1].lat,tour[i+1].lon); return d; }
+
+function loadSelected() { let saved = localStorage.getItem('tsp_selected_cities'); if (saved) { try { selectedCities = JSON.parse(saved); if (selectedCities.length) nextCityId = Math.max(...selectedCities.map(c=>c.id), 0) + 1; } catch(e) {} } updateSelUI(); updateMarkersOnMap(); }
 function saveSelected() { localStorage.setItem('tsp_selected_cities', JSON.stringify(selectedCities)); }
-function updateMarkersOnMap() {
-    if (!map) return;
-    selectionMarkers.forEach(m => map.removeLayer(m));
-    selectionMarkers = [];
-    selectedCities.forEach(city => {
-        let popupContent = `<div style="min-width:150px;"><b>${escapeHtml(city.name)}</b><br><i>${escapeHtml(city.country)}</i><br>📍 ${city.lat.toFixed(5)}, ${city.lon.toFixed(5)}<br>${city.desc ? `<small>${escapeHtml(city.desc)}</small><br>` : ''}<button onclick="window.zoomToCityById(${city.id})" style="margin-top:4px; padding:2px 8px; background:#00f5ff; border:none; border-radius:20px;">🎯 Centrer</button></div>`;
-        let marker = L.marker([city.lat, city.lon], { title: city.name }).bindPopup(popupContent).addTo(map);
-        marker.on('click', () => showPlaceDetails(city.name, city.lat, city.lon, city.country, city.desc));
-        selectionMarkers.push(marker);
-    });
-}
-window.zoomToCityById = function(id) {
-    let city = selectedCities.find(c => c.id === id);
-    if (city) map.flyTo([city.lat, city.lon], 13);
-};
-function updateSelUI() {
-    let container = document.getElementById('selectedList');
-    document.getElementById('selCount').innerText = selectedCities.length;
-    if (!selectedCities.length) {
-        container.innerHTML = '<div>Aucune ville sélectionnée</div>';
-        document.getElementById('startCitySelect').innerHTML = '<option>Aucune</option>';
-        return;
-    }
-    container.innerHTML = selectedCities.map((city, i) => `<div class="sel-item" onclick="showPlaceDetails('${escapeHtml(city.name)}', ${city.lat}, ${city.lon}, '${escapeHtml(city.country)}', '${escapeHtml(city.desc || '')}'); zoomToCity(${i});"><span>${i+1}. ${escapeHtml(city.name)} (${escapeHtml(city.country)})</span><button class="rm" onclick="event.stopPropagation();removeCity(${i})">✖</button></div>`).join('');
-    let sel = document.getElementById('startCitySelect');
-    sel.innerHTML = selectedCities.map((c,i) => `<option value="${i}">${escapeHtml(c.name)}</option>`).join('');
-}
+function updateMarkersOnMap() { if (!map) return; selectionMarkers.forEach(m => map.removeLayer(m)); selectionMarkers = []; selectedCities.forEach(city => { let popup = `<div style="min-width:150px;"><b>${escapeHtml(city.name)}</b><br><i>${escapeHtml(city.country)}</i><br>📍 ${city.lat.toFixed(5)}, ${city.lon.toFixed(5)}<br>${city.desc ? `<small>${escapeHtml(city.desc)}</small><br>` : ''}<button onclick="window.zoomToCityById(${city.id})" style="margin-top:4px; padding:2px 8px; background:#00f5ff; border:none; border-radius:20px;">🎯 Centrer</button></div>`; let marker = L.marker([city.lat, city.lon], { title: city.name }).bindPopup(popup).addTo(map); marker.on('click', () => showPlaceDetails(city.name, city.lat, city.lon, city.country, city.desc)); selectionMarkers.push(marker); }); }
+window.zoomToCityById = function(id) { let city = selectedCities.find(c => c.id === id); if (city) map.flyTo([city.lat, city.lon], 13); };
+function updateSelUI() { let container = document.getElementById('selectedList'); document.getElementById('selCount').innerText = selectedCities.length; if (!selectedCities.length) { container.innerHTML = '<div>Aucune ville sélectionnée</div>'; document.getElementById('startCitySelect').innerHTML = '<option>Aucune</option>'; return; } container.innerHTML = selectedCities.map((city, i) => `<div class="sel-item" onclick="showPlaceDetails('${escapeHtml(city.name)}', ${city.lat}, ${city.lon}, '${escapeHtml(city.country)}', '${escapeHtml(city.desc || '')}'); zoomToCity(${i});"><span>${i+1}. ${escapeHtml(city.name)} (${escapeHtml(city.country)})</span><button class="rm" onclick="event.stopPropagation();removeCity(${i})">✖</button></div>`).join(''); let sel = document.getElementById('startCitySelect'); sel.innerHTML = selectedCities.map((c,i) => `<option value="${i}">${escapeHtml(c.name)}</option>`).join(''); }
 function removeCity(idx) { selectedCities.splice(idx,1); saveSelected(); updateSelUI(); updateMarkersOnMap(); clearMapRoute(); if (selectedCities.length === 0) document.getElementById('placeDetails').innerHTML = '<span style="color:var(--muted);">Aucun lieu sélectionné</span>'; }
 function clearSelection() { selectedCities = []; saveSelected(); updateSelUI(); updateMarkersOnMap(); clearMapRoute(); document.getElementById('placeDetails').innerHTML = '<span style="color:var(--muted);">Aucun lieu sélectionné</span>'; }
 function addCityToList(city) { if (!selectedCities.some(c => c.name === city.name && Math.abs(c.lat - city.lat) < 0.001)) { let newId = nextCityId++; let newCity = { ...city, id: newId, desc: city.desc || '' }; selectedCities.push(newCity); saveSelected(); updateSelUI(); updateMarkersOnMap(); showPlaceDetails(newCity.name, newCity.lat, newCity.lon, newCity.country, newCity.desc); return true; } else { let existing = selectedCities.find(c => c.name === city.name); if (existing) showPlaceDetails(existing.name, existing.lat, existing.lon, existing.country, existing.desc); return false; } }
 function zoomToCity(idx) { let city = selectedCities[idx]; if (city) { map.flyTo([city.lat, city.lon], 12); let marker = selectionMarkers.find(m => m.getLatLng().lat === city.lat && m.getLatLng().lng === city.lon); if (marker) marker.openPopup(); } }
-function showPlaceDetails(name, lat, lon, country, description) { let detailsDiv = document.getElementById('placeDetails'); detailsDiv.innerHTML = `<h4>📍 ${escapeHtml(name)}</h4><p><strong>Pays :</strong> ${escapeHtml(country)}</p><p><strong>Coordonnées :</strong> ${lat.toFixed(6)}°, ${lon.toFixed(6)}°</p>${description ? `<p><strong>Description :</strong> ${escapeHtml(description)}</p>` : ''}<button class="btn-secondary" onclick="map.flyTo([${lat}, ${lon}], 14);">🎯 Centrer la carte</button>`; }
+function showPlaceDetails(name, lat, lon, country, description) { document.getElementById('placeDetails').innerHTML = `<h4>📍 ${escapeHtml(name)}</h4><p><strong>Pays :</strong> ${escapeHtml(country)}</p><p><strong>Coordonnées :</strong> ${lat.toFixed(6)}°, ${lon.toFixed(6)}°</p>${description ? `<p><strong>Description :</strong> ${escapeHtml(description)}</p>` : ''}<button class="btn-secondary" onclick="map.flyTo([${lat}, ${lon}], 14);">🎯 Centrer la carte</button>`; }
+
 let searchTimeout = null;
-async function performSearch(query) { if (!query || query.length < 3) { document.getElementById('searchResults').style.display = 'none'; document.getElementById('searchFeedback').innerHTML = 'Tapez au moins 3 caractères...'; return; } document.getElementById('searchResults').style.display = 'block'; document.getElementById('searchFeedback').innerHTML = '⏳ Recherche en cours...'; try { let resp = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=8&addressdetails=1`); let data = await resp.json(); if (!data.length) { document.getElementById('searchResults').innerHTML = '<div class="city-card">Aucun résultat</div>'; document.getElementById('searchFeedback').innerHTML = '❌ Aucun lieu trouvé'; return; } let resultsHtml = ''; for (let place of data) { let name = place.display_name.split(',')[0]; let country = place.address?.country || 'Monde'; resultsHtml += `<div class="city-card" onclick="selectSearchResult('${escapeHtml(name)}', ${place.lat}, ${place.lon}, '${escapeHtml(country)}', '')"><span><strong>${escapeHtml(name)}</strong> (${escapeHtml(country)})</span><span>➕</span></div>`; } document.getElementById('searchResults').innerHTML = resultsHtml; document.getElementById('searchFeedback').innerHTML = `✅ ${data.length} résultat(s) trouvé(s)`; } catch(e) { document.getElementById('searchResults').innerHTML = '<div class="city-card">Erreur réseau</div>'; document.getElementById('searchFeedback').innerHTML = '❌ Erreur de connexion'; } }
-function selectSearchResult(name, lat, lon, country, description) { let added = addCityToList({ name, lat: parseFloat(lat), lon: parseFloat(lon), country, desc: description }); if (added) { document.getElementById('searchFeedback').innerHTML = `✅ ${escapeHtml(name)} ajouté à la sélection !`; map.flyTo([lat, lon], 12); } else { document.getElementById('searchFeedback').innerHTML = `⚠️ ${escapeHtml(name)} déjà sélectionné.`; } document.getElementById('dynamicSearch').value = ''; document.getElementById('searchResults').style.display = 'none'; if (window.innerWidth <= 768) { document.getElementById('dashboard').classList.add('collapsed'); } }
+async function performSearch(query) { if (!query || query.length < 3) { document.getElementById('searchResults').style.display = 'none'; document.getElementById('searchFeedback').innerHTML = 'Tapez au moins 3 caractères...'; return; } document.getElementById('searchResults').style.display = 'block'; document.getElementById('searchFeedback').innerHTML = '⏳ Recherche...'; try { let resp = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=8&addressdetails=1`); let data = await resp.json(); if (!data.length) { document.getElementById('searchResults').innerHTML = '<div class="city-card">Aucun résultat</div>'; document.getElementById('searchFeedback').innerHTML = '❌ Aucun lieu trouvé'; return; } let resultsHtml = ''; for (let place of data) { let name = place.display_name.split(',')[0]; let country = place.address?.country || 'Monde'; resultsHtml += `<div class="city-card" onclick="selectSearchResult('${escapeHtml(name)}', ${place.lat}, ${place.lon}, '${escapeHtml(country)}', '')"><span><strong>${escapeHtml(name)}</strong> (${escapeHtml(country)})</span><span>➕</span></div>`; } document.getElementById('searchResults').innerHTML = resultsHtml; document.getElementById('searchFeedback').innerHTML = `✅ ${data.length} résultat(s) trouvé(s)`; } catch(e) { document.getElementById('searchResults').innerHTML = '<div class="city-card">Erreur réseau</div>'; document.getElementById('searchFeedback').innerHTML = '❌ Erreur de connexion'; } }
+function selectSearchResult(name, lat, lon, country, description) { let added = addCityToList({ name, lat: parseFloat(lat), lon: parseFloat(lon), country, desc: description }); if (added) { document.getElementById('searchFeedback').innerHTML = `✅ ${escapeHtml(name)} ajouté à la sélection !`; map.flyTo([lat, lon], 12); } else { document.getElementById('searchFeedback').innerHTML = `⚠️ ${escapeHtml(name)} déjà sélectionné.`; } document.getElementById('dynamicSearch').value = ''; document.getElementById('searchResults').style.display = 'none'; if (window.innerWidth <= 768) document.getElementById('dashboard').classList.add('collapsed'); }
 document.getElementById('dynamicSearch').addEventListener('input', function(e) { let val = e.target.value.trim(); if (searchTimeout) clearTimeout(searchTimeout); searchTimeout = setTimeout(() => performSearch(val), 500); });
-function shareCurrentLocation() { requestGeolocationWithHelp(pos => { let lat = pos.coords.latitude, lon = pos.coords.longitude; let shareUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}`; navigator.clipboard.writeText(shareUrl).then(() => { alert("Lien copié ! Envoyez-le à un ami.\nIl pourra donner un nom personnalisé à cette position."); }); }, err => alert("Impossible d'obtenir votre position")); }
-function handleUrlLocation() { const urlParams = new URLSearchParams(window.location.search); let lat = parseFloat(urlParams.get('lat')); let lon = parseFloat(urlParams.get('lon')); let suggestedName = urlParams.get('name') || ""; if (!isNaN(lat) && !isNaN(lon)) { let defaultName = suggestedName ? suggestedName : `Position partagée (${lat.toFixed(4)}, ${lon.toFixed(4)})`; let customName = prompt("🟢 Une position vous a été partagée.\nDonnez-lui un nom :", defaultName); if (customName && customName.trim() !== "") { addCityToList({ name: customName.trim(), lat: lat, lon: lon, country: "Partagé", desc: `Position reçue par lien (${new Date().toLocaleString()})`, custom: true }); map.flyTo([lat, lon], 12); alert(`✅ "${customName}" ajouté à votre sélection.`); } else alert("Ajout annulé."); window.history.replaceState({}, document.title, window.location.pathname); } }
-let lastQrUrl = null; let scannerStream = null; let scannerAnimFrame = null; const TSP_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="18" fill="#070714"/><text x="50" y="42" text-anchor="middle" font-size="34" font-family="sans-serif">✈️</text><text x="50" y="62" text-anchor="middle" font-size="9" font-weight="bold" fill="#00f5ff" font-family="sans-serif">TSP WORLD</text><text x="50" y="74" text-anchor="middle" font-size="7.5" fill="#00ffaa" font-family="sans-serif">ERROUIFI</text></svg>`;
-function svgToDataUrl(svg) { return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg))); }
-function generatePositionQR() { requestGeolocationWithHelp(pos => { let lat = pos.coords.latitude, lon = pos.coords.longitude; lastQrUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}`; document.getElementById('qrCoords').textContent = `📍 ${lat.toFixed(5)}, ${lon.toFixed(5)}`; let modal = document.getElementById('qrModal'); modal.style.display = 'flex'; modal.onclick = e => { if (e.target === modal) { modal.style.display = 'none'; stopQRScanner(); } }; drawQRWithLogo(lastQrUrl); }, err => alert("❌ GPS refusé ou indisponible")); }
-function drawQRWithLogo(url) { let tempDiv = document.getElementById('qrcode'); tempDiv.innerHTML = ''; new QRCode(tempDiv, { text: url, width: 280, height: 280, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H }); setTimeout(() => { let qrCanvas = tempDiv.querySelector('canvas'); if (!qrCanvas) return; let finalCanvas = document.getElementById('qrCanvas'); finalCanvas.width = 280; finalCanvas.height = 280; let ctx = finalCanvas.getContext('2d'); ctx.drawImage(qrCanvas, 0, 0, 280, 280); let logo = new Image(); logo.onload = () => { let size = 62; let x = (280 - size) / 2; let y = (280 - size) / 2; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(x - 5, y - 5, size + 10, size + 10, 12); ctx.fill(); ctx.drawImage(logo, x, y, size, size); }; logo.src = svgToDataUrl(TSP_LOGO_SVG); }, 60); }
-async function copyQRImage() { let canvas = document.getElementById('qrCanvas'); if (!canvas) return; try { canvas.toBlob(async blob => { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); let btn = document.getElementById('copyQrBtn'); btn.textContent = '✅ Copié !'; setTimeout(() => { btn.textContent = '📋 Copier l\'image QR'; }, 2000); }); } catch(e) { downloadQR(); alert("Clipboard non supporté — image téléchargée à la place."); } }
-function downloadQR() { let canvas = document.getElementById('qrCanvas'); if (!canvas) return; let link = document.createElement('a'); link.download = 'qr-tsp-errouifi.png'; link.href = canvas.toDataURL('image/png'); link.click(); }
-async function openQRScanner() { document.getElementById('scannerZone').style.display = 'block'; document.getElementById('scanResult').textContent = ''; try { scannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }); let video = document.getElementById('scannerVideo'); video.srcObject = scannerStream; video.play(); scanQRFromVideo(video); } catch(e) { alert("❌ Caméra non accessible.\n" + e.message); document.getElementById('scannerZone').style.display = 'none'; } }
-function scanQRFromVideo(video) { if (!window.BarcodeDetector) { document.getElementById('scanResult').textContent = '⚠️ BarcodeDetector non supporté sur ce navigateur.'; return; } let detector = new BarcodeDetector({ formats: ['qr_code'] }); function detect() { if (!scannerStream) return; detector.detect(video).then(barcodes => { if (barcodes.length > 0) { let result = barcodes[0].rawValue; document.getElementById('scanResult').innerHTML = `✅ <a href="${result}" style="color:#00ffaa;">${result}</a>`; stopQRScanner(); if (result.includes('lat=') && result.includes('lon=')) { setTimeout(() => { window.location.href = result; }, 1000); } } else { scannerAnimFrame = requestAnimationFrame(detect); } }).catch(() => { scannerAnimFrame = requestAnimationFrame(detect); }); } detect(); }
-function stopQRScanner() { if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; } if (scannerAnimFrame) { cancelAnimationFrame(scannerAnimFrame); scannerAnimFrame = null; } document.getElementById('scannerZone').style.display = 'none'; }
-async function scanQRFromFile(event) { let file = event.target.files[0]; if (!file) return; if (!window.BarcodeDetector) { alert("⚠️ BarcodeDetector non supporté sur ce navigateur (Chrome/Edge recommandé)."); return; } let img = new Image(); img.onload = async () => { try { let detector = new BarcodeDetector({ formats: ['qr_code'] }); let barcodes = await detector.detect(img); if (barcodes.length > 0) { let result = barcodes[0].rawValue; document.getElementById('scanResult').innerHTML = `✅ Lu : <a href="${result}" style="color:#00ffaa;">${result}</a>`; document.getElementById('scannerZone').style.display = 'block'; if (result.includes('lat=') && result.includes('lon=')) { setTimeout(() => { window.location.href = result; }, 1200); } } else { alert("❌ Aucun QR code détecté dans cette image."); } } catch(e) { alert("Erreur lecture: " + e.message); } }; img.src = URL.createObjectURL(file); }
-const AudioCtx = window.AudioContext || window.webkitAudioContext; let audioCtx = null;
-function getAudioCtx() { if (!audioCtx) audioCtx = new AudioCtx(); return audioCtx; }
-function playBeep(freq=880, duration=0.15, type='sine', vol=0.3) { try { let ctx = getAudioCtx(); let osc = ctx.createOscillator(); let gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.type = type; osc.frequency.setValueAtTime(freq, ctx.currentTime); gain.gain.setValueAtTime(vol, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration); osc.start(ctx.currentTime); osc.stop(ctx.currentTime + duration); } catch(e) { console.warn("Audio error", e); } }
-function soundStart() { playBeep(600,0.08,'sine',0.25); setTimeout(()=>playBeep(900,0.08,'sine',0.25),90); setTimeout(()=>playBeep(1200,0.15,'sine',0.3),180); }
-function soundStop() { playBeep(800,0.08,'sine',0.2); setTimeout(()=>playBeep(500,0.08,'sine',0.2),90); setTimeout(()=>playBeep(300,0.15,'sine',0.25),180); }
-function soundTick()  { playBeep(1000,0.04,'sine',0.08); }
-function soundWarn()  { playBeep(400,0.2,'square',0.15); setTimeout(()=>playBeep(300,0.3,'square',0.15),250); }
-function offsetLatLngs(points, offsetMeters) { if (points.length < 2) return points; let result = []; for (let i = 0; i < points.length; i++) { let p = points[i]; let prev = points[Math.max(0, i - 1)]; let next = points[Math.min(points.length - 1, i + 1)]; let dx = next[1] - prev[1]; let dy = next[0] - prev[0]; let len = Math.sqrt(dx*dx + dy*dy); if (len === 0) { result.push(p); continue; } let nx = -dy / len; let ny =  dx / len; let dLat = nx * offsetMeters / 111320; let dLon = ny * offsetMeters / (111320 * Math.cos(p[0] * Math.PI / 180)); result.push([p[0] + dLat, p[1] + dLon]); } return result; }
-let dotAnimationInterval = null; let animatedDots = [];
-function stopDotAnimation() { if (dotAnimationInterval) { clearInterval(dotAnimationInterval); dotAnimationInterval = null; } animatedDots.forEach(dot => { if (dot && map) map.removeLayer(dot); }); animatedDots = []; }
-function animateDotsOnRoute(points) { stopDotAnimation(); if (!points || points.length < 2) return; let totalLen = 0; let segments = []; for (let i = 0; i < points.length - 1; i++) { let d = Math.sqrt(Math.pow(points[i+1][0] - points[i][0], 2) + Math.pow(points[i+1][1] - points[i][1], 2)); segments.push({ start: points[i], end: points[i+1], len: d, cumLen: totalLen }); totalLen += d; } if (totalLen === 0) return; const NUM_DOTS = 30; let progress = 0; for (let i = 0; i < NUM_DOTS; i++) { let dot = L.circleMarker(points[0], { radius: 2.5, color: 'transparent', fillColor: '#ffffff', fillOpacity: 0.8, weight: 0 }).addTo(map); animatedDots.push(dot); } dotAnimationInterval = setInterval(() => { progress = (progress + 0.0035) % 1; for (let i = 0; i < NUM_DOTS; i++) { let t = (progress + i / NUM_DOTS) % 1; let targetLen = t * totalLen; let seg = segments[segments.length - 1]; for (let s of segments) if (s.cumLen + s.len >= targetLen) { seg = s; break; } let segT = seg.len > 0 ? (targetLen - seg.cumLen) / seg.len : 0; let lat = seg.start[0] + (seg.end[0] - seg.start[0]) * segT; let lon = seg.start[1] + (seg.end[1] - seg.start[1]) * segT; let isHead = (i >= NUM_DOTS - 4); animatedDots[i].setLatLng([lat, lon]); animatedDots[i].setStyle({ radius: isHead ? 3.5 : 2, fillOpacity: isHead ? 1 : 0.7 }); } }, 38); }
-let isTracking = false; let lastHeading = 0; let trackingPolyline = null; let watchId = null; let trackingPoints = []; let myLocationMarker = null;
-function toggleTracking() { if (isTracking) stopTrackingPro(); else startTrackingPro(); }
-function startTrackingPro() { if (isFileProtocol()) { alert("Suivi impossible en file://\nOuvrez via serveur HTTP (Live Server)."); return; } if (!navigator.geolocation) { alert("GPS non supporté par ce navigateur."); return; } isTracking = true; trackingPoints = []; if (trackingPolyline) map.removeLayer(trackingPolyline); soundStart(); let btn = document.getElementById('trackBtn'); btn.innerHTML = '⏹️ Stop Tracking'; btn.classList.add('tracking'); document.getElementById('trackingInfo').style.display = 'block'; watchId = navigator.geolocation.watchPosition(onTrackingUpdate, err => { soundWarn(); let msg = { 1: "❌ Permission GPS refusée.\nAutorisez la localisation dans votre navigateur.", 2: "⚠️ Position GPS indisponible.\nVérifiez que le GPS est activé sur votre appareil.", 3: "⏱️ Timeout GPS.\nEssayez de vous déplacer ou rechargez." }[err.code] || "❌ Erreur GPS inconnue."; alert(msg); stopTrackingPro(); }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }); }
-function stopTrackingPro() { if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; } isTracking = false; soundStop(); if (map.setBearing) map.setBearing(0, { animate: true, duration: 0.8 }); let currentRoute = routeLayer ? routeLayer.getLatLngs() : null; if (currentRoute && currentRoute.length) { let points = currentRoute.map(latlng => [latlng.lat, latlng.lng]); animateDotsOnRoute(points); } else { stopDotAnimation(); } let btn = document.getElementById('trackBtn'); btn.innerHTML = '📡 Start Tracking'; btn.classList.remove('tracking'); document.getElementById('trackingInfo').style.display = 'none'; }
-function onTrackingUpdate(pos) { let lat = pos.coords.latitude, lon = pos.coords.longitude, speed = pos.coords.speed, heading = pos.coords.heading, accuracy = pos.coords.accuracy; soundTick(); trackingPoints.push([lat, lon]); if (trackingPolyline) map.removeLayer(trackingPolyline); let offsetPoints = offsetLatLngs(trackingPoints, 3); trackingPolyline = L.polyline(offsetPoints, { color: '#00f5ff', weight: 5, opacity: 0.85 }).addTo(map); if (myLocationMarker) { myLocationMarker.setLatLng([lat, lon]); if (heading != null && !isNaN(heading)) { let newIcon = L.divIcon({ html: `<div style="width:28px; height:28px; background: radial-gradient(circle, #00f5ff, #0055ff); border-radius:50%; border:3px solid white; box-shadow:0 0 18px rgba(0,245,255,0.9); position:relative;"><div style="position:absolute; top:-10px; left:50%; transform:translateX(-50%) rotate(${heading}deg); width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:12px solid #00f5ff;"></div></div>`, iconSize: [28,28], iconAnchor: [14,14] }); myLocationMarker.setIcon(newIcon); } } else { let iconHtml = `<div style="width:28px; height:28px; background: radial-gradient(circle, #00f5ff, #0055ff); border-radius:50%; border:3px solid white; box-shadow:0 0 18px rgba(0,245,255,0.9); position:relative;"><div style="position:absolute; top:-10px; left:50%; transform:translateX(-50%) rotate(${heading || 0}deg); width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:12px solid #00f5ff;"></div></div>`; myLocationMarker = L.marker([lat, lon], { icon: L.divIcon({ html: iconHtml, iconSize: [28,28], iconAnchor: [14,14] }) }).addTo(map); } if (heading != null && !isNaN(heading) && heading !== 0) { lastHeading = heading; if (map.setBearing) map.setBearing(-heading, { animate: true, duration: 0.5 }); } map.flyTo([lat, lon], map.getZoom(), { animate: true, duration: 0.8 }); document.getElementById('ti_lat').textContent = lat.toFixed(6) + '°'; document.getElementById('ti_lon').textContent = lon.toFixed(6) + '°'; document.getElementById('ti_speed').textContent = speed != null ? (speed * 3.6).toFixed(1) + ' km/h' : '0 km/h'; document.getElementById('ti_acc').textContent = accuracy != null ? Math.round(accuracy) + ' m' : '-- m'; updateDirectionDisplay(lastHeading); }
-function updateDirectionDisplay(heading) { let arrowSpan = document.getElementById('directionArrow'); if (arrowSpan) arrowSpan.style.transform = `rotate(${heading}deg)`; let dirs = ['N','NE','E','SE','S','SO','O','NO']; let names = { 'N':'⬆️ Nord','NE':'↗️ Nord-Est','E':'➡️ Est','SE':'↘️ Sud-Est', 'S':'⬇️ Sud','SO':'↙️ Sud-Ouest','O':'⬅️ Ouest','NO':'↖️ Nord-Ouest' }; let idx = Math.round(heading / 45) % 8; document.getElementById('ti_dir').innerHTML = names[dirs[idx]] || `${Math.round(heading)}°`; let needle = document.getElementById('compassNeedle'); if (needle) needle.setAttribute('transform', `rotate(${heading}, 40, 40)`); let compassLabel = document.getElementById('compassLabel'); if (compassLabel) compassLabel.textContent = `${Math.round(heading)}°`; }
-let map, currentTileLayer, routeLayer, routeMarkers = []; let tspCancelRequested = false;
-const tileLayers = { osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 20, detectRetina: true }), googleSat: L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { attribution: '© Google Hybrid', maxZoom: 20, detectRetina: true }) };
+
+function shareCurrentLocation() { requestGeolocationWithHelp(pos => { let lat = pos.coords.latitude, lon = pos.coords.longitude; let shareUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}`; navigator.clipboard.writeText(shareUrl).then(() => { alert("Lien copié !"); }); }, () => alert("Erreur GPS")); }
+function handleUrlLocation() { const urlParams = new URLSearchParams(window.location.search); let lat = parseFloat(urlParams.get('lat')); let lon = parseFloat(urlParams.get('lon')); let suggestedName = urlParams.get('name') || ""; if (!isNaN(lat) && !isNaN(lon)) { let defaultName = suggestedName ? suggestedName : `Position (${lat.toFixed(4)}, ${lon.toFixed(4)})`; let customName = prompt("Nommez cette position :", defaultName); if (customName && customName.trim()) { addCityToList({ name: customName.trim(), lat, lon, country: "Partagé", desc: "Lien reçu", custom: true }); map.flyTo([lat, lon], 12); alert(`✅ ${customName} ajouté`); } window.history.replaceState({}, document.title, window.location.pathname); } }
+
+function drawQRWithLogo(url) { let tempDiv = document.getElementById('qrcode'); tempDiv.innerHTML = ''; new QRCode(tempDiv, { text: url, width: 280, height: 280, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H }); setTimeout(() => { let qrCanvas = tempDiv.querySelector('canvas'); if (!qrCanvas) return; let finalCanvas = document.getElementById('qrCanvas'); finalCanvas.width = 280; finalCanvas.height = 280; let ctx = finalCanvas.getContext('2d'); ctx.drawImage(qrCanvas, 0, 0, 280, 280); let logo = new Image(); logo.onload = () => { let size = 62, x = (280 - size) / 2, y = (280 - size) / 2; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(x-5, y-5, size+10, size+10, 12); ctx.fill(); ctx.drawImage(logo, x, y, size, size); }; logo.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(TSP_LOGO_SVG))); }, 60); }
+async function copyQRImage() { let canvas = document.getElementById('qrCanvas'); if (!canvas) return; try { canvas.toBlob(async blob => { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); alert("✅ Image copiée"); }); } catch(e) { downloadQR(); } }
+function downloadQR() { let canvas = document.getElementById('qrCanvas'); if (!canvas) return; let link = document.createElement('a'); link.download = 'qr-tsp.png'; link.href = canvas.toDataURL('image/png'); link.click(); }
+async function openQRScanner() { document.getElementById('scannerZone').style.display = 'block'; document.getElementById('scanResult').textContent = ''; try { scannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }); let video = document.getElementById('scannerVideo'); video.srcObject = scannerStream; video.play(); scanQRFromVideo(video); } catch(e) { alert("❌ Caméra inaccessible"); document.getElementById('scannerZone').style.display = 'none'; } }
+function scanQRFromVideo(video) { if (!window.BarcodeDetector) { document.getElementById('scanResult').textContent = '⚠️ Fallback jsQR'; const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); function frame() { if (!scannerStream) return; canvas.width = video.videoWidth; canvas.height = video.videoHeight; ctx.drawImage(video, 0, 0, canvas.width, canvas.height); let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height); if (window.jsQR) { let code = jsQR(imageData.data, imageData.width, imageData.height); if (code && window.__tempQRCallback) { window.__tempQRCallback(code.data); return; } } scannerAnimFrame = requestAnimationFrame(frame); } frame(); return; } let detector = new BarcodeDetector({ formats: ['qr_code'] }); function detect() { if (!scannerStream) return; detector.detect(video).then(barcodes => { if (barcodes.length > 0 && window.__tempQRCallback) window.__tempQRCallback(barcodes[0].rawValue); else scannerAnimFrame = requestAnimationFrame(detect); }).catch(() => { scannerAnimFrame = requestAnimationFrame(detect); }); } detect(); }
+function stopQRScanner() { if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; } if (scannerAnimFrame) cancelAnimationFrame(scannerAnimFrame); document.getElementById('scannerZone').style.display = 'none'; }
+async function scanQRFromFile(event) { let file = event.target.files[0]; if (!file) return; let reader = new FileReader(); reader.onload = e => { let img = new Image(); img.onload = () => { let canvas = document.createElement('canvas'); canvas.width = img.width; canvas.height = img.height; let ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0); let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height); function run() { let code = window.jsQR ? jsQR(imageData.data, imageData.width, imageData.height) : null; if (code) { window.__tempQRCallback && window.__tempQRCallback(code.data); } else alert("QR non trouvé"); } if (!window.jsQR) { let script = document.createElement('script'); script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js'; script.onload = run; document.head.appendChild(script); } else { run(); } }; img.src = e.target.result; }; reader.readAsDataURL(file); }
+
+function offsetLatLngs(points, offsetMeters) { if (points.length < 2) return points; let result = []; for (let i = 0; i < points.length; i++) { let p = points[i]; let prev = points[Math.max(0, i - 1)]; let next = points[Math.min(points.length - 1, i + 1)]; let dx = next[1] - prev[1]; let dy = next[0] - prev[0]; let len = Math.sqrt(dx*dx + dy*dy); if (len === 0) { result.push(p); continue; } let nx = -dy / len, ny = dx / len; let dLat = nx * offsetMeters / 111320; let dLon = ny * offsetMeters / (111320 * Math.cos(p[0] * Math.PI / 180)); result.push([p[0] + dLat, p[1] + dLon]); } return result; }
+function stopDotAnimation() { if (dotAnimationInterval) clearInterval(dotAnimationInterval); animatedDots.forEach(dot => map && map.removeLayer(dot)); animatedDots = []; }
+function animateDotsOnRoute(points) { stopDotAnimation(); if (!points || points.length < 2) return; let totalLen = 0, segments = []; for (let i=0; i<points.length-1; i++) { let d = Math.hypot(points[i+1][0]-points[i][0], points[i+1][1]-points[i][1]); segments.push({ start: points[i], end: points[i+1], len: d, cumLen: totalLen }); totalLen += d; } if (totalLen === 0) return; const NUM_DOTS = 30; let progress = 0; for (let i=0; i<NUM_DOTS; i++) animatedDots.push(L.circleMarker(points[0], { radius: 2.5, color: 'transparent', fillColor: '#fff', fillOpacity: 0.8, weight: 0 }).addTo(map)); dotAnimationInterval = setInterval(() => { progress = (progress + 0.0035) % 1; for (let i=0; i<NUM_DOTS; i++) { let t = (progress + i/NUM_DOTS) % 1; let targetLen = t * totalLen; let seg = segments.find(s => s.cumLen + s.len >= targetLen) || segments[segments.length-1]; let segT = seg.len > 0 ? (targetLen - seg.cumLen) / seg.len : 0; let lat = seg.start[0] + (seg.end[0] - seg.start[0]) * segT; let lon = seg.start[1] + (seg.end[1] - seg.start[1]) * segT; let isHead = (i >= NUM_DOTS - 4); animatedDots[i].setLatLng([lat, lon]); animatedDots[i].setStyle({ radius: isHead ? 3.5 : 2, fillOpacity: isHead ? 1 : 0.7 }); } }, 38); }
+
+function toggleTracking() { isTracking ? stopTrackingPro() : startTrackingPro(); }
+function startTrackingPro() { if (isFileProtocol()) { alert("Suivi impossible en file://"); return; } if (!navigator.geolocation) return; isTracking = true; trackingPoints = []; if (trackingPolyline) map.removeLayer(trackingPolyline); document.getElementById('trackBtn').innerHTML = '⏹️ Stop Tracking'; document.getElementById('trackBtn').classList.add('tracking'); document.getElementById('trackingInfo').style.display = 'block'; watchId = navigator.geolocation.watchPosition(onTrackingUpdate, err => { alert("Erreur GPS"); stopTrackingPro(); }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }); }
+function stopTrackingPro() { if (watchId) navigator.geolocation.clearWatch(watchId); isTracking = false; if (map.setBearing) map.setBearing(0, { animate: true, duration: 0.8 }); let currentRoute = routeLayer ? routeLayer.getLatLngs() : null; if (currentRoute && currentRoute.length) animateDotsOnRoute(currentRoute.map(latlng => [latlng.lat, latlng.lng])); else stopDotAnimation(); document.getElementById('trackBtn').innerHTML = '📡 Start Tracking'; document.getElementById('trackBtn').classList.remove('tracking'); document.getElementById('trackingInfo').style.display = 'none'; }
+function onTrackingUpdate(pos) { let lat = pos.coords.latitude, lon = pos.coords.longitude, speed = pos.coords.speed, heading = pos.coords.heading, accuracy = pos.coords.accuracy; trackingPoints.push([lat, lon]); if (trackingPolyline) map.removeLayer(trackingPolyline); let offsetPoints = offsetLatLngs(trackingPoints, 3); trackingPolyline = L.polyline(offsetPoints, { color: '#00f5ff', weight: 5, opacity: 0.85 }).addTo(map); if (myLocationMarker) { myLocationMarker.setLatLng([lat, lon]); if (heading != null && !isNaN(heading)) { let iconHtml = `<div style="width:28px;height:28px;background:radial-gradient(circle,#00f5ff,#0055ff);border-radius:50%;border:3px solid white;box-shadow:0 0 18px rgba(0,245,255,0.9);position:relative;"><div style="position:absolute; top:-10px; left:50%; transform:translateX(-50%) rotate(${heading}deg); width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:12px solid #00f5ff;"></div></div>`; myLocationMarker.setIcon(L.divIcon({ html: iconHtml, iconSize: [28,28], iconAnchor: [14,14] })); } } else { let iconHtml = `<div style="width:28px;height:28px;background:radial-gradient(circle,#00f5ff,#0055ff);border-radius:50%;border:3px solid white;box-shadow:0 0 18px rgba(0,245,255,0.9);position:relative;"><div style="position:absolute; top:-10px; left:50%; transform:translateX(-50%) rotate(${heading||0}deg); width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:12px solid #00f5ff;"></div></div>`; myLocationMarker = L.marker([lat, lon], { icon: L.divIcon({ html: iconHtml, iconSize: [28,28], iconAnchor: [14,14] }) }).addTo(map); } if (heading != null && !isNaN(heading) && heading !== 0 && map.setBearing) map.setBearing(-heading, { animate: true, duration: 0.5 }); map.flyTo([lat, lon], map.getZoom(), { animate: true, duration: 0.8 }); document.getElementById('ti_lat').textContent = lat.toFixed(6)+'°'; document.getElementById('ti_lon').textContent = lon.toFixed(6)+'°'; document.getElementById('ti_speed').textContent = speed != null ? (speed*3.6).toFixed(1)+' km/h' : '0 km/h'; document.getElementById('ti_acc').textContent = accuracy != null ? Math.round(accuracy)+' m' : '-- m'; updateDirectionDisplay(heading || lastHeading); }
+function updateDirectionDisplay(heading) { let arrowSpan = document.getElementById('directionArrow'); if (arrowSpan) arrowSpan.style.transform = `rotate(${heading}deg)`; let dirs = ['N','NE','E','SE','S','SO','O','NO']; let names = { 'N':'⬆️ Nord','NE':'↗️ Nord-Est','E':'➡️ Est','SE':'↘️ Sud-Est','S':'⬇️ Sud','SO':'↙️ Sud-Ouest','O':'⬅️ Ouest','NO':'↖️ Nord-Ouest' }; let idx = Math.round(heading / 45) % 8; document.getElementById('ti_dir').innerHTML = names[dirs[idx]] || `${Math.round(heading)}°`; let needle = document.getElementById('compassNeedle'); if (needle) needle.setAttribute('transform', `rotate(${heading}, 40, 40)`); document.getElementById('compassLabel').textContent = `${Math.round(heading)}°`; }
+
 function setMapLayer(layerId) { if (currentTileLayer) map.removeLayer(currentTileLayer); currentTileLayer = tileLayers[layerId]; currentTileLayer.addTo(map); localStorage.setItem('tsp_map_layer', layerId); }
 function toggleMapLayer() { let newLayer = (localStorage.getItem('tsp_map_layer') || 'osm') === 'osm' ? 'googleSat' : 'osm'; setMapLayer(newLayer); }
 function updateCompass() { let bearing = map.getBearing ? map.getBearing() : 0; let needle = document.getElementById('compassNeedle'); if (needle) needle.setAttribute('transform', `rotate(${-bearing}, 40, 40)`); document.getElementById('compassLabel').innerHTML = bearing === 0 ? '↺ Nord' : `${Math.round(-bearing)}°`; }
-function resetNorth() { if (map.setBearing) map.setBearing(0); updateCompass(); } window.resetNorth = resetNorth;
-function isFileProtocol() { return window.location.protocol === 'file:'; }
-if (isFileProtocol()) document.getElementById('gpsWarningBanner').style.display = 'block';
-function requestGeolocationWithHelp(cbSuccess, cbError) { if (isFileProtocol()) { alert("GPS bloqué: ouvrez via serveur HTTP."); if (cbError) cbError({ message: "file://" }); return; } if (!navigator.geolocation) { alert("Navigateur non supporté."); return; } navigator.geolocation.getCurrentPosition(cbSuccess, cbError); }
-function showMyLocation() { requestGeolocationWithHelp(pos => { let lat = pos.coords.latitude, lon = pos.coords.longitude; map.setView([lat, lon], 14); if (myLocationMarker) myLocationMarker.setLatLng([lat, lon]); else { myLocationMarker = L.marker([lat, lon], { icon: L.divIcon({ html: '<div style="background:#00aaff;width:20px;height:20px;border-radius:50%;border:2px solid white;"></div>', iconSize: [20,20] }) }).addTo(map).bindPopup('Votre position').openPopup(); } if (confirm("Ajouter cette position à votre liste de villes ?")) addCityToList({ name: "Ma position", lat, lon, country: "Local", desc: "GPS", custom: true }); }, err => alert("Erreur GPS")); }
-let reminders = [], nextReminderId = 1, reminderInterval = null;
-function loadReminders() { try { let saved = localStorage.getItem('tsp_reminders'); if (saved) { reminders = JSON.parse(saved); nextReminderId = Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); } } catch(e) {} startReminderWatcher(); }
+function resetNorth() { if (map.setBearing) map.setBearing(0); updateCompass(); }
+function requestGeolocationWithHelp(cbSuccess, cbError) { if (isFileProtocol()) { alert("GPS bloqué: serveur HTTP requis"); if(cbError) cbError(); return; } if (!navigator.geolocation) return; navigator.geolocation.getCurrentPosition(cbSuccess, cbError); }
+function showMyLocation() { requestGeolocationWithHelp(pos => { let lat = pos.coords.latitude, lon = pos.coords.longitude; map.setView([lat, lon], 14); if (myLocationMarker) myLocationMarker.setLatLng([lat, lon]); else myLocationMarker = L.marker([lat, lon]).addTo(map).bindPopup('Votre position').openPopup(); if (confirm("Ajouter cette position à la liste ?")) addCityToList({ name: "Ma position", lat, lon, country: "Local", desc: "GPS", custom: true }); }, () => alert("Erreur GPS")); }
+
+function loadReminders() { try { let saved = localStorage.getItem('tsp_reminders'); if (saved) { reminders = JSON.parse(saved); nextReminderId = Math.max(...reminders.map(r=>r.id),0)+1; renderReminderList(); } } catch(e){} startReminderWatcher(); }
 function saveReminders() { localStorage.setItem('tsp_reminders', JSON.stringify(reminders)); }
-function renderReminderList() { let container = document.getElementById('reminderList'); if (!reminders.length) { container.innerHTML = '<div style="color:var(--muted); padding:8px;">Aucun rappel programmé.</div>'; return; } container.innerHTML = reminders.map(r => `<div class="reminder-item"><span class="reminder-time">⏰ ${r.timeStr}</span><span class="reminder-msg">${escapeHtml(r.message)}</span><button class="reminder-del" onclick="deleteReminder(${r.id})">✖</button></div>`).join(''); }
-function startReminderWatcher() { if (reminderInterval) clearInterval(reminderInterval); reminderInterval = setInterval(() => { const now = new Date(); const nowStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`; for (let i=reminders.length-1; i>=0; i--) { if (reminders[i].timeStr === nowStr) { showToastAlarm(reminders[i].message); if (Notification.permission === "granted") new Notification("⏰ Rappel TSP WORLD PRO", { body: reminders[i].message, icon: NOTIF_ICON }); reminders.splice(i,1); saveReminders(); renderReminderList(); } } }, 1000); }
-function scheduleAlarm() { let timeInput = document.getElementById('reminderTime').value; let message = document.getElementById('reminderMessage').value.trim(); if (!timeInput) { alert("Veuillez choisir une heure."); return; } if (!message) message = "Rappel !"; if (Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission(); let newId = nextReminderId++; reminders.push({ id: newId, timeStr: timeInput, message: message }); saveReminders(); renderReminderList(); document.getElementById('reminderTime').value = ''; document.getElementById('reminderMessage').value = ''; document.getElementById('notifStatus').innerHTML = `✅ Rappel ajouté pour ${timeInput}`; setTimeout(() => { if(document.getElementById('notifStatus')) document.getElementById('notifStatus').innerHTML = "💡 Cliquez sur Ajouter."; }, 3000); }
+function renderReminderList() { let container = document.getElementById('reminderList'); if (!reminders.length) { container.innerHTML = '<div style="color:var(--muted); padding:8px;">Aucun rappel</div>'; return; } container.innerHTML = reminders.map(r => `<div class="reminder-item"><span class="reminder-time">⏰ ${r.timeStr}</span><span class="reminder-msg">${escapeHtml(r.message)}</span><button class="reminder-del" onclick="deleteReminder(${r.id})">✖</button></div>`).join(''); }
+function startReminderWatcher() { if (reminderInterval) clearInterval(reminderInterval); reminderInterval = setInterval(() => { const now = new Date(); const nowStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`; for (let i=reminders.length-1; i>=0; i--) { if (reminders[i].timeStr === nowStr) { showToastAlarm(reminders[i].message); if (Notification.permission === "granted") new Notification("⏰ Rappel TSP", { body: reminders[i].message, icon: NOTIF_ICON }); reminders.splice(i,1); saveReminders(); renderReminderList(); } } }, 1000); }
+function scheduleAlarm() { let timeInput = document.getElementById('reminderTime').value; let message = document.getElementById('reminderMessage').value.trim(); if (!timeInput) return alert("Choisissez une heure"); if (!message) message = "Rappel"; if (Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission(); reminders.push({ id: nextReminderId++, timeStr: timeInput, message }); saveReminders(); renderReminderList(); document.getElementById('reminderTime').value = ''; document.getElementById('reminderMessage').value = ''; document.getElementById('notifStatus').innerHTML = `✅ Rappel ${timeInput}`; setTimeout(() => document.getElementById('notifStatus').innerHTML = "💡 Cliquez sur Ajouter", 3000); }
 function deleteReminder(id) { reminders = reminders.filter(r => r.id !== id); saveReminders(); renderReminderList(); }
-function showToastAlarm(message) { let toast = document.createElement('div'); toast.className = 'toast-alarm'; toast.innerHTML = `<div class="toast-close" onclick="this.parentElement.remove()">✖</div><div class="toast-title">⏰ ALARME</div><div>${escapeHtml(message)}</div>`; document.body.appendChild(toast); setTimeout(() => { if(toast && toast.remove) toast.remove(); }, 8000); }
-const NOTIF_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E";
-let cronInterval = null, cronSeconds = parseInt(sessionStorage.getItem('tsp_cron_sec') || '0');
+function showToastAlarm(message) { let toast = document.createElement('div'); toast.className = 'toast-alarm'; toast.innerHTML = `<div class="toast-close" onclick="this.parentElement.remove()">✖</div><div class="toast-title">⏰ ALARME</div><div>${escapeHtml(message)}</div>`; document.body.appendChild(toast); setTimeout(() => toast.remove(), 8000); }
+
 function updateLiveClock() { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('fr-FR'); }
 setInterval(updateLiveClock, 1000); updateLiveClock();
 function updateCronDisplay() { let h=Math.floor(cronSeconds/3600), m=Math.floor((cronSeconds%3600)/60), s=cronSeconds%60; document.getElementById('cronDisplay').innerText=`${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; }
 function startCron() { if(cronInterval) return; cronInterval=setInterval(()=>{cronSeconds++; updateCronDisplay(); sessionStorage.setItem('tsp_cron_sec',cronSeconds);},1000); }
-function pauseCron() { if(cronInterval) {clearInterval(cronInterval); cronInterval=null;} }
+function pauseCron() { if(cronInterval) clearInterval(cronInterval); cronInterval=null; }
 function resetCron() { pauseCron(); cronSeconds=0; updateCronDisplay(); sessionStorage.setItem('tsp_cron_sec',0); }
 updateCronDisplay();
+
 async function hashPassword(pwd) { const encoder = new TextEncoder(); const data = encoder.encode(pwd); const hashBuffer = await crypto.subtle.digest('SHA-256', data); return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2,'0')).join(''); }
 function getUsers() { return JSON.parse(localStorage.getItem('tsp_users') || '{}'); }
 function saveUsers(u) { localStorage.setItem('tsp_users', JSON.stringify(u)); }
@@ -828,107 +356,73 @@ async function doRegister() { let u = document.getElementById('regUsername').val
 function showConfirm(u) { pendingUser = u; document.getElementById('cf_username').textContent = u.username; document.getElementById('cf_first').textContent = u.firstName; document.getElementById('cf_last').textContent = u.lastName; document.getElementById('confirmOverlay').classList.remove('hidden'); }
 function finalizeLogin() { localStorage.setItem('tsp_session', JSON.stringify(pendingUser)); document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('confirmOverlay').classList.add('hidden'); startApp(pendingUser); }
 function logout() { localStorage.removeItem('tsp_session'); location.reload(); }
-function startApp(user) {
-    document.getElementById('dashboard').style.display = 'block';
-    document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`;
-    map = L.map('map', { zoomControl: false, rotate: true, touchRotate: true, rotateControl: false, bearing: 0 }).setView([20,10], 2);
-    if (window.devicePixelRatio > 1) { map.options.zoomSnap = 0.5; map.options.zoomDelta = 0.5; }
-    map.dragging.rotateModifierKey = 'Shift';
-    let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm';
-    setMapLayer(savedLayer);
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-    map.on('rotate', updateCompass);
-    map.on('move', updateCompass);
-    updateCompass();
-    map.on('click', async e => {
-        if (pickMode) {
-            document.getElementById('newLat').value = e.latlng.lat.toFixed(6);
-            document.getElementById('newLon').value = e.latlng.lng.toFixed(6);
-            document.getElementById('pickMsg').textContent = '✅ Coordonnées récupérées';
-            pickMode = false;
-            map.getContainer().style.cursor = '';
-            return;
-        }
-        let lat = e.latlng.lat, lon = e.latlng.lng;
-        let popup = L.popup().setLatLng(e.latlng).setContent('⏳ Chargement...').openOn(map);
-        try {
-            let resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`);
-            let data = await resp.json();
-            let name = data.name || (data.display_name ? data.display_name.split(',')[0] : 'Lieu inconnu');
-            let addr = data.address || {};
-            let city = addr.city || addr.town || addr.village || addr.county || '';
-            let country = addr.country || '';
-            let road = addr.road || addr.pedestrian || addr.suburb || '';
-            let gmapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
-            let safeN = name.replace(/'/g,"&#39;").replace(/"/g,'&quot;');
-            let safeC = country.replace(/'/g,"&#39;");
-            popup.setContent(`<div style="min-width:200px; font-family:sans-serif;"><div style="font-weight:800; font-size:1rem; margin-bottom:4px;">📍 ${name}</div>${road ? `<div style="font-size:0.82rem; color:#555;">🛣️ ${road}</div>` : ''}${city ? `<div style="font-size:0.82rem; color:#555;">🏙️ ${city}</div>` : ''}${country ? `<div style="font-size:0.82rem; color:#555;">🌍 ${country}</div>` : ''}<div style="font-size:0.75rem; color:#888; margin:4px 0;">📐 ${lat.toFixed(5)}, ${lon.toFixed(5)}</div><div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;"><button onclick="addCityToList({name:'${safeN}',lat:${lat},lon:${lon},country:'${safeC}',desc:'${road}'}); this.textContent='✅ Ajouté!';" style="padding:4px 10px; background:#00f5ff; border:none; border-radius:20px; cursor:pointer; font-weight:700; font-size:0.78rem;">➕ Ajouter</button><button onclick="window.open('${gmapsUrl}','_blank')" style="padding:4px 10px; background:#4285f4; color:white; border:none; border-radius:20px; cursor:pointer; font-weight:700; font-size:0.78rem;">🗺️ Google Maps</button></div></div>`);
-        } catch(e) { popup.setContent('❌ Erreur de chargement'); }
-    });
-    loadSelected();
-    loadReminders();
-    handleUrlLocation();
-}
-let isTilted = false;
+
+function startApp(user) { document.getElementById('dashboard').style.display = 'block'; document.getElementById('welcomeName').innerHTML = `${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}`; map = L.map('map', { zoomControl: false, rotate: true, touchRotate: true, bearing: 0 }).setView([20,10], 2); if (window.devicePixelRatio > 1) { map.options.zoomSnap = 0.5; } map.dragging.rotateModifierKey = 'Shift'; let savedLayer = localStorage.getItem('tsp_map_layer') || 'osm'; setMapLayer(savedLayer); L.control.zoom({ position: 'bottomright' }).addTo(map); map.on('rotate', updateCompass); map.on('move', updateCompass); updateCompass(); map.on('click', async e => { if (pickMode) { document.getElementById('newLat').value = e.latlng.lat.toFixed(6); document.getElementById('newLon').value = e.latlng.lng.toFixed(6); document.getElementById('pickMsg').textContent = '✅ Coordonnées récupérées'; pickMode = false; map.getContainer().style.cursor = ''; return; } let lat = e.latlng.lat, lon = e.latlng.lng; let popup = L.popup().setLatLng(e.latlng).setContent('⏳ Chargement...').openOn(map); try { let resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`); let data = await resp.json(); let name = data.name || (data.display_name ? data.display_name.split(',')[0] : 'Lieu'); let addr = data.address || {}; let country = addr.country || ''; let road = addr.road || ''; let safeN = name.replace(/'/g,"&#39;"); let safeC = country.replace(/'/g,"&#39;"); popup.setContent(`<div><b>📍 ${name}</b><br>${road?`🛣️ ${road}<br>`:''}${country?`🌍 ${country}<br>`:''}<button onclick="addCityToList({name:'${safeN}',lat:${lat},lon:${lon},country:'${safeC}',desc:'${road}'})">➕ Ajouter</button> <a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank">🗺️ Maps</a></div>`); } catch(e) { popup.setContent('❌ Erreur'); } }); loadSelected(); loadReminders(); handleUrlLocation(); }
 function toggleTilt() { isTilted = !isTilted; document.getElementById('map').classList.toggle('tilted', isTilted); document.getElementById('tiltBtn').classList.toggle('active', isTilted); }
-window.toggleTilt = toggleTilt;
-let pickMode = false;
 function addCustomCity() { let name=document.getElementById('newName').value.trim(), country=document.getElementById('newCountry').value.trim(), lat=parseFloat(document.getElementById('newLat').value), lon=parseFloat(document.getElementById('newLon').value), desc=document.getElementById('newDesc').value.trim(); if(!name||!country||isNaN(lat)||isNaN(lon)) { alert('Champs requis'); return; } addCityToList({ name, lat, lon, country, desc, custom:true }); document.getElementById('newName').value=''; document.getElementById('newCountry').value=''; document.getElementById('newLat').value=''; document.getElementById('newLon').value=''; document.getElementById('newDesc').value=''; document.getElementById('pickMsg').textContent=`✅ ${escapeHtml(name)} ajoutée`; }
-function startMapPick() { pickMode=true; map.getContainer().style.cursor='crosshair'; document.getElementById('pickMsg').innerHTML='🔘 Cliquez sur la carte <span class="cancel-pick" onclick="cancelPick()">Annuler</span>'; }
+function startMapPick() { pickMode=true; map.getContainer().style.cursor='crosshair'; document.getElementById('pickMsg').innerHTML='🔘 Cliquez sur la carte <span onclick="cancelPick()">Annuler</span>'; }
 function cancelPick() { pickMode=false; map.getContainer().style.cursor=''; document.getElementById('pickMsg').innerHTML=''; }
-function useGeoloc() { requestGeolocationWithHelp(pos => { document.getElementById('newLat').value=pos.coords.latitude.toFixed(6); document.getElementById('newLon').value=pos.coords.longitude.toFixed(6); document.getElementById('pickMsg').textContent='📍 GPS récupéré'; }, err=>alert("GPS refusé")); }
+function useGeoloc() { requestGeolocationWithHelp(pos => { document.getElementById('newLat').value=pos.coords.latitude.toFixed(6); document.getElementById('newLon').value=pos.coords.longitude.toFixed(6); document.getElementById('pickMsg').textContent='📍 GPS récupéré'; }, ()=>alert("GPS refusé")); }
 function exportGeoJSON() { let features = []; selectedCities.forEach(city => { features.push({ type:"Feature", geometry:{ type:"Point", coordinates:[city.lon,city.lat] }, properties:{ name:city.name, country:city.country } }); }); if(routeLayer && routeLayer.getLatLngs && routeLayer.getLatLngs().length) { let coords = routeLayer.getLatLngs().map(c => [c.lng, c.lat]); features.push({ type:"Feature", geometry:{ type:"LineString", coordinates:coords }, properties:{ name:"Itinéraire TSP" } }); } let geojson = { type:"FeatureCollection", features }; let blob = new Blob([JSON.stringify(geojson,null,2)], {type:"application/json"}); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "tsp.geojson"; a.click(); URL.revokeObjectURL(url); }
-function escapeHtml(s) { return String(s).replace(/[&<>]/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m];}); }
-function haversine(lat1,lon1,lat2,lon2) { const R=6371, r=Math.PI/180; const dLat=(lat2-lat1)*r, dLon=(lon2-lon1)*r; return R*2*Math.asin(Math.sqrt(Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2)); }
-function totalDistance(tour) { let d=0; for(let i=0;i<tour.length-1;i++) d+=haversine(tour[i].lat,tour[i].lon,tour[i+1].lat,tour[i+1].lon); return d; }
 function twoOpt(tour) { let improved=true, bestDist=totalDistance(tour); while(improved && !tspCancelRequested){ improved=false; for(let i=1;i<tour.length-2;i++){ for(let j=i+1;j<tour.length-1;j++){ if(tspCancelRequested) return tour; let newTour = [...tour.slice(0,i), ...tour.slice(i,j+1).reverse(), ...tour.slice(j+1)]; let newDist=totalDistance(newTour); if(newDist<bestDist-0.001){ bestDist=newDist; tour=newTour; improved=true; } } } } return tour; }
 function tspNN(cities,startIdx) { if(cities.length<2) return [[],0]; let unvisited=[...cities]; let start=unvisited.splice(startIdx,1)[0]; let tour=[start], current=start, total=0; while(unvisited.length){ let bestIdx=0, bestDist=haversine(current.lat,current.lon,unvisited[0].lat,unvisited[0].lon); for(let i=1;i<unvisited.length;i++){ let d=haversine(current.lat,current.lon,unvisited[i].lat,unvisited[i].lon); if(d<bestDist){bestDist=d;bestIdx=i;}} total+=bestDist; current=unvisited[bestIdx]; tour.push(current); unvisited.splice(bestIdx,1); } total+=haversine(current.lat,current.lon,start.lat,start.lon); tour.push(start); return [tour,total]; }
-async function fetchOsrmRoute(lat1, lon1, lat2, lon2, mode) { let profile = mode === 'foot' ? 'foot' : 'driving'; let url = `https://router.project-osrm.org/route/v1/${profile}/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`; try { let resp = await fetch(url); if (!resp.ok) return null; let data = await resp.json(); if (!data.routes || data.routes.length === 0) return null; let route = data.routes[0]; let distanceKm = route.distance / 1000; let durationSec = route.duration; let coords = route.geometry.coordinates.map(c => [c[1], c[0]]); return { routeCoords: coords, distanceKm, durationSec }; } catch(e) { return null; } }
-async function buildRouteGeometry(tour, mode) { if (tour.length < 2) return { routeLatLng: [], totalDistanceKm: 0, totalDurationSec: 0 }; let allLatLng = []; let totalDistanceKm = 0; let totalDurationSec = 0; for (let i = 0; i < tour.length - 1; i++) { if (tspCancelRequested) return { routeLatLng: [], totalDistanceKm: 0, totalDurationSec: 0 }; let c1 = tour[i], c2 = tour[i+1]; if (mode === 'plane') { let dist = haversine(c1.lat, c1.lon, c2.lat, c2.lon); totalDistanceKm += dist; totalDurationSec += (dist / 800) * 3600; if (allLatLng.length === 0 || allLatLng[allLatLng.length-1][0] !== c1.lat || allLatLng[allLatLng.length-1][1] !== c1.lon) allLatLng.push([c1.lat, c1.lon]); allLatLng.push([c2.lat, c2.lon]); } else { let result = await fetchOsrmRoute(c1.lat, c1.lon, c2.lat, c2.lon, mode); if (result && result.routeCoords && result.routeCoords.length > 0) { let segmentCoords = result.routeCoords; if (allLatLng.length > 0 && segmentCoords.length > 0) { let last = allLatLng[allLatLng.length-1]; let first = segmentCoords[0]; if (Math.abs(last[0]-first[0])<1e-7 && Math.abs(last[1]-first[1])<1e-7) segmentCoords.shift(); } allLatLng.push(...segmentCoords); totalDistanceKm += result.distanceKm; totalDurationSec += result.durationSec; } else { let dist = haversine(c1.lat, c1.lon, c2.lat, c2.lon); totalDistanceKm += dist; let speedKmh = (mode === 'foot') ? 5 : 80; totalDurationSec += (dist / speedKmh) * 3600; if (allLatLng.length === 0 || allLatLng[allLatLng.length-1][0] !== c1.lat || allLatLng[allLatLng.length-1][1] !== c1.lon) allLatLng.push([c1.lat, c1.lon]); allLatLng.push([c2.lat, c2.lon]); } await new Promise(r => setTimeout(r, 200)); } } return { routeLatLng: allLatLng, totalDistanceKm, totalDurationSec }; }
+async function fetchOsrmRoute(lat1, lon1, lat2, lon2, mode) { let profile = mode === 'foot' ? 'foot' : 'driving'; let url = `https://router.project-osrm.org/route/v1/${profile}/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`; try { let resp = await fetch(url); if (!resp.ok) return null; let data = await resp.json(); if (!data.routes || data.routes.length === 0) return null; let route = data.routes[0]; return { routeCoords: route.geometry.coordinates.map(c => [c[1], c[0]]), distanceKm: route.distance/1000, durationSec: route.duration }; } catch(e) { return null; } }
+async function buildRouteGeometry(tour, mode) { if (tour.length < 2) return { routeLatLng: [], totalDistanceKm: 0, totalDurationSec: 0 }; let allLatLng = [], totalDistanceKm = 0, totalDurationSec = 0; for (let i=0; i<tour.length-1; i++) { if (tspCancelRequested) return { routeLatLng: [], totalDistanceKm: 0, totalDurationSec: 0 }; let c1=tour[i], c2=tour[i+1]; if (mode === 'plane') { let dist = haversine(c1.lat,c1.lon,c2.lat,c2.lon); totalDistanceKm += dist; totalDurationSec += (dist/800)*3600; if (allLatLng.length===0 || allLatLng[allLatLng.length-1][0]!==c1.lat || allLatLng[allLatLng.length-1][1]!==c1.lon) allLatLng.push([c1.lat,c1.lon]); allLatLng.push([c2.lat,c2.lon]); } else { let result = await fetchOsrmRoute(c1.lat,c1.lon,c2.lat,c2.lon,mode); if (result && result.routeCoords && result.routeCoords.length) { let seg = result.routeCoords; if (allLatLng.length && seg.length && Math.abs(allLatLng[allLatLng.length-1][0]-seg[0][0])<1e-7 && Math.abs(allLatLng[allLatLng.length-1][1]-seg[0][1])<1e-7) seg.shift(); allLatLng.push(...seg); totalDistanceKm += result.distanceKm; totalDurationSec += result.durationSec; } else { let dist = haversine(c1.lat,c1.lon,c2.lat,c2.lon); totalDistanceKm += dist; totalDurationSec += (dist / (mode==='foot'?5:80))*3600; if (allLatLng.length===0 || allLatLng[allLatLng.length-1][0]!==c1.lat || allLatLng[allLatLng.length-1][1]!==c1.lon) allLatLng.push([c1.lat,c1.lon]); allLatLng.push([c2.lat,c2.lon]); } await new Promise(r => setTimeout(r,200)); } } return { routeLatLng: allLatLng, totalDistanceKm, totalDurationSec }; }
 function clearMapRoute() { if(routeLayer) map.removeLayer(routeLayer); routeMarkers.forEach(m=>map.removeLayer(m)); routeMarkers=[]; stopDotAnimation(); }
-async function computeTSP() { tspCancelRequested = false; document.getElementById('cancelTSPBtn').style.display = 'inline-block'; let max = parseInt(document.getElementById('maxCities').value) || 8; let cities = [...selectedCities]; if (cities.length < 2) { document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Sélectionnez au moins 2 villes</div>'; document.getElementById('cancelTSPBtn').style.display = 'none'; return; } if (cities.length > max) cities = cities.slice(0, max); let startIdx = parseInt(document.getElementById('startCitySelect').value) || 0; let [tour, straightDist] = tspNN(cities, startIdx); if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } let algo = document.getElementById('algoSelect').value; if (algo === '2opt') tour = twoOpt(tour); if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } let orderedCities = tour.slice(0, -1); selectedCities = orderedCities; saveSelected(); updateSelUI(); updateMarkersOnMap(); clearMapRoute(); let loadEl = document.getElementById('routeLoading'); let mode = document.getElementById('transportMode').value; loadEl.style.display = 'block'; let { routeLatLng, totalDistanceKm, totalDurationSec } = await buildRouteGeometry(tour, mode); loadEl.style.display = 'none'; if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } if (routeLatLng.length < 2) { document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Erreur tracé route</div>'; document.getElementById('cancelTSPBtn').style.display = 'none'; return; } routeLayer = L.polyline(routeLatLng, { color: '#00f5ff', weight: 4, opacity: 0.85 }).addTo(map); animateDotsOnRoute(routeLatLng); tour.slice(0, -1).forEach((city, idx) => { let isStart = (idx === 0); let color = isStart ? '#ff4466' : (city.custom ? '#00ffaa' : '#00ccff'); let marker = L.marker([city.lat, city.lon], { icon: L.divIcon({ html: `<div style="background:${color};width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:${isStart ? '#fff' : '#000'};border:2px solid white;font-size:12px;">${isStart ? '🏁' : idx+1}</div>`, iconSize: [30,30] }) }).addTo(map).bindPopup(`<b>${idx+1}. ${escapeHtml(city.name)}</b><br>${escapeHtml(city.country)}`); routeMarkers.push(marker); }); let lats = cities.map(c => c.lat), lons = cities.map(c => c.lon); map.fitBounds([[Math.min(...lats), Math.min(...lons)], [Math.max(...lats), Math.max(...lons)]], { padding: [60,60] }); let stepsHtml = tour.slice(0, -1).map((c,i) => `<div><b>${i+1}. ${escapeHtml(c.name)}</b> (${escapeHtml(c.country)})</div>`).join(''); let modeLabel = { car:'🚗 Voiture', foot:'🚶 Piéton', plane:'✈️ Avion' }[mode]; let durationHours = totalDurationSec / 3600; let durationStr = `${Math.floor(durationHours)}h ${Math.floor((durationHours % 1) * 60)}min`; let distanceKm = totalDistanceKm.toFixed(0); document.getElementById('resultsPanel').innerHTML = `<div><strong>📊 Résultat (${algo === '2opt' ? '2-opt optimisé' : 'Plus proche voisin'})</strong></div><div class="stats-grid"><div class="stat-card"><div class="val">${cities.length}</div>villes</div><div class="stat-card"><div class="val">${distanceKm}</div>km</div><div class="stat-card"><div class="val">${durationStr}</div>durée</div><div class="stat-card"><div class="val">${modeLabel}</div></div></div><div class="route-steps">${stepsHtml}</div>`; document.getElementById('cancelTSPBtn').style.display = 'none'; }
+async function computeTSP() { tspCancelRequested = false; document.getElementById('cancelTSPBtn').style.display = 'inline-block'; let max = parseInt(document.getElementById('maxCities').value) || 8; let cities = [...selectedCities]; if (cities.length < 2) { document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--error)">Sélectionnez au moins 2 villes</div>'; document.getElementById('cancelTSPBtn').style.display = 'none'; return; } if (cities.length > max) cities = cities.slice(0,max); let startIdx = parseInt(document.getElementById('startCitySelect').value) || 0; let [tour] = tspNN(cities, startIdx); if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } if (document.getElementById('algoSelect').value === '2opt') tour = twoOpt(tour); if (tspCancelRequested) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } let orderedCities = tour.slice(0,-1); selectedCities = orderedCities; saveSelected(); updateSelUI(); updateMarkersOnMap(); clearMapRoute(); document.getElementById('routeLoading').style.display = 'block'; let mode = document.getElementById('transportMode').value; let { routeLatLng, totalDistanceKm, totalDurationSec } = await buildRouteGeometry(tour, mode); document.getElementById('routeLoading').style.display = 'none'; if (tspCancelRequested || routeLatLng.length < 2) { document.getElementById('cancelTSPBtn').style.display = 'none'; return; } routeLayer = L.polyline(routeLatLng, { color: '#00f5ff', weight: 4, opacity: 0.85 }).addTo(map); animateDotsOnRoute(routeLatLng); tour.slice(0,-1).forEach((city, idx) => { let color = idx===0 ? '#ff4466' : (city.custom ? '#00ffaa' : '#00ccff'); let marker = L.marker([city.lat, city.lon], { icon: L.divIcon({ html: `<div style="background:${color};width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:${idx===0?'#fff':'#000'};border:2px solid white;font-size:12px;">${idx===0?'🏁':idx+1}</div>`, iconSize:[30,30] }) }).addTo(map).bindPopup(`<b>${idx+1}. ${escapeHtml(city.name)}</b><br>${escapeHtml(city.country)}`); routeMarkers.push(marker); }); let lats = cities.map(c=>c.lat), lons = cities.map(c=>c.lon); map.fitBounds([[Math.min(...lats), Math.min(...lons)], [Math.max(...lats), Math.max(...lons)]], { padding:[60,60] }); let stepsHtml = tour.slice(0,-1).map((c,i)=>`<div><b>${i+1}. ${escapeHtml(c.name)}</b> (${escapeHtml(c.country)})</div>`).join(''); let modeLabel = { car:'🚗 Voiture', foot:'🚶 Piéton', plane:'✈️ Avion' }[mode]; let durationHours = totalDurationSec/3600; let durationStr = `${Math.floor(durationHours)}h ${Math.floor((durationHours%1)*60)}min`; let distanceKm = totalDistanceKm.toFixed(0); document.getElementById('resultsPanel').innerHTML = `<div><strong>📊 Résultat (${document.getElementById('algoSelect').value === '2opt' ? '2-opt' : 'Plus proche voisin'})</strong></div><div class="stats-grid"><div class="stat-card"><div class="val">${cities.length}</div>villes</div><div class="stat-card"><div class="val">${distanceKm}</div>km</div><div class="stat-card"><div class="val">${durationStr}</div>durée</div><div class="stat-card"><div class="val">${modeLabel}</div></div></div><div class="route-steps">${stepsHtml}</div>`; document.getElementById('cancelTSPBtn').style.display = 'none'; }
 function cancelTSP() { tspCancelRequested = true; }
-function generateJavaCode() { if (!selectedCities.length) { document.getElementById('javaCodeArea').value = "// Aucune ville sélectionnée."; return; } let coordsArray = selectedCities.map(c => `    {${c.lat}, ${c.lon}}`).join(",\n"); let javaCode = `public class TSPCoords {\n    public static double[][] getCoordinates() {\n        return new double[][] {\n${coordsArray}\n        };\n    }\n}`; document.getElementById('javaCodeArea').value = javaCode; }
-function copyJavaCode() { let textarea = document.getElementById('javaCodeArea'); textarea.select(); document.execCommand('copy'); alert("Code Java copié !"); }
-function switchTab(t) { document.getElementById('loginForm').style.display = t === 'login' ? 'block' : 'none'; document.getElementById('registerForm').style.display = t === 'register' ? 'block' : 'none'; document.getElementById('tabLogin').classList.toggle('active', t === 'login'); document.getElementById('tabReg').classList.toggle('active', t === 'register'); }
-window.switchTab = switchTab; window.doLogin = doLogin; window.doRegister = doRegister; window.finalizeLogin = finalizeLogin; window.logout = logout; window.toggleMapLayer = toggleMapLayer; window.shareCurrentLocation = shareCurrentLocation; window.showMyLocation = showMyLocation; window.exportGeoJSON = exportGeoJSON; window.clearSelection = clearSelection; window.computeTSP = computeTSP; window.cancelTSP = cancelTSP; window.generateJavaCode = generateJavaCode; window.copyJavaCode = copyJavaCode; window.scheduleAlarm = scheduleAlarm; window.startCron = startCron; window.pauseCron = pauseCron; window.resetCron = resetCron; window.addCustomCity = addCustomCity; window.startMapPick = startMapPick; window.useGeoloc = useGeoloc; window.zoomToCity = zoomToCity; window.showPlaceDetails = showPlaceDetails; window.zoomToCityById = zoomToCityById; window.selectSearchResult = selectSearchResult; window.toggleTracking = toggleTracking; window.startTracking = startTrackingPro; window.stopTracking = stopTrackingPro; window.generatePositionQR = generatePositionQR; window.copyQRImage = copyQRImage; window.downloadQR = downloadQR; window.openQRScanner = openQRScanner; window.stopQRScanner = stopQRScanner; window.scanQRFromFile = scanQRFromFile;
+function generateJavaCode() { if (!selectedCities.length) { document.getElementById('javaCodeArea').value = "// Aucune ville"; return; } let coordsArray = selectedCities.map(c => `    {${c.lat}, ${c.lon}}`).join(",\n"); document.getElementById('javaCodeArea').value = `public class TSPCoords {\n    public static double[][] getCoordinates() {\n        return new double[][] {\n${coordsArray}\n        };\n    }\n}`; }
+function copyJavaCode() { let ta = document.getElementById('javaCodeArea'); ta.select(); document.execCommand('copy'); alert("Code Java copié !"); }
 
-// NOUVEAU GESTIONNAIRE DOMContentLoaded : INTRO PERSONNALISÉE PUIS SPLASH TSP
+// ==================== FONCTIONS QR SPÉCIALES POUR LA RECHERCHE ====================
+function decodeQRAndAddLocation(file, mode='file') { return new Promise((resolve, reject) => { let img = new Image(); img.onload = () => { let canvas = document.createElement('canvas'); canvas.width = img.width; canvas.height = img.height; let ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0); let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height); function run() { if (!window.jsQR) { let script = document.createElement('script'); script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js'; script.onload = () => { let code = jsQR(imageData.data, imageData.width, imageData.height); code ? resolve(code.data) : reject("Aucun QR"); }; document.head.appendChild(script); } else { let code = jsQR(imageData.data, imageData.width, imageData.height); code ? resolve(code.data) : reject("Aucun QR"); } } run(); }; img.onerror = () => reject("Impossible de charger"); if (mode==='file' && file instanceof File) img.src = URL.createObjectURL(file); else img.src = file; }); }
+function processQRUrl(url) { try { let urlObj = new URL(url); let lat = parseFloat(urlObj.searchParams.get('lat')); let lon = parseFloat(urlObj.searchParams.get('lon')); let name = urlObj.searchParams.get('name') || `Position scannée (${lat.toFixed(4)}, ${lon.toFixed(4)})`; if (isNaN(lat) || isNaN(lon)) throw new Error(); addCityToList({ name: decodeURIComponent(name), lat, lon, country: "QR scanné", desc: "Lu par QR" }); map.flyTo([lat, lon], 14); alert(`✅ ${name} ajouté`); } catch(e) { alert("QR invalide (lat/lon manquants)"); } }
+async function scanQRFromFileSearch(event) { let file = event.target.files[0]; if (!file) return; try { let result = await decodeQRAndAddLocation(file, 'file'); processQRUrl(result); } catch(e) { alert("Impossible de lire le QR : " + e.message); } event.target.value = ''; }
+async function pasteQRToSearch() { try { const items = await navigator.clipboard.read(); for (let item of items) { let imageType = item.types.find(t => t.startsWith('image/')); if (imageType) { let blob = await item.getType(imageType); let file = new File([blob], 'paste.png', { type: imageType }); let result = await decodeQRAndAddLocation(file, 'file'); processQRUrl(result); return; } } alert("Aucune image dans le presse-papiers"); } catch(e) { alert("Accès au presse-papiers refusé"); } }
+function openQRScannerForSearch() { let modal = document.getElementById('qrModal'); modal.style.display = 'flex'; if (!scannerStream) { openQRScanner(); } window.__tempQRCallback = function(result) { processQRUrl(result); modal.style.display = 'none'; stopQRScanner(); window.__tempQRCallback = null; }; if (scannerStream) stopQRScanner(); openQRScanner(); }
+function openShareQR() { requestGeolocationWithHelp(pos => { let lat = pos.coords.latitude, lon = pos.coords.longitude; let customName = prompt("Nom de cette position :", "Ma position"); if (!customName) customName = "Position"; lastQrUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}&name=${encodeURIComponent(customName)}`; document.getElementById('qrCoords').textContent = `📍 ${lat.toFixed(5)}, ${lon.toFixed(5)}`; document.getElementById('qrSubtitle').textContent = `${customName} · ASSOCIATION ERROUIFI`; let modal = document.getElementById('qrModal'); modal.style.display = 'flex'; modal.onclick = e => { if (e.target === modal) { modal.style.display = 'none'; stopQRScanner(); } }; drawQRWithLogo(lastQrUrl); }, () => alert("GPS indisponible")); }
+function copyQRLink() { if (!lastQrUrl) return; navigator.clipboard.writeText(lastQrUrl).then(() => alert("Lien copié !")).catch(() => { let ta = document.createElement('textarea'); ta.value = lastQrUrl; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert("Lien copié"); }); }
+function shareQRNative() { if (!lastQrUrl) return; if (navigator.share) navigator.share({ title: 'Ma position', url: lastQrUrl }).catch(()=>{}); else copyQRLink(); }
+async function scanQRFromFileAuto(event) { scanQRFromFileSearch(event); }
+async function pasteQRFromClipboard() { pasteQRToSearch(); }
+
+window.selectSearchResult = selectSearchResult;
+window.switchTab = function(t) { document.getElementById('loginForm').style.display = t === 'login' ? 'block' : 'none'; document.getElementById('registerForm').style.display = t === 'register' ? 'block' : 'none'; document.getElementById('tabLogin').classList.toggle('active', t === 'login'); document.getElementById('tabReg').classList.toggle('active', t === 'register'); };
+window.doLogin = doLogin; window.doRegister = doRegister; window.finalizeLogin = finalizeLogin; window.logout = logout;
+window.toggleMapLayer = toggleMapLayer; window.shareCurrentLocation = shareCurrentLocation; window.showMyLocation = showMyLocation;
+window.exportGeoJSON = exportGeoJSON; window.clearSelection = clearSelection; window.computeTSP = computeTSP; window.cancelTSP = cancelTSP;
+window.generateJavaCode = generateJavaCode; window.copyJavaCode = copyJavaCode; window.scheduleAlarm = scheduleAlarm;
+window.startCron = startCron; window.pauseCron = pauseCron; window.resetCron = resetCron;
+window.addCustomCity = addCustomCity; window.startMapPick = startMapPick; window.useGeoloc = useGeoloc; window.zoomToCity = zoomToCity;
+window.showPlaceDetails = showPlaceDetails; window.toggleTracking = toggleTracking; window.generatePositionQR = openShareQR;
+window.copyQRImage = copyQRImage; window.downloadQR = downloadQR; window.openQRScanner = openQRScanner; window.stopQRScanner = stopQRScanner;
+window.scanQRFromFile = scanQRFromFile; window.openQRScannerForSearch = openQRScannerForSearch; window.scanQRFromFileSearch = scanQRFromFileSearch;
+window.pasteQRToSearch = pasteQRToSearch; window.openShareQR = openShareQR; window.copyQRLink = copyQRLink; window.shareQRNative = shareQRNative;
+window.scanQRFromFileAuto = scanQRFromFileAuto; window.pasteQRFromClipboard = pasteQRFromClipboard;
+
+// Démarrage : intro 5s, splash TSP 5s
 document.addEventListener('DOMContentLoaded', () => {
-    // Intro progress bar sur 3.5 secondes
+    const intro = document.getElementById('introSplash');
+    const splash = document.getElementById('splashScreen');
+    const loginOverlay = document.getElementById('loginOverlay');
     const fill = document.getElementById('introProgressFill');
-    const introDuration = 3500;
-    const startTime = Date.now();
-    function animateIntroBar() {
-        const elapsed = Date.now() - startTime;
-        const pct = Math.min((elapsed / introDuration) * 100, 100);
-        fill.style.width = pct + '%';
-        if (pct < 100) {
-            requestAnimationFrame(animateIntroBar);
-        } else {
-            const intro = document.getElementById('introSplash');
-            intro.classList.add('hide');
-            setTimeout(() => {
-                intro.style.display = 'none';
-                const splash = document.getElementById('splashScreen');
-                splash.classList.remove('hidden'); // affiche le splash TSP
-                setTimeout(() => {
-                    splash.classList.add('hidden');
-                    let sess = localStorage.getItem('tsp_session');
-                    if (sess) {
-                        try {
-                            sess = JSON.parse(sess);
-                            document.getElementById('loginOverlay').style.display = 'none';
-                            startApp(sess);
-                        } catch(e) {}
-                    } else {
-                        document.getElementById('loginOverlay').classList.remove('hidden');
-                    }
-                }, 5000);
-            }, 800);
-        }
+    const INTRO_DURATION = 5000;
+    const SPLASH_DURATION = 5000;
+    if (fill) {
+        const start = Date.now();
+        function animate() { const elapsed = Date.now()-start; const pct = Math.min((elapsed/INTRO_DURATION)*100,100); fill.style.width = pct+'%'; if(pct<100) requestAnimationFrame(animate); }
+        requestAnimationFrame(animate);
     }
-    requestAnimationFrame(animateIntroBar);
+    setTimeout(() => {
+        intro.classList.add('hide');
+        setTimeout(() => { intro.style.display = 'none'; splash.classList.remove('hidden'); }, 800);
+        setTimeout(() => {
+            splash.classList.add('hidden');
+            let sess = localStorage.getItem('tsp_session');
+            if (sess) { try { sess = JSON.parse(sess); loginOverlay.style.display = 'none'; startApp(sess); } catch(e){} }
+            else { loginOverlay.classList.remove('hidden'); }
+        }, SPLASH_DURATION);
+    }, INTRO_DURATION);
 });
 </script>
 </body>
