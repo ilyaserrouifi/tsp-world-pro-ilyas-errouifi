@@ -856,15 +856,16 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(animate);
     }
     setTimeout(() => {
-        intro.classList.add('hide');
-        setTimeout(() => { intro.style.display = 'none'; splash.classList.remove('hidden'); }, 800);
-        setTimeout(() => {
-            splash.classList.add('hidden');
-            let sess = localStorage.getItem('tsp_session');
-            if (sess) { try { sess = JSON.parse(sess); loginOverlay.style.display = 'none'; startApp(sess); } catch(e){} }
-            else { loginOverlay.classList.remove('hidden'); }
-        }, SPLASH_DURATION);
-    }, INTRO_DURATION);
+    intro.classList.add('hide');
+    setTimeout(() => {
+        intro.style.display = 'none';
+        // splash désactivée temporairement
+        // splash.classList.remove('hidden');
+        let sess = localStorage.getItem('tsp_session');
+        if (sess) { try { sess = JSON.parse(sess); loginOverlay.style.display = 'none'; startApp(sess); } catch(e){} }
+        else { loginOverlay.classList.remove('hidden'); }
+    }, 800);
+}, INTRO_DURATION);
 });
 </script>
 </body>
